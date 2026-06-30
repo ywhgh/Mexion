@@ -1,6 +1,7 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
 import { PaperFrame } from "@/components";
 import { Demo } from "@/pages/Demo";
+import { SignInPage, SignOutButton, useMeQuery } from "@/pages/SignIn";
 
 function Placeholder({ title }: { title: string }): JSX.Element {
   return (
@@ -8,58 +9,97 @@ function Placeholder({ title }: { title: string }): JSX.Element {
       <p className="font-mono text-xs uppercase tracking-widest text-mute">PL. 待刊</p>
       <h1 className="mt-2 font-serif text-2xl font-semibold tracking-wide">{title}</h1>
       <p className="mt-3 max-w-[70ch] text-sm leading-6 text-mute">案卷已编号，正文将在后续里程碑写入。</p>
+      <div className="mt-5">
+        <SignOutButton />
+      </div>
     </div>
   );
 }
 
+function ProtectedShell(): JSX.Element {
+  const me = useMeQuery();
+
+  if (me.isLoading) {
+    return (
+      <PaperFrame>
+        <div className="border border-rule bg-paper p-6 font-mono text-sm uppercase tracking-widest text-mute">
+          LOADING AXION INDEX
+        </div>
+      </PaperFrame>
+    );
+  }
+
+  if (!me.data?.bootstrapped || !me.data.admin) {
+    window.location.assign("/sign-in");
+    return (
+      <PaperFrame>
+        <div className="border border-rule bg-paper p-6 font-mono text-sm uppercase tracking-widest text-mute">
+          REDIRECTING
+        </div>
+      </PaperFrame>
+    );
+  }
+
+  return <Outlet />;
+}
+
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: (
-      <PaperFrame>
-        <Demo />
-      </PaperFrame>
-    ),
+    path: "/sign-in",
+    element: <SignInPage />,
   },
   {
-    path: "/subs",
-    element: (
-      <PaperFrame>
-        <Placeholder title="§ 订阅 · PL. I" />
-      </PaperFrame>
-    ),
-  },
-  {
-    path: "/tokens",
-    element: (
-      <PaperFrame>
-        <Placeholder title="§ 凭证 · PL. II" />
-      </PaperFrame>
-    ),
-  },
-  {
-    path: "/routes",
-    element: (
-      <PaperFrame>
-        <Placeholder title="§ 中转 · PL. III" />
-      </PaperFrame>
-    ),
-  },
-  {
-    path: "/logs",
-    element: (
-      <PaperFrame>
-        <Placeholder title="§ 附录 · PL. IV" />
-      </PaperFrame>
-    ),
-  },
-  {
-    path: "/settings",
-    element: (
-      <PaperFrame>
-        <Placeholder title="§ 设置" />
-      </PaperFrame>
-    ),
+    element: <ProtectedShell />,
+    children: [
+      {
+        path: "/",
+        element: (
+          <PaperFrame>
+            <Demo />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/subs",
+        element: (
+          <PaperFrame>
+            <Placeholder title="§ 订阅 · PL. I" />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/tokens",
+        element: (
+          <PaperFrame>
+            <Placeholder title="§ 凭证 · PL. II" />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/routes",
+        element: (
+          <PaperFrame>
+            <Placeholder title="§ 中转 · PL. III" />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/logs",
+        element: (
+          <PaperFrame>
+            <Placeholder title="§ 附录 · PL. IV" />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/settings",
+        element: (
+          <PaperFrame>
+            <Placeholder title="§ 设置" />
+          </PaperFrame>
+        ),
+      },
+    ],
   },
 ]);
 

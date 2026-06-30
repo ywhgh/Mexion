@@ -18,7 +18,8 @@
       "@shared/*": [
         "../../packages/shared/src/*"
       ]
-    }
+    },
+    "baseUrl": "."
   },
   "include": [
     "src/**/*.ts"

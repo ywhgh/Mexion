@@ -1,12 +1,16 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { ZodError } from "zod";
 import type { DbClient } from "./db/client.js";
 import { openDb } from "./db/client.js";
 import { migrate } from "./db/migrate.js";
+import { authRoutes } from "./routes/auth.js";
+import type { PublicAdmin } from "./services/auth.js";
 
 export type AppBindings = {
   Variables: {
     db: DbClient;
+    admin: PublicAdmin;
   };
 };
 
@@ -26,6 +30,8 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
     await next();
   });
 
+  app.route("/api/auth", authRoutes);
+
   app.get("/api/health", (c) =>
     c.json({
       ok: true,
@@ -37,6 +43,12 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   );
 
   app.onError((error, c) => {
+    if (error instanceof ZodError) {
+      return c.json(
+        { ok: false, error: { code: "VALIDATION_ERROR", message: error.issues[0]?.message ?? "Invalid input" } },
+        400,
+      );
+    }
     if (error instanceof HTTPException) {
       return c.json(
         { ok: false, error: { code: `HTTP_${error.status}`, message: error.message } },
