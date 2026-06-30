@@ -37,6 +37,19 @@ export const tokenCreateSchema = z.object({
   ipAllow: z.array(z.string().trim().min(1)).optional().default([]),
 });
 
+export const routeCreateSchema = z.object({
+  alias: z
+    .string()
+    .trim()
+    .min(1)
+    .max(80)
+    .regex(/^[a-zA-Z0-9_-]+$/),
+  upstream: z.string().url(),
+  enabled: z.boolean().optional().default(true),
+});
+
+export const routeUpdateSchema = routeCreateSchema.partial();
+
 export const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -46,3 +59,5 @@ export type RuleSet = z.infer<typeof ruleSetSchema>;
 export type SubCreateInput = z.infer<typeof subCreateSchema>;
 export type SubUpdateInput = z.infer<typeof subUpdateSchema>;
 export type TokenCreateInput = z.infer<typeof tokenCreateSchema>;
+export type RouteCreateInput = z.infer<typeof routeCreateSchema>;
+export type RouteUpdateInput = z.infer<typeof routeUpdateSchema>;
