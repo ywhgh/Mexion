@@ -1,7 +1,8 @@
-import { Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Navigate, Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
 import { PaperFrame } from "@/components";
 import { Demo } from "@/pages/Demo";
 import { SignInPage, SignOutButton, useMeQuery } from "@/pages/SignIn";
+import { SubDetailPage, SubsListPage, SubsNewPage } from "@/pages/Subs";
 
 function Placeholder({ title }: { title: string }): JSX.Element {
   return (
@@ -30,14 +31,7 @@ function ProtectedShell(): JSX.Element {
   }
 
   if (!me.data?.bootstrapped || !me.data.admin) {
-    window.location.assign("/sign-in");
-    return (
-      <PaperFrame>
-        <div className="border border-rule bg-paper p-6 font-mono text-sm uppercase tracking-widest text-mute">
-          REDIRECTING
-        </div>
-      </PaperFrame>
-    );
+    return <Navigate replace to="/sign-in" />;
   }
 
   return <Outlet />;
@@ -63,7 +57,23 @@ const router = createBrowserRouter([
         path: "/subs",
         element: (
           <PaperFrame>
-            <Placeholder title="§ 订阅 · PL. I" />
+            <SubsListPage />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/subs/new",
+        element: (
+          <PaperFrame>
+            <SubsNewPage />
+          </PaperFrame>
+        ),
+      },
+      {
+        path: "/subs/:id",
+        element: (
+          <PaperFrame>
+            <SubDetailPage />
           </PaperFrame>
         ),
       },

@@ -5,6 +5,8 @@ import type { DbClient } from "./db/client.js";
 import { openDb } from "./db/client.js";
 import { migrate } from "./db/migrate.js";
 import { authRoutes } from "./routes/auth.js";
+import { subRoutes } from "./routes/subs.js";
+import { renderPublicSubscription } from "./services/subscriptions.js";
 import type { PublicAdmin } from "./services/auth.js";
 
 export type AppBindings = {
@@ -31,6 +33,8 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   });
 
   app.route("/api/auth", authRoutes);
+  app.route("/api/subs", subRoutes);
+  app.get("/v1/sub", renderPublicSubscription);
 
   app.get("/api/health", (c) =>
     c.json({
