@@ -50,6 +50,12 @@ export const routeCreateSchema = z.object({
 
 export const routeUpdateSchema = routeCreateSchema.partial();
 
+export const logsQuerySchema = z.object({
+  token: z.string().trim().optional(),
+  status: z.coerce.number().int().min(100).max(599).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional().default(100),
+});
+
 export const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -61,3 +67,5 @@ export type SubUpdateInput = z.infer<typeof subUpdateSchema>;
 export type TokenCreateInput = z.infer<typeof tokenCreateSchema>;
 export type RouteCreateInput = z.infer<typeof routeCreateSchema>;
 export type RouteUpdateInput = z.infer<typeof routeUpdateSchema>;
+export type LogsQuery = z.infer<typeof logsQuerySchema>;
+

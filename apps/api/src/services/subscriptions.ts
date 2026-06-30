@@ -4,6 +4,7 @@ import type { RuleSet, SubCreateInput, TargetFormat } from "../contracts.js";
 import { idParamSchema, subCreateSchema, subUpdateSchema } from "../contracts.js";
 import type { DbClient } from "../db/client.js";
 import type { AppBindings } from "../app.js";
+import { recordLog } from "./logs.js";
 import { consumeTokenQuota, createTokenForSub, listTokensForSub, verifyTokenSecret } from "./tokens.js";
 
 export type SubRecord = {
@@ -462,6 +463,7 @@ export async function renderPublicSubscription(c: Context<AppBindings>): Promise
     throw new HTTPException(401, { message: "Missing subscription token" });
   }
   const sourceIp = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+  const started = performance.now();
   const token = await verifyTokenSecret(c.get("db"), secret, sourceIp);
   const sub = getSubRecord(c.get("db"), token.subId);
   const nodes = await collectNodes(sub);
@@ -472,10 +474,21 @@ export async function renderPublicSubscription(c: Context<AppBindings>): Promise
         ? renderShadowrocket(nodes)
         : renderClash(nodes, sub.ruleSet);
   const bytes = Buffer.byteLength(content, "utf8");
-  consumeTokenQuota(c.get("db"), token, bytes);
+  const consumed = consumeTokenQuota(c.get("db"), token, bytes);
+  const durationMs = Math.max(0, Math.round(performance.now() - started));
+  recordLog(c.get("db"), {
+    tokenPrefix: consumed.prefix,
+    source: sourceIp,
+    target: `/v1/sub:${sub.id}`,
+    bytes,
+    durationMs,
+    status: 200,
+  });
   const contentType = sub.target === "sing-box" ? "application/json; charset=utf-8" : "text/plain; charset=utf-8";
   return new Response(content, { status: 200, headers: { "content-type": contentType } });
 }
+
+
 
 
 

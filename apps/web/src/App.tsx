@@ -4,6 +4,7 @@ import { Demo } from "@/pages/Demo";
 import { SignInPage, SignOutButton, useMeQuery } from "@/pages/SignIn";
 import { SubDetailPage, SubsListPage, SubsNewPage } from "@/pages/Subs";
 import { TokensPage } from "@/pages/Tokens";
+import { LogsPage } from "@/pages/Logs";
 import { RoutesPage } from "@/pages/Routes";
 
 function Placeholder({ title }: { title: string }): JSX.Element {
@@ -99,7 +100,7 @@ const router = createBrowserRouter([
         path: "/logs",
         element: (
           <PaperFrame>
-            <Placeholder title="§ 附录 · PL. IV" />
+            <LogsPage />
           </PaperFrame>
         ),
       },
@@ -118,5 +119,6 @@ const router = createBrowserRouter([
 export function App(): JSX.Element {
   return <RouterProvider router={router} />;
 }
+
 
 
