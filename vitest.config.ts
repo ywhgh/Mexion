@@ -5,8 +5,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@shared": path.resolve(__dirname, "packages/shared/src"),
-      "@": path.resolve(__dirname, "apps/web/src")
-    }
+      "@axion/shared": path.resolve(__dirname, "packages/shared/src"),
+      "@": path.resolve(__dirname, "apps/web/src"),
+    },
   },
   test: {
     globals: true,
@@ -18,7 +19,7 @@ export default defineConfig({
         lines: 60,
         functions: 60,
         branches: 50,
-        statements: 60
+        statements: 60,
       },
       exclude: [
         "**/dist/**",
@@ -27,8 +28,10 @@ export default defineConfig({
         "**/server.ts",
         "**/tailwind.config.ts",
         "**/postcss.config.js",
-        "**/vite-env.d.ts"
-      ]
-    }
-  }
+        "**/vite-env.d.ts",
+        "**/db/schema.ts",
+        "scripts/**",
+      ],
+    },
+  },
 });
