@@ -16,7 +16,7 @@ export function Header(): JSX.Element {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="font-mono text-xs uppercase tracking-widest">AXION · VOL. I · EST. 2026</div>
         <div className="flex items-center gap-2 font-mono text-xs text-mute">
-          <span className="h-[6px] w-[6px] bg-cinnabar" aria-hidden="true" />
+          <span className="h-[1.5px] w-[1.5px] bg-cinnabar" aria-hidden="true" />
           <span>核心中转：正常运行</span>
           <span className="text-ink">12ms</span>
         </div>
@@ -40,3 +40,4 @@ export function Header(): JSX.Element {
     </header>
   );
 }
+

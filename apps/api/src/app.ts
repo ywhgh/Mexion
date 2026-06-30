@@ -1,4 +1,8 @@
 import { Hono } from "hono";
+import { serveStatic } from "@hono/node-server/serve-static";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { HTTPException } from "hono/http-exception";
 import { ZodError } from "zod";
 import type { DbClient } from "./db/client.js";
@@ -13,6 +17,19 @@ import { relayRoute } from "./services/routes.js";
 import { renderPublicSubscription } from "./services/subscriptions.js";
 import type { PublicAdmin } from "./services/auth.js";
 
+
+function webDistAbsolute(): string {
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../web/dist");
+}
+
+function webDistRoot(): string {
+  const relative = path.relative(process.cwd(), webDistAbsolute()).replace(/\\/g, "/");
+  return relative || ".";
+}
+
+function isApiPath(pathname: string): boolean {
+  return pathname.startsWith("/api") || pathname.startsWith("/v1");
+}
 export type AppBindings = {
   Variables: {
     db: DbClient;
@@ -54,6 +71,26 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
     }),
   );
 
+  if (fs.existsSync(webDistAbsolute())) {
+    const root = webDistRoot();
+    const staticAssets = serveStatic<AppBindings>({ root });
+    const staticIndex = serveStatic<AppBindings>({ root, path: "index.html" });
+    app.use("/*", async (c, next) => {
+      if (isApiPath(c.req.path)) {
+        await next();
+        return;
+      }
+      return staticAssets(c, next);
+    });
+    app.get("*", async (c, next) => {
+      if (isApiPath(c.req.path)) {
+        await next();
+        return;
+      }
+      return staticIndex(c, next);
+    });
+  }
+
   app.onError((error, c) => {
     if (error instanceof ZodError) {
       return c.json(
@@ -78,4 +115,5 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
