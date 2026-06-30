@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.vite/
+.env
+.env.*
+!.env.example
+data/
+apps/api/data/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+pnpm-debug.log*
