@@ -1,7 +1,11 @@
+import type { Context } from "hono";
 import bcrypt from "bcryptjs";
 import { HTTPException } from "hono/http-exception";
 import crypto from "node:crypto";
+import { idParamSchema, tokenCreateSchema } from "../contracts.js";
+import type { TokenCreateInput } from "../contracts.js";
 import type { DbClient } from "../db/client.js";
+import type { AppBindings } from "../app.js";
 
 export type TokenRecord = {
   id: number;
@@ -61,6 +65,14 @@ function rowToToken(row: unknown): TokenRecord | null {
   };
 }
 
+function parseIpAllow(value: string | null): string[] {
+  if (!value) {
+    return [];
+  }
+  const parsed = JSON.parse(value) as unknown;
+  return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+}
+
 export function publicToken(token: TokenRecord): TokenPublic {
   return {
     id: token.id,
@@ -70,7 +82,7 @@ export function publicToken(token: TokenRecord): TokenPublic {
     subId: token.subId,
     quotaBytes: token.quotaBytes,
     usedBytes: token.usedBytes,
-    ipAllow: token.ipAllow ? (JSON.parse(token.ipAllow) as string[]) : [],
+    ipAllow: parseIpAllow(token.ipAllow),
     expiresAt: token.expiresAt,
     revokedAt: token.revokedAt,
     createdAt: token.createdAt,
@@ -81,17 +93,11 @@ export function generateTokenSecret(): string {
   return `ax_${crypto.randomBytes(24).toString("base64url")}`;
 }
 
-export async function createTokenForSub(
-  db: DbClient,
-  input: {
-    name: string;
-    note?: string;
-    subId: number;
-    quotaBytes?: number | null;
-    expiresAt?: string | null;
-    ipAllow?: string[];
-  },
-): Promise<CreatedToken> {
+export async function createTokenForSub(db: DbClient, input: TokenCreateInput): Promise<CreatedToken> {
+  const subExists = db.sqlite.prepare("SELECT id FROM subs WHERE id = ?").get(input.subId);
+  if (!subExists) {
+    throw new HTTPException(404, { message: "Bound subscription not found" });
+  }
   const secret = generateTokenSecret();
   const hash = await bcrypt.hash(secret, 12);
   const prefix = secret.slice(0, 8);
@@ -103,26 +109,26 @@ export async function createTokenForSub(
     )
     .run(
       input.name,
-      input.note ?? "",
+      input.note,
       hash,
       prefix,
       input.subId,
-      input.quotaBytes ?? null,
-      JSON.stringify(input.ipAllow ?? []),
-      input.expiresAt ?? null,
+      input.quotaBytes,
+      JSON.stringify(input.ipAllow),
+      input.expiresAt,
       createdAt,
     );
   const token: TokenRecord = {
     id: Number(result.lastInsertRowid),
     name: input.name,
-    note: input.note ?? "",
+    note: input.note,
     hash,
     prefix,
     subId: input.subId,
-    quotaBytes: input.quotaBytes ?? null,
+    quotaBytes: input.quotaBytes,
     usedBytes: 0,
-    ipAllow: JSON.stringify(input.ipAllow ?? []),
-    expiresAt: input.expiresAt ?? null,
+    ipAllow: JSON.stringify(input.ipAllow),
+    expiresAt: input.expiresAt,
     revokedAt: null,
     createdAt,
   };
@@ -137,6 +143,20 @@ export function listTokensForSub(db: DbClient, subId: number): TokenPublic[] {
        FROM tokens WHERE sub_id = ? ORDER BY id DESC`,
     )
     .all(subId);
+  return rows.flatMap((row) => {
+    const token = rowToToken(row);
+    return token ? [publicToken(token)] : [];
+  });
+}
+
+export function listAllTokens(db: DbClient): TokenPublic[] {
+  const rows = db.sqlite
+    .prepare(
+      `SELECT id, name, note, hash, prefix, sub_id AS subId, quota_bytes AS quotaBytes, used_bytes AS usedBytes,
+        ip_allow AS ipAllow, expires_at AS expiresAt, revoked_at AS revokedAt, created_at AS createdAt
+       FROM tokens ORDER BY id DESC`,
+    )
+    .all();
   return rows.flatMap((row) => {
     const token = rowToToken(row);
     return token ? [publicToken(token)] : [];
@@ -167,7 +187,7 @@ function ipMatchesRule(ip: string, rule: string): boolean {
 }
 
 function tokenAllowsIp(token: TokenRecord, sourceIp: string): boolean {
-  const rules = token.ipAllow ? (JSON.parse(token.ipAllow) as string[]) : [];
+  const rules = parseIpAllow(token.ipAllow);
   if (rules.length === 0) {
     return true;
   }
@@ -209,4 +229,24 @@ export function consumeTokenQuota(db: DbClient, token: TokenRecord, bytes: numbe
   }
   db.sqlite.prepare("UPDATE tokens SET used_bytes = used_bytes + ? WHERE id = ?").run(bytes, token.id);
   return { ...token, usedBytes: token.usedBytes + bytes };
+}
+
+export function listTokens(c: Context<AppBindings>): Response {
+  return c.json({ ok: true, data: { tokens: listAllTokens(c.get("db")) } });
+}
+
+export async function createToken(c: Context<AppBindings>): Promise<Response> {
+  const input = tokenCreateSchema.parse(await c.req.json());
+  const created = await createTokenForSub(c.get("db"), input);
+  return c.json({ ok: true, data: { token: created.token, secret: created.secret } }, 201);
+}
+
+export function revokeToken(c: Context<AppBindings>): Response {
+  const { id } = idParamSchema.parse(c.req.param());
+  const now = new Date().toISOString();
+  const result = c.get("db").sqlite.prepare("UPDATE tokens SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL").run(now, id);
+  if (result.changes === 0) {
+    throw new HTTPException(404, { message: "Token not found" });
+  }
+  return c.json({ ok: true, data: { revoked: true } });
 }

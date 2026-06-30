@@ -3,6 +3,7 @@ import { PaperFrame } from "@/components";
 import { Demo } from "@/pages/Demo";
 import { SignInPage, SignOutButton, useMeQuery } from "@/pages/SignIn";
 import { SubDetailPage, SubsListPage, SubsNewPage } from "@/pages/Subs";
+import { TokensPage } from "@/pages/Tokens";
 
 function Placeholder({ title }: { title: string }): JSX.Element {
   return (
@@ -81,7 +82,7 @@ const router = createBrowserRouter([
         path: "/tokens",
         element: (
           <PaperFrame>
-            <Placeholder title="§ 凭证 · PL. II" />
+            <TokensPage />
           </PaperFrame>
         ),
       },
@@ -116,3 +117,4 @@ const router = createBrowserRouter([
 export function App(): JSX.Element {
   return <RouterProvider router={router} />;
 }
+

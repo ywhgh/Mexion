@@ -28,6 +28,15 @@ export const subUpdateSchema = subCreateSchema.partial().extend({
   rawSources: z.array(z.string().trim().min(1)).min(1).optional(),
 });
 
+export const tokenCreateSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  note: z.string().trim().max(240).optional().default(""),
+  subId: z.number().int().positive(),
+  quotaBytes: z.number().int().positive().nullable().optional().default(null),
+  expiresAt: z.string().datetime().nullable().optional().default(null),
+  ipAllow: z.array(z.string().trim().min(1)).optional().default([]),
+});
+
 export const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -36,3 +45,4 @@ export type TargetFormat = z.infer<typeof targetFormatSchema>;
 export type RuleSet = z.infer<typeof ruleSetSchema>;
 export type SubCreateInput = z.infer<typeof subCreateSchema>;
 export type SubUpdateInput = z.infer<typeof subUpdateSchema>;
+export type TokenCreateInput = z.infer<typeof tokenCreateSchema>;

@@ -140,6 +140,9 @@ export async function createSub(c: Context<AppBindings>): Promise<Response> {
     name: `${input.name} endpoint`,
     note: "Auto-issued subscription endpoint",
     subId: id,
+    quotaBytes: null,
+    expiresAt: null,
+    ipAllow: [],
   });
   const sub = publicSub(db, getSubRecord(db, id));
   const origin = new URL(c.req.url).origin;
@@ -473,5 +476,6 @@ export async function renderPublicSubscription(c: Context<AppBindings>): Promise
   const contentType = sub.target === "sing-box" ? "application/json; charset=utf-8" : "text/plain; charset=utf-8";
   return new Response(content, { status: 200, headers: { "content-type": contentType } });
 }
+
 
 
