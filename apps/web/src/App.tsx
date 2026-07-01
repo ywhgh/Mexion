@@ -6,6 +6,7 @@ import { SignIn } from "./pages/SignIn";
 import { SubsDetail } from "./pages/subs/Detail";
 import { SubsList } from "./pages/subs/List";
 import { SubsNew } from "./pages/subs/New";
+import { Tokens } from "./pages/Tokens";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +38,7 @@ export function App() {
             <Route path="subs" element={<SubsList />} />
             <Route path="subs/new" element={<SubsNew />} />
             <Route path="subs/:id" element={<SubsDetail />} />
-            <Route path="tokens" element={<Placeholder title="Tokens" />} />
+            <Route path="tokens" element={<Tokens />} />
             <Route path="routes" element={<Placeholder title="Routes" />} />
             <Route path="logs" element={<Placeholder title="Logs" />} />
             <Route path="settings" element={<Placeholder title="Settings" />} />
@@ -48,5 +49,6 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
 
 
