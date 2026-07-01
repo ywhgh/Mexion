@@ -12,3 +12,7 @@ apps/api/data/
 *.db-wal
 .DS_Store
 pnpm-debug.log*
+
+# Local reference material for Codex — do not commit
+research/
+apps/web/public/vendor/
