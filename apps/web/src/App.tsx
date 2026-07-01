@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/shell";
 import { Dashboard } from "./pages/Dashboard";
+import { Logs } from "./pages/Logs";
 import { Routes as RoutesPage } from "./pages/Routes";
 import { SignIn } from "./pages/SignIn";
 import { SubsDetail } from "./pages/subs/Detail";
@@ -41,7 +42,7 @@ export function App() {
             <Route path="subs/:id" element={<SubsDetail />} />
             <Route path="tokens" element={<Tokens />} />
             <Route path="routes" element={<RoutesPage />} />
-            <Route path="logs" element={<Placeholder title="Logs" />} />
+            <Route path="logs" element={<Logs />} />
             <Route path="settings" element={<Placeholder title="Settings" />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -50,6 +51,7 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
 
 
 
