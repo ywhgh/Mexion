@@ -1,7 +1,7 @@
 /* ── I18N DICTIONARY ── */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'billing.tab.title': 'Axiom — Wallet',
+    'billing.tab.title': 'Mexion — Wallet',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
     'nav.section.account': 'Account',
@@ -86,7 +86,7 @@ AxiomI18n.register({
     'billing.txn.sub.calls': '{n} calls'
   },
   zh: {
-    'billing.tab.title': 'Axiom — 钱包',
+    'billing.tab.title': 'Mexion — 钱包',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': '工作区',
     'nav.section.account': '账户',
@@ -173,7 +173,7 @@ AxiomI18n.register({
 });
 
 function tt(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -189,8 +189,8 @@ var BILLING_POLL_INFLIGHT = false;
 var BILLING_POLL_DEBOUNCE_TIMER = null;
 
 function setBalanceFromUser(user) {
-  BALANCE = typeof window.AxiomQuota !== 'undefined'
-    ? window.AxiomQuota.getUserBalance(user)
+  BALANCE = typeof window.MexionQuota !== 'undefined'
+    ? window.MexionQuota.getUserBalance(user)
     : ((Number(user && user.quota) || 0) / 500000);
 }
 
@@ -203,17 +203,17 @@ function applyBillingUser(user, animate) {
 }
 
 function getBillingLang() {
-  return (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+  return (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
 }
 
 function refreshBillingUserState(animate, source) {
-  if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-    return AxiomAuth.refreshUser({ source: source || 'billing-refresh', force: true }).then(function(user){
+  if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+    return MexionAuth.refreshUser({ source: source || 'billing-refresh', force: true }).then(function(user){
       applyBillingUser(user, animate);
       return user;
     });
   }
-  return AxiomHttp.get('/user/self').then(function(user){
+  return MexionHttp.get('/user/self').then(function(user){
     applyBillingUser(user, animate);
     return user;
   });
@@ -275,7 +275,7 @@ function stopBillingPolling() {
 }
 
 function pollBillingSnapshot(source) {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
   if (BILLING_POLL_INFLIGHT) return Promise.resolve();
   BILLING_POLL_INFLIGHT = true;
   return Promise.allSettled([
@@ -308,8 +308,8 @@ function startBillingTopupSync(baselineBalance, payWin) {
           stopBillingTopupSync();
           // 到账：自动关闭支付弹窗，原页面已就地刷新余额——用户无需手动关多余标签页。
           if (payWin) { try { payWin.close(); } catch (e) {} }
-          if (typeof AxiomToast !== 'undefined' && AxiomToast.show) {
-            AxiomToast.show(getBillingLang() === 'zh' ? '充值已到账' : 'Top-up credited', { tone: 'success' });
+          if (typeof MexionToast !== 'undefined' && MexionToast.show) {
+            MexionToast.show(getBillingLang() === 'zh' ? '充值已到账' : 'Top-up credited', { tone: 'success' });
           }
         } else if (attempts >= 30) {
           stopBillingTopupSync();
@@ -436,7 +436,7 @@ function applyBillingPaymentAvailability(info) {
     submitBtn.classList.add('is-loading');
     submitLabel.textContent = tt('billing.topup.submit.processing');
     // 支付未启用时提示
-    if (typeof AxiomHttp === 'undefined' || submitBtn.dataset.paymentDisabled === 'true') {
+    if (typeof MexionHttp === 'undefined' || submitBtn.dataset.paymentDisabled === 'true') {
       setTimeout(function(){
         submitBtn.classList.remove('is-loading');
         submitLabel.textContent = lang === 'zh' ? '支付系统尚未开放' : 'Payment not available yet';
@@ -456,11 +456,11 @@ function applyBillingPaymentAvailability(info) {
     var baselineBalance = BALANCE;
     // 在用户点击手势内同步开支付弹窗(命名窗口)，避免被浏览器拦截；到账后自动关闭，原页面就地刷新余额。
     var payWin = null;
-    try { payWin = window.open('about:blank', 'axiomPay', 'width=520,height=760'); } catch (e) { payWin = null; }
-    AxiomHttp.post('/user/pay', { amount: amt, payment_method: payMethod }).then(function(data){
+    try { payWin = window.open('about:blank', 'mexionPay', 'width=520,height=760'); } catch (e) { payWin = null; }
+    MexionHttp.post('/user/pay', { amount: amt, payment_method: payMethod }).then(function(data){
       submitBtn.classList.remove('is-loading');
       if (data && data.url) {
-        submitBillingPaymentForm(data.url, data, 'axiomPay');
+        submitBillingPaymentForm(data.url, data, 'mexionPay');
         submitLabel.textContent = lang === 'zh' ? '请在弹窗完成支付，到账后自动返回本页' : 'Complete payment in the popup — returns here automatically';
         submitBtn.disabled = false;
         startBillingTopupSync(baselineBalance, payWin);
@@ -521,17 +521,17 @@ function applyBillingPaymentAvailability(info) {
     if (code.length < 8) { input.focus(); msg.textContent = tt('billing.redeem.error'); msg.className = 'redeem-msg err'; return; }
     submitBtn.disabled = true;
     submitBtn.classList.add('is-loading');
-    AxiomHttp.post('/user/topup', { key: code }).then(function(data){
+    MexionHttp.post('/user/topup', { key: code }).then(function(data){
       submitBtn.classList.remove('is-loading');
       submitBtn.disabled = false;
       submitBtn.classList.add('is-success');
       /* After successful redeem, refresh balance from API */
-      if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-        AxiomAuth.refreshUser({ source: 'billing-redeem', force: true }).then(function(user){
+      if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+        MexionAuth.refreshUser({ source: 'billing-redeem', force: true }).then(function(user){
           applyBillingUser(user, false);
         }).catch(function(){});
       } else {
-        AxiomHttp.get('/user/self').then(function(user){
+        MexionHttp.get('/user/self').then(function(user){
           applyBillingUser(user, false);
         }).catch(function(){});
       }
@@ -575,8 +575,8 @@ function updateBalanceDisplay(animate){
   var fracEl = document.getElementById('balFrac');
   if (!intEl || !fracEl) return;
   function render(value) {
-    var parts = typeof window.AxiomQuota !== 'undefined'
-      ? window.AxiomQuota.getMoneyParts(value)
+    var parts = typeof window.MexionQuota !== 'undefined'
+      ? window.MexionQuota.getMoneyParts(value)
       : { sign: value < 0 ? '-' : '', int: Math.abs(value).toFixed(2).split('.')[0], frac: Math.abs(value).toFixed(2).split('.')[1] };
     intEl.textContent = parts.sign + Number(parts.int).toLocaleString();
     fracEl.textContent = parts.frac;
@@ -647,7 +647,7 @@ function fmtCsvDate(s){
 function fmtMonthLabel(key){
   /* Try i18n key first, fallback to raw key */
   var i18nKey = 'billing.txn.month.' + key;
-  var label = AxiomI18n.t(i18nKey);
+  var label = MexionI18n.t(i18nKey);
   return label !== i18nKey ? label : key;
 }
 
@@ -784,15 +784,15 @@ function csvEscape(value){
 }
 
 function loadBillingUsageRecords() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve([]);
-  return AxiomHttp.get('/log/self?p=1&page_size=100').then(function(data) {
+  if (typeof MexionHttp === 'undefined') return Promise.resolve([]);
+  return MexionHttp.get('/log/self?p=1&page_size=100').then(function(data) {
     var items = (data && (data.items || data.logs)) || (Array.isArray(data) ? data : []);
     var total = (data && (data.total || data.total_count)) || items.length;
     if (total <= 100) return items;
     // 二开修复:后端 page_size 硬上限100(common/page_info.go),原 size=200 实回100、又按 /200 算页数+上限20页→漏拉大半历史
     var pages = Math.min(Math.ceil(total / 100), 40);
     var reqs = [];
-    for (var p = 2; p <= pages; p++) reqs.push(AxiomHttp.get('/log/self?p=' + p + '&page_size=100'));
+    for (var p = 2; p <= pages; p++) reqs.push(MexionHttp.get('/log/self?p=' + p + '&page_size=100'));
     return Promise.all(reqs).then(function(results) {
       results.forEach(function(pageData) {
         items = items.concat((pageData && (pageData.items || pageData.logs)) || []);
@@ -813,7 +813,7 @@ function renderTxn(filter){
     return true;
   });
   if (!filtered.length){
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     body.innerHTML = '<div style="text-align:center;padding:32px 16px;color:var(--mute-2);font-size:13px">' +
       (lang === 'zh' ? '暂无充值记录' : 'No top-up records yet') + '</div>';
     return;
@@ -893,7 +893,7 @@ function exportBillingTransactionsCsv() {
   var blob = new Blob(["\ufeff" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   var url = URL.createObjectURL(blob);
   var stamp = new Date();
-  var filename = 'axiom-billing-' +
+  var filename = 'mexion-billing-' +
     stamp.getFullYear() +
     String(stamp.getMonth() + 1).padStart(2, '0') +
     String(stamp.getDate()).padStart(2, '0') +
@@ -1044,10 +1044,10 @@ if (txnExportBtn) {
 }
 
 function reloadBillingTransactions() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
   var lang = getBillingLang();
   return Promise.all([
-    AxiomHttp.get('/user/topup/self').catch(function(){ return { items: [] }; }),
+    MexionHttp.get('/user/topup/self').catch(function(){ return { items: [] }; }),
     loadBillingUsageRecords().catch(function(){ return []; })
   ]).then(function(results){
     var data = results[0] || {};
@@ -1143,9 +1143,9 @@ function reloadBillingTransactions() {
     var balanceTimeline = topupItems.concat(usageItems).sort(byCreatedDesc);
     TXN_ITEMS = topupItems.slice().sort(byCreatedDesc);
 
-    var authUser = (typeof AxiomAuth !== 'undefined' && AxiomAuth.getUser) ? AxiomAuth.getUser() : null;
-    var currentBalance = authUser && typeof window.AxiomQuota !== 'undefined'
-      ? window.AxiomQuota.getUserBalance(authUser)
+    var authUser = (typeof MexionAuth !== 'undefined' && MexionAuth.getUser) ? MexionAuth.getUser() : null;
+    var currentBalance = authUser && typeof window.MexionQuota !== 'undefined'
+      ? window.MexionQuota.getUserBalance(authUser)
       : BALANCE;
     var usedQuotaTotal = authUser && authUser.used_quota != null
       ? ((Number(authUser.used_quota) || 0) / 500000)
@@ -1252,30 +1252,30 @@ function reloadBillingTransactions() {
 
 /* ── INIT: Load real data from API ── */
 document.addEventListener('DOMContentLoaded', function(){
-  if (typeof AxiomHttp === 'undefined') return;
+  if (typeof MexionHttp === 'undefined') return;
   var lang = getBillingLang();
   var payStatus = getBillingPayStatus();
   initBillingTxnDateFilter();
 
-  if (typeof AxiomAuth !== 'undefined' && AxiomAuth.fetchUser) {
-    AxiomAuth.fetchUser().then(function(user){
+  if (typeof MexionAuth !== 'undefined' && MexionAuth.fetchUser) {
+    MexionAuth.fetchUser().then(function(user){
       applyBillingUser(user, true);
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
     }).catch(function(){});
   } else {
-    AxiomHttp.get('/user/self').then(function(user){
+    MexionHttp.get('/user/self').then(function(user){
       applyBillingUser(user, true);
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
     }).catch(function(){});
   }
 
-  window.addEventListener('axiom:user-updated', function (event) {
+  window.addEventListener('mexion:user-updated', function (event) {
     var user = event && event.detail ? event.detail.user : null;
     if (!user) return;
     applyBillingUser(user, false);
   });
 
-  AxiomHttp.get('/user/topup/info').then(function(info){
+  MexionHttp.get('/user/topup/info').then(function(info){
     applyBillingPaymentAvailability(info || {});
   }).catch(function(){});
 
@@ -1305,8 +1305,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
   if (payStatus === 'fail') {
     setTimeout(function(){
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show(lang === 'zh' ? '支付未完成，请重试' : 'Payment was not completed', { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show(lang === 'zh' ? '支付未完成，请重试' : 'Payment was not completed', { tone: 'error' });
       }
     }, 120);
   }
@@ -1314,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* Re-render dynamic strings when language flips */
-AxiomI18n.onChange(function(){ AxiomI18n.preserve(function(){
+MexionI18n.onChange(function(){ MexionI18n.preserve(function(){
   if (typeof window.__billingUpdateTopupUI === 'function') window.__billingUpdateTopupUI();
   reloadBillingTransactions();
 }); });

@@ -19,7 +19,7 @@ describe("stats and settings", () => {
     await expect(stats.json()).resolves.toMatchObject({ ok: true, data: { stats: { totals: { requests: 0 }, heatmap: expect.any(Array) } } });
 
     const settings = await app.request("/api/settings", { headers: { cookie } });
-    await expect(settings.json()).resolves.toMatchObject({ ok: true, data: { settings: { instanceName: "Axion", theme: "light", lang: "zh" } } });
+    await expect(settings.json()).resolves.toMatchObject({ ok: true, data: { settings: { instanceName: "Mexion", theme: "light", lang: "zh" } } });
 
     const patch = await app.request("/api/settings", {
       method: "PATCH",

@@ -391,7 +391,7 @@ function renderClashNode(node: ProxyNode): string[] {
 
 function renderClash(nodes: ProxyNode[], ruleSet: RuleSet): string {
   const proxyNames = nodes.map((node) => `      - ${quoteYaml(node.name)}`).join("\n");
-  const ruleLines = ruleSet === "acl4ssr" ? ["  - GEOIP,CN,DIRECT", "  - MATCH,AXION"] : ["  - MATCH,AXION"];
+  const ruleLines = ruleSet === "acl4ssr" ? ["  - GEOIP,CN,DIRECT", "  - MATCH,MEXION"] : ["  - MATCH,MEXION"];
   return [
     "mixed-port: 7890",
     "allow-lan: false",
@@ -400,7 +400,7 @@ function renderClash(nodes: ProxyNode[], ruleSet: RuleSet): string {
     "proxies:",
     ...nodes.flatMap(renderClashNode),
     "proxy-groups:",
-    "  - name: AXION",
+    "  - name: MEXION",
     "    type: select",
     "    proxies:",
     proxyNames || "      - DIRECT",
@@ -436,7 +436,7 @@ function renderSingBox(nodes: ProxyNode[], ruleSet: RuleSet): string {
   const outbounds = [
     ...nodes.map(singBoxOutbound),
     { type: "direct", tag: "DIRECT" },
-    { type: "selector", tag: "AXION", outbounds: nodes.map((node) => node.name) },
+    { type: "selector", tag: "MEXION", outbounds: nodes.map((node) => node.name) },
   ];
   return JSON.stringify(
     {

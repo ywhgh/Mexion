@@ -20,11 +20,11 @@ export type PublicAdmin = {
   createdAt: string;
 };
 
-const cookieName = "axion_session";
+const cookieName = "mexion_session";
 const oneWeek = 60 * 60 * 24 * 7;
 
 function jwtSecret(): string {
-  return process.env.AXION_JWT_SECRET ?? "axion-local-development-secret";
+  return process.env.MEXION_JWT_SECRET ?? "mexion-local-development-secret";
 }
 
 export function publicAdmin(admin: AdminRecord): PublicAdmin {

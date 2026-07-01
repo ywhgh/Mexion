@@ -64,7 +64,7 @@ const statements = [
 ];
 
 const settingDefaults = [
-  ["instanceName", "Axion"],
+  ["instanceName", "Mexion"],
   ["theme", "light"],
   ["lang", "zh"],
 ] as const;

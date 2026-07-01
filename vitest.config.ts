@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@shared": path.resolve(__dirname, "packages/shared/src"),
-      "@axion/shared": path.resolve(__dirname, "packages/shared/src"),
+      "@mexion/shared": path.resolve(__dirname, "packages/shared/src"),
     },
   },
   test: {

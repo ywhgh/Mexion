@@ -10,7 +10,7 @@ export type DbClient = {
 };
 
 export function defaultDbPath(): string {
-  return process.env.AXION_DB_PATH ?? path.resolve(process.cwd(), "data", "axion.db");
+  return process.env.MEXION_DB_PATH ?? path.resolve(process.cwd(), "data", "mexion.db");
 }
 
 export function openDb(dbPath = defaultDbPath()): DbClient {

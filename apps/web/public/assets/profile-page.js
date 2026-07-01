@@ -1,4 +1,4 @@
-// preference toggles (language toggle is wired by AxiomI18n)
+// preference toggles (language toggle is wired by MexionI18n)
 (function(){
   document.querySelectorAll('.toggle').forEach(t=>{
     t.addEventListener('click',()=>{
@@ -6,17 +6,17 @@
       t.setAttribute('aria-pressed',on?'false':'true');
     });
   });
-  // bridge custom language select → AxiomI18n
+  // bridge custom language select → MexionI18n
   document.addEventListener('select:change', (e)=>{
     const wrap = e.target.closest && e.target.closest('[data-select="lang"]');
-    if (!wrap || !window.AxiomI18n) return;
+    if (!wrap || !window.MexionI18n) return;
     const v = e.detail && e.detail.value;
-    if (v === 'zh' || v === 'en') AxiomI18n.set(v);
+    if (v === 'zh' || v === 'en') MexionI18n.set(v);
   });
 })();
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'profile.tab.title': 'Axiom — Profile',
+    'profile.tab.title': 'Mexion — Profile',
     /* shared chrome (matches subscription.html canonical keys) */
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
@@ -363,7 +363,7 @@ AxiomI18n.register({
     'binding.connect.title': 'Connect',
     'binding.connect.sub': 'Redirecting to third-party auth · requesting basic profile + email only',
     'binding.connect.msg1': 'Clicking "Confirm" will open',
-    'binding.connect.msg2': '\'s authorization page. Once you approve, you\'ll be returned to Axiom and the account will be linked.',
+    'binding.connect.msg2': '\'s authorization page. Once you approve, you\'ll be returned to Mexion and the account will be linked.',
     'binding.scope.req': 'Requested scope',
     'binding.scope.list': 'Basic profile · email · identity only',
     'binding.connect.btn': 'Confirm connection',
@@ -405,7 +405,7 @@ AxiomI18n.register({
     'toast.email.unsupported': 'Email change not available yet'
   },
   zh: {
-    'profile.tab.title': 'Axiom — 个人资料',
+    'profile.tab.title': 'Mexion — 个人资料',
     /* shared chrome */
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
@@ -752,7 +752,7 @@ AxiomI18n.register({
     'binding.connect.title': '连接',
     'binding.connect.sub': '即将跳转到第三方授权 · 仅请求基础资料与邮箱',
     'binding.connect.msg1': '点击「确认连接」后将打开 <b>',
-    'binding.connect.msg2': '</b> 的授权页面。授权完成后会自动返回 Axiom 并绑定到当前账户。',
+    'binding.connect.msg2': '</b> 的授权页面。授权完成后会自动返回 Mexion 并绑定到当前账户。',
     'binding.scope.req': '请求范围',
     'binding.scope.list': '基础资料 · 邮箱 · 仅用于身份识别',
     'binding.connect.btn': '确认连接',
@@ -769,7 +769,7 @@ AxiomI18n.register({
     'del.warn': '注销账户是 <b>永久且不可恢复</b> 的操作。请仔细阅读以下后果再继续。',
     'del.con1': '账户编号 <b>--</b> 与所有个人数据将被永久删除',
     'del.con2': '当前账户余额 <b>--</b</b> 自动失效，不可退款、不可转移',
-    'del.con3': '所有 API 密钥立即吊销 · 你的应用将无法继续访问 Axiom',
+    'del.con3': '所有 API 密钥立即吊销 · 你的应用将无法继续访问 Mexion',
     'del.con4': '历史调用日志、对话记录、收藏会在 30 天内从备份中清除',
     'del.con5': '已绑定的第三方账号（GitHub / Google / 微信）将自动解除关联',
     'del.keep': '我再想想 · 不要注销',

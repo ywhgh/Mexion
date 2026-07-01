@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────────────────────────
-   Axiom 服务状态页 — 分区抽屉(按服务商折叠) + 全局总览 banner。
+   Mexion 服务状态页 — 分区抽屉(按服务商折叠) + 全局总览 banner。
    数据：models[].groups[] 在每个服务商分区内【按分组聚合】成「分组行」(面向用户不暴露模型名)，
    按服务商(Anthropic/OpenAI/…)归入可折叠抽屉。同(分区,分组)的多模型合并一行,状态取最差、
    指标取最差状态那条模型的代表值。智能展开:有异常(劣化/不可用)的抽屉默认展开,全正常折叠成摘要行。
@@ -13,9 +13,9 @@
 
   var REFRESH_MS = 45000;
 
-  AxiomI18n.register({
+  MexionI18n.register({
     en: {
-      'status.tab.title': 'Axiom — Service Status',
+      'status.tab.title': 'Mexion — Service Status',
       'status.crumb.overview': 'Overview',
       'status.crumb.status': 'Status',
       'status.page.title': 'Service <em>Status</em>',
@@ -60,7 +60,7 @@
       'topbar.notify.label': 'Notifications'
     },
     zh: {
-      'status.tab.title': 'Axiom — 服务状态',
+      'status.tab.title': 'Mexion — 服务状态',
       'status.crumb.overview': '概览',
       'status.crumb.status': '服务状态',
       'status.page.title': '服务 <em>状态</em>',
@@ -107,7 +107,7 @@
   });
 
   function t(k, params) {
-    var s = AxiomI18n.t(k);
+    var s = MexionI18n.t(k);
     if (params) Object.keys(params).forEach(function (p) { s = s.replace('{' + p + '}', params[p]); });
     return s;
   }
@@ -151,7 +151,7 @@
   function sectionName(prov) { return PROVIDER_NAME[prov] || t('status.prov.other'); }
 
   // ── 可用率窗口选择(24h / 7d / 30d) ─────────────────────────
-  var WINDOW_KEY = 'axiom_status_window';
+  var WINDOW_KEY = 'mexion_status_window';
   var WINDOWS = ['24h', '7d', '30d'];
   var curWindow = '7d';
   function loadWindow() { try { var w = localStorage.getItem(WINDOW_KEY); if (WINDOWS.indexOf(w) >= 0) curWindow = w; } catch (e) {} }
@@ -485,7 +485,7 @@
   }
   function announceHtml(a) {
     if (!a || !a.active) return '';
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     var title = lang === 'zh' ? (a.title_zh || a.title_en) : (a.title_en || a.title_zh);
     var body = lang === 'zh' ? (a.body_zh || a.body_en) : (a.body_en || a.body_zh);
     if (!title && !body) return '';
@@ -518,7 +518,7 @@
   }
 
   // ── 折叠状态持久化(localStorage):用户显式选择优先,否则智能展开(异常自动开) ──
-  var DRAWER_KEY = 'axiom_status_drawers';
+  var DRAWER_KEY = 'mexion_status_drawers';
   var drawerOverride = {};
   function loadDrawerState() {
     try { var v = JSON.parse(localStorage.getItem(DRAWER_KEY) || '{}'); drawerOverride = (v && typeof v === 'object') ? v : {}; }
@@ -569,8 +569,8 @@
   }
 
   function load() {
-    if (typeof AxiomHttp === 'undefined') return;
-    AxiomHttp.get('/status/models').then(function (data) {
+    if (typeof MexionHttp === 'undefined') return;
+    MexionHttp.get('/status/models').then(function (data) {
       lastSnapshot = data || { models: [] };
       var ms = (lastSnapshot.refresh_second ? lastSnapshot.refresh_second * 1000 : REFRESH_MS);
       REFRESH_MS = ms;
@@ -634,8 +634,8 @@
 
   function init() {
     // 免登录公开页:不再强制跳登录;按真实登录态(含 cookie 回退)切换 anon 精简 chrome。
-    var anon = !(typeof AxiomAuth !== 'undefined' && AxiomAuth.isLoggedIn && AxiomAuth.isLoggedIn());
-    document.documentElement.classList.toggle('axiom-anon', anon);
+    var anon = !(typeof MexionAuth !== 'undefined' && MexionAuth.isLoggedIn && MexionAuth.isLoggedIn());
+    document.documentElement.classList.toggle('mexion-anon', anon);
     loadWindow();
     loadDrawerState();
     setupDrawerToggle();
@@ -644,8 +644,8 @@
     startPolling();
     tickTimer = setInterval(renderCountdown, 1000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
-    if (typeof AxiomI18n !== 'undefined' && AxiomI18n.onChange) {
-      AxiomI18n.onChange(function () { if (lastSnapshot) render(lastSnapshot); });
+    if (typeof MexionI18n !== 'undefined' && MexionI18n.onChange) {
+      MexionI18n.onChange(function () { if (lastSnapshot) render(lastSnapshot); });
     }
   }
 

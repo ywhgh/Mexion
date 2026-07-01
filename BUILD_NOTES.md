@@ -2,11 +2,11 @@
 
 ## Milestones
 
-- M1 `chore(web): reset UI scaffold for axiom rewrite`: completed.
-- M2 `feat(web): install axiom design tokens and runtime`: completed.
-- M3 `feat(web): axiom ui primitives (card/button/pill/field/...)`: completed.
+- M1 `chore(web): reset UI scaffold for mexion rewrite`: completed.
+- M2 `feat(web): install mexion design tokens and runtime`: completed.
+- M3 `feat(web): mexion ui primitives (card/button/pill/field/...)`: completed.
 - M4 `feat(web): app shell with sidebar/topbar/corner marks`: completed.
-- M5 `feat(web): sign-in page 1:1 axiom folio`: completed.
+- M5 `feat(web): sign-in page 1:1 mexion folio`: completed.
 - M6 `feat(api): stats/settings endpoints and public gateway`: completed.
 - M7 `feat(web): dashboard page`: completed.
 - M8 `feat(web): subs list/new/detail pages`: completed.
@@ -41,7 +41,7 @@ pnpm build: passed, produced apps/web/dist and apps/api/dist
 pnpm audit:ui: passed; emoji, shortcut, debug residue, hex color, and forbidden dependency scans returned ok
 ```
 
-`pnpm audit:ui` is provided by `scripts/audit.sh`. The initial rounded-class listing is informational because the v2 Axiom backend screens intentionally allow small component radii.
+`pnpm audit:ui` is provided by `scripts/audit.sh`. The initial rounded-class listing is informational because the v2 Mexion backend screens intentionally allow small component radii.
 
 ## Production Smoke
 
@@ -76,11 +76,11 @@ f5a63d3 feat: settings and first-run migrate
 6602e4c feat(web): subs list/new/detail pages
 c89b44b feat(web): dashboard page
 c61192b feat(api): stats/settings endpoints and public gateway
-0cbed0b feat(web): sign-in page 1:1 axiom folio
+0cbed0b feat(web): sign-in page 1:1 mexion folio
 c214ab9 feat(web): app shell with sidebar/topbar/corner marks
-007acbd feat(web): axiom ui primitives (card/button/pill/field/...)
-ff6b661 feat(web): install axiom design tokens and runtime
-1dbd82d chore(web): reset UI scaffold for axiom rewrite
+007acbd feat(web): mexion ui primitives (card/button/pill/field/...)
+ff6b661 feat(web): install mexion design tokens and runtime
+1dbd82d chore(web): reset UI scaffold for mexion rewrite
 ddd7f57 chore: v2 codex prompt + ignore local refs
 64bdd98 chore: final pass
 133040b chore: production bundle

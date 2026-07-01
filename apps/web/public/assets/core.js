@@ -1,22 +1,22 @@
 (function () {
   'use strict';
-  window.AxiomConfig = {
+  window.MexionConfig = {
     API_BASE: '/api',
-    SITE_NAME: 'Axiom',
+    SITE_NAME: 'Mexion',
     PAGE_SIZE: 20,
     LOGIN_URL: '/login',
     DASHBOARD_URL: '/dashboard',
     MOCK_MODE: false,
   };
-  // 前端发布版本号。每次前端发布时递增；nginx 版本闸门(axiom-chat)按此值校验请求头 X-Axiom-Fe-Version，
+  // 前端发布版本号。每次前端发布时递增；nginx 版本闸门(mexion-chat)按此值校验请求头 X-Mexion-Fe-Version，
   // 旧标签页(长期未刷新、仍跑旧 JS)会在调用受闸控的鉴权数据接口时收到 426，前端弹出刷新横幅。
-  // ⚠️ 改这里必须同步把 nginx 的 $axiom_fe_ver_ok map 白名单加上新值(否则新页面全站 426)。部署顺序见 share.md。
-  window.AXIOM_FE_VERSION = '20260614c';
+  // ⚠️ 改这里必须同步把 nginx 的 $mexion_fe_ver_ok map 白名单加上新值(否则新页面全站 426)。部署顺序见 share.md。
+  window.MEXION_FE_VERSION = '20260614c';
 })();
 (function () {
   'use strict';
 
-  var TOAST_ID = 'axiom-global-toast';
+  var TOAST_ID = 'mexion-global-toast';
   var HIDE_TIMER = null;
 
   function ensureToast() {
@@ -76,7 +76,7 @@
     }, (options && options.duration) || 2200);
   }
 
-  window.AxiomToast = {
+  window.MexionToast = {
     show: showToast
   };
 
@@ -93,7 +93,7 @@
   var COPY_OK_SVG = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.6 7.4 5.5 10.3 11.4 3.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function copyWithFeedback(text, btn, opts) {
     opts = opts || {};
-    var en = (window.AxiomI18n && AxiomI18n.lang === 'en');
+    var en = (window.MexionI18n && MexionI18n.lang === 'en');
     text = text == null ? '' : String(text);
     if (!text.trim()) {
       showToast(opts.emptyMsg || (en ? 'Nothing to copy' : '暂无可复制内容'));
@@ -118,7 +118,7 @@
     showToast(en ? 'Copied' : '已复制');
     return true;
   }
-  window.AxiomCopy = copyWithFeedback;
+  window.MexionCopy = copyWithFeedback;
 })();
 (function () {
   'use strict';
@@ -169,7 +169,7 @@
     return prefix + Number(parts.int).toLocaleString() + '.' + parts.frac;
   }
 
-  window.AxiomQuota = {
+  window.MexionQuota = {
     perUsd: QUOTA_PER_USD,
     quotaToUsd: quotaToUsd,
     getUserBalance: getUserBalance,
@@ -181,11 +181,11 @@
 (function () {
   'use strict';
 
-  var PERSIST_KEY = 'axiom_auth_persist';
+  var PERSIST_KEY = 'mexion_auth_persist';
   var AUTH_KEYS = [
-    'axiom_user',
-    'axiom_user_id',
-    'axiom_user_synced_at',
+    'mexion_user',
+    'mexion_user_id',
+    'mexion_user_synced_at',
     PERSIST_KEY
   ];
 
@@ -220,7 +220,7 @@
 
   function readUidCookie() {
     try {
-      var m = document.cookie.match(/(?:^|; )axiom_uid=([^;]*)/);
+      var m = document.cookie.match(/(?:^|; )mexion_uid=([^;]*)/);
       return m ? decodeURIComponent(m[1]) : '';
     } catch (e) { return ''; }
   }
@@ -230,9 +230,9 @@
     if (sessionValue !== '') return sessionValue;
     var localValue = safeGet(localStorage, key);
     if (localValue !== '') return localValue;
-    // user_id 的持久真相源 = axiom_uid cookie(与 session cookie 同寿命):storage 被清/驱逐时
+    // user_id 的持久真相源 = mexion_uid cookie(与 session cookie 同寿命):storage 被清/驱逐时
     // 从 cookie 回退,登录态不再依赖易丢的 localStorage。读侧单一收口于此,无需独立的启动期回填。
-    if (key === 'axiom_user_id') {
+    if (key === 'mexion_user_id') {
       var fromCookie = readUidCookie();
       if (fromCookie !== '') return fromCookie;
     }
@@ -270,7 +270,7 @@
     AUTH_KEYS.forEach(removeItem);
   }
 
-  window.AxiomAuthStorage = {
+  window.MexionAuthStorage = {
     getMode: readMode,
     getItem: getItem,
     setMode: setMode,
@@ -284,14 +284,14 @@
 
   function headers(extra) {
     var h = { 'Content-Type': 'application/json' };
-    var uid = window.AxiomAuthStorage.getItem('axiom_user_id');
+    var uid = window.MexionAuthStorage.getItem('mexion_user_id');
     if (uid) h['New-Api-User'] = uid;
-    if (window.AXIOM_FE_VERSION) h['X-Axiom-Fe-Version'] = window.AXIOM_FE_VERSION;
+    if (window.MEXION_FE_VERSION) h['X-Mexion-Fe-Version'] = window.MEXION_FE_VERSION;
     if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
     return h;
   }
-  // 暴露给非 AxiomHttp 的裸 fetch（如 login()）复用，使其也带版本头/鉴权头（Codex 修复，合并保留）
-  window.AxiomHeaders = headers;
+  // 暴露给非 MexionHttp 的裸 fetch（如 login()）复用，使其也带版本头/鉴权头（Codex 修复，合并保留）
+  window.MexionHeaders = headers;
 
   var ERROR_ZH = {
     'EMAIL_EXISTS': '该邮箱已被注册',
@@ -384,7 +384,7 @@
   }
 
   function translateError(json) {
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     var map = lang === 'zh' ? ERROR_ZH : ERROR_EN;
     if (json.reason && map[json.reason]) return map[json.reason];
     var msg = json.message || '';
@@ -405,11 +405,11 @@
     if (_feOutdatedShown) return;
     _feOutdatedShown = true;
     try {
-      var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+      var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
       var isZh = lang === 'zh';
-      if (document.getElementById('axiom-fe-outdated')) return;
+      if (document.getElementById('mexion-fe-outdated')) return;
       var bar = document.createElement('div');
-      bar.id = 'axiom-fe-outdated';
+      bar.id = 'mexion-fe-outdated';
       bar.style.cssText = [
         'position:fixed', 'left:0', 'right:0', 'top:0', 'z-index:2147483647',
         'display:flex', 'align-items:center', 'justify-content:center', 'gap:14px',
@@ -435,7 +435,7 @@
   function handleResponse(res) {
     if (res.status === 426) {
       showFrontendOutdated();
-      var _l = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+      var _l = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
       var e426 = new Error(_l === 'zh' ? '页面有新版本，请刷新页面' : 'A new version is available — please refresh');
       e426._feOutdated = true;
       return Promise.reject(e426);
@@ -479,18 +479,18 @@
   }
 
   function forceLogout() {
-    window.AxiomAuthStorage.clearAuth();
+    window.MexionAuthStorage.clearAuth();
     // 注:SSO_DOMAIN 定义在另一个 IIFE,此处不可见 → 用字面量(消除既有潜在 ReferenceError),并一并清持久 uid cookie。
-    document.cookie = 'axiom_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.axiomcode.dev';
-    document.cookie = 'axiom_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.axiomcode.dev';
+    document.cookie = 'mexion_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.mexioncode.dev';
+    document.cookie = 'mexion_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.mexioncode.dev';
     document.cookie = 'session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
-    window.location.href = AxiomConfig.LOGIN_URL;
+    window.location.href = MexionConfig.LOGIN_URL;
   }
 
   var AUTH_PATHS = ['/user/login', '/user/register'];
 
   function request(method, path, body) {
-    var url = AxiomConfig.API_BASE + path;
+    var url = MexionConfig.API_BASE + path;
     var isAuthPath = AUTH_PATHS.indexOf(path) !== -1;
     function doFetch() {
       var opts = { method: method, headers: headers(), credentials: 'same-origin' };
@@ -509,7 +509,7 @@
     });
   }
 
-  window.AxiomHttp = {
+  window.MexionHttp = {
     get:    function (path) { return request('GET', path); },
     post:   function (path, body) { return request('POST', path, body); },
     put:    function (path, body) { return request('PUT', path, body); },
@@ -519,9 +519,9 @@
 (function () {
   'use strict';
 
-  var USER_KEY  = 'axiom_user';
-  var USER_SYNC_EVENT = 'axiom:user-updated';
-  var USER_SYNC_AT_KEY = 'axiom_user_synced_at';
+  var USER_KEY  = 'mexion_user';
+  var USER_SYNC_EVENT = 'mexion:user-updated';
+  var USER_SYNC_AT_KEY = 'mexion_user_synced_at';
   var USER_SYNC_INTERVAL_MS = 15000;
   var USER_SYNC_FOCUS_MIN_INTERVAL_MS = 5000;
   var MOCK_USER  = {
@@ -538,13 +538,13 @@
   var _lastUserRefreshAt = readStoredSyncAt();
 
   function readStoredSyncAt() {
-    var raw = Number(window.AxiomAuthStorage.getItem(USER_SYNC_AT_KEY) || 0);
+    var raw = Number(window.MexionAuthStorage.getItem(USER_SYNC_AT_KEY) || 0);
     return isFinite(raw) && raw > 0 ? raw : 0;
   }
 
   function markUserSynced(ts) {
     _lastUserRefreshAt = ts;
-    window.AxiomAuthStorage.setItem(USER_SYNC_AT_KEY, String(ts));
+    window.MexionAuthStorage.setItem(USER_SYNC_AT_KEY, String(ts));
   }
 
   function emitUserUpdate(user, source) {
@@ -564,9 +564,9 @@
   }
 
   function setStoredUser(user) {
-    window.AxiomAuthStorage.setItem(USER_KEY, JSON.stringify(user));
+    window.MexionAuthStorage.setItem(USER_KEY, JSON.stringify(user));
     if (user && user.id) {
-      window.AxiomAuthStorage.setItem('axiom_user_id', String(user.id));
+      window.MexionAuthStorage.setItem('mexion_user_id', String(user.id));
       setUidCookie(user.id); // 冗余持久 cookie,localStorage 丢失后据此恢复
     }
   }
@@ -580,7 +580,7 @@
     user.email = source.email || source.username || '';
     user.username = source.display_name || source.username || '';
     user.display_name = source.display_name || source.username || user.username;
-    user.balance = window.AxiomQuota.getUserBalance(source);
+    user.balance = window.MexionQuota.getUserBalance(source);
     user.auth_role = source.role === 100 ? 'admin' : 'user';
     user.auth_status = source.status === 1
       ? 'active'
@@ -606,55 +606,55 @@
   }
 
   function isLoggedIn() {
-    return !!window.AxiomAuthStorage.getItem('axiom_user_id');
+    return !!window.MexionAuthStorage.getItem('mexion_user_id');
   }
 
   function getUser() {
-    try { return JSON.parse(window.AxiomAuthStorage.getItem(USER_KEY) || 'null') || null; }
+    try { return JSON.parse(window.MexionAuthStorage.getItem(USER_KEY) || 'null') || null; }
     catch (e) { return null; }
   }
 
-  var SSO_DOMAIN = '.axiomcode.dev';
+  var SSO_DOMAIN = '.mexioncode.dev';
 
   function setSsoCookie() {
     var d = new Date();
     d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
-    document.cookie = 'axiom_sso=1' +
+    document.cookie = 'mexion_sso=1' +
       ';expires=' + d.toUTCString() +
       ';path=/;domain=' + SSO_DOMAIN + ';SameSite=Lax;Secure';
   }
 
   function clearSsoCookie() {
-    document.cookie = 'axiom_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
+    document.cookie = 'mexion_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
   }
 
-  // 二开:user_id 的持久真相源 = 前端可读的 axiom_uid cookie(与 session cookie 同寿命/30天)。
-  // 写侧在此(登录落、登出清);读侧收口于 AxiomAuthStorage.getItem('axiom_user_id') 的 cookie 回退,
+  // 二开:user_id 的持久真相源 = 前端可读的 mexion_uid cookie(与 session cookie 同寿命/30天)。
+  // 写侧在此(登录落、登出清);读侧收口于 MexionAuthStorage.getItem('mexion_user_id') 的 cookie 回退,
   // 使 storage 被清/驱逐(移动端、微信/QQ 内置浏览器常见)时登录态不丢。只存非敏感 user_id,鉴权仍靠 session cookie。
   function setUidCookie(id) {
     if (!id) return;
     // 只在"保持登录"(local 模式)时落持久 cookie;session 模式(关浏览器即登出)清掉,尊重用户意图。
-    if (window.AxiomAuthStorage.getMode() !== 'local') { clearUidCookie(); return; }
+    if (window.MexionAuthStorage.getMode() !== 'local') { clearUidCookie(); return; }
     var d = new Date();
     d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
-    document.cookie = 'axiom_uid=' + encodeURIComponent(String(id)) +
+    document.cookie = 'mexion_uid=' + encodeURIComponent(String(id)) +
       ';expires=' + d.toUTCString() +
       ';path=/;domain=' + SSO_DOMAIN + ';SameSite=Lax;Secure';
   }
 
   function clearUidCookie() {
-    document.cookie = 'axiom_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
+    document.cookie = 'mexion_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
   }
 
   function setSession(token, user, refreshToken, rememberMe) {
     var mode = rememberMe ? 'local' : 'session';
-    window.AxiomAuthStorage.setMode(mode);
+    window.MexionAuthStorage.setMode(mode);
     setStoredUser(user);
     setSsoCookie();
   }
 
   function clearSession() {
-    window.AxiomAuthStorage.clearAuth();
+    window.MexionAuthStorage.clearAuth();
     clearSsoCookie();
     clearUidCookie();
     _lastUserRefreshAt = 0;
@@ -662,14 +662,14 @@
   }
 
   function login(email, password, rememberMe) {
-    if (AxiomConfig.MOCK_MODE) {
+    if (MexionConfig.MOCK_MODE) {
       var user = Object.assign({}, MOCK_USER, { email: email, username: email.split('@')[0] });
       setSession(null, user, null, rememberMe);
       return Promise.resolve(user);
     }
-    return fetch(AxiomConfig.API_BASE + '/user/login', {
+    return fetch(MexionConfig.API_BASE + '/user/login', {
       method: 'POST',
-      headers: window.AxiomHeaders ? window.AxiomHeaders() : { 'Content-Type': 'application/json' },
+      headers: window.MexionHeaders ? window.MexionHeaders() : { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: email, password: password }),
       credentials: 'same-origin'
     }).then(function (res) {
@@ -698,7 +698,7 @@
   function fetchUser(options) {
     if (!isLoggedIn()) return Promise.resolve(null);
     if (_userRefreshPromise) return _userRefreshPromise;
-    _userRefreshPromise = AxiomHttp.get('/user/self').then(function (data) {
+    _userRefreshPromise = MexionHttp.get('/user/self').then(function (data) {
       return storeSyncedUser(
         normalizeUser(data),
         options && options.source ? options.source : 'fetch'
@@ -769,23 +769,23 @@
   }
 
   function register(payloadOrEmail, password) {
-    if (AxiomConfig.MOCK_MODE) {
+    if (MexionConfig.MOCK_MODE) {
       return Promise.resolve({ message: 'Registration successful' });
     }
     var payload = typeof payloadOrEmail === 'object' && payloadOrEmail !== null
       ? payloadOrEmail
       : { username: payloadOrEmail, email: payloadOrEmail, password: password };
-    return AxiomHttp.post('/user/register', payload);
+    return MexionHttp.post('/user/register', payload);
   }
 
   function logout() {
     clearSession();
-    window.location.href = AxiomConfig.LOGIN_URL;
+    window.location.href = MexionConfig.LOGIN_URL;
   }
 
   function guard() {
     if (!isLoggedIn()) {
-      window.location.replace(AxiomConfig.LOGIN_URL);
+      window.location.replace(MexionConfig.LOGIN_URL);
     }
   }
 
@@ -806,21 +806,21 @@
     if (!user) return;
     var displayName = user.username || (user.email ? user.email.split('@')[0] : '');
     var email = user.email || '';
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'en';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'en';
 
     var initial = getInitial(user);
-    document.querySelectorAll('[data-axiom-avatar]').forEach(function(el) {
+    document.querySelectorAll('[data-mexion-avatar]').forEach(function(el) {
       var img = el.querySelector('img');
       if (img) img.remove();
       el.textContent = initial;
     });
 
-    document.querySelectorAll('[data-axiom-user="name"]').forEach(function (el) {
+    document.querySelectorAll('[data-mexion-user="name"]').forEach(function (el) {
       el.textContent = displayName;
       el.removeAttribute('data-i18n');
       el.removeAttribute('data-i18n-html');
     });
-    document.querySelectorAll('[data-axiom-user="email"]').forEach(function (el) {
+    document.querySelectorAll('[data-mexion-user="email"]').forEach(function (el) {
       el.textContent = email;
     });
 
@@ -855,7 +855,7 @@
     hydrateUI();
   }
 
-  window.AxiomAuth = {
+  window.MexionAuth = {
     isLoggedIn: isLoggedIn,
     getUser:    getUser,
     getInitial: getInitial,
@@ -881,8 +881,8 @@
   }
 })();
 (function(){
-  if (typeof AxiomI18n === 'undefined') return;
-  AxiomI18n.register({
+  if (typeof MexionI18n === 'undefined') return;
+  MexionI18n.register({
     en: {
       'shared.nav.profile': 'Profile',
       'shared.nav.apikeys': 'API Keys',
@@ -907,12 +907,12 @@
 })();
 
 /* ─── Theme (light/dark) ─── 二开：用户端暗色模式 + 平滑切换。
-   - 存储键 axiom_theme: 'light' | 'dark'（未设=跟随系统）。
+   - 存储键 mexion_theme: 'light' | 'dark'（未设=跟随系统）。
    - <head> 内联脚本在首帧前已设好 data-theme（防闪烁）；本模块负责注入切换按钮、
      系统偏好跟随、以及切换时的过渡动画（View Transitions 圆形揭示，回退到 .theme-anim 交叉淡入）。 */
 (function () {
   'use strict';
-  var KEY = 'axiom_theme';
+  var KEY = 'mexion_theme';
   var root = document.documentElement;
 
   function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -955,7 +955,7 @@
   function toggle(ev) { commit(effective() === 'dark' ? 'light' : 'dark', ev); }
 
   function buildButton() {
-    var en = (window.AxiomI18n && AxiomI18n.lang === 'en');
+    var en = (window.MexionI18n && MexionI18n.lang === 'en');
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'theme-toggle';
@@ -995,5 +995,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  window.AxiomTheme = { get: effective, set: commit, toggle: toggle };
+  window.MexionTheme = { get: effective, set: commit, toggle: toggle };
 })();

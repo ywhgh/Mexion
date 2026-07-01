@@ -68,7 +68,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
       ok: true,
       data: {
         status: "ok",
-        service: "axion-api",
+        service: "mexion-api",
       },
     }),
   );
@@ -108,7 +108,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
     }
     console.error(error);
     return c.json(
-      { ok: false, error: { code: "INTERNAL_ERROR", message: "Axion internal fault" } },
+      { ok: false, error: { code: "INTERNAL_ERROR", message: "Mexion internal fault" } },
       500,
     );
   });

@@ -3,7 +3,7 @@ import { createApp } from "../src/app";
 
 function sessionCookie(response: Response): string {
   const cookie = response.headers.get("set-cookie");
-  expect(cookie).toContain("axion_session=");
+  expect(cookie).toContain("mexion_session=");
   return cookie?.split(";")[0] ?? "";
 }
 
@@ -49,7 +49,7 @@ describe("admin auth", () => {
       body: JSON.stringify({ username: "operator", password: "long-password" }),
     });
     expect(signIn.status).toBe(200);
-    expect(sessionCookie(signIn)).toContain("axion_session=");
+    expect(sessionCookie(signIn)).toContain("mexion_session=");
   });
 
   it("requires an admin session before password changes", async () => {

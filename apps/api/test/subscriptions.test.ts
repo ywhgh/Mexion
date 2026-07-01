@@ -27,7 +27,7 @@ async function bootstrapCookie(app: ReturnType<typeof createApp>): Promise<strin
     body: JSON.stringify({ username: "operator", password: "long-password" }),
   });
   const cookie = res.headers.get("set-cookie")?.split(";")[0] ?? "";
-  expect(cookie).toContain("axion_session=");
+  expect(cookie).toContain("mexion_session=");
   return cookie;
 }
 
@@ -43,7 +43,7 @@ describe("subscription converter", () => {
         rawSources: [vmessLink("HK Line", "hk.example.test"), vmessLink("HK Line", "hk.example.test")],
         target: "clash-meta",
         ruleSet: "acl4ssr",
-        renamePrefix: "AXION",
+        renamePrefix: "MEXION",
         filterRegex: "HK",
       }),
     });
@@ -62,7 +62,7 @@ describe("subscription converter", () => {
     expect(pull.status).toBe(200);
     const text = await pull.text();
     expect(text).toContain("mixed-port: 7890");
-    expect(text).toContain('name: "AXION 1. HK Line"');
+    expect(text).toContain('name: "MEXION 1. HK Line"');
     expect(text).toContain("hk.example.test");
     expect(text).toContain("GEOIP,CN,DIRECT");
   });

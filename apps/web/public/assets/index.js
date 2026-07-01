@@ -9,7 +9,7 @@
    moat. "语言模型" is a category noun, not a value anchor.) */
 var _BRUSH = '<svg class="brush-svg" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M 2,11.8 C 8,10.2 18,12.4 32,11.0 C 48,9.4 68,12.8 86,11.2 C 102,9.6 118,12.6 134,10.8 C 150,9.2 168,12.2 182,10.6 C 190,9.8 196,10.8 198,10.2 L 198,12.4 C 196,13.0 190,12.0 182,13.2 C 168,14.8 150,11.4 134,13.0 C 118,14.6 102,11.6 86,13.4 C 68,15.0 48,11.4 32,13.2 C 18,14.6 8,12.0 2,13.4 Z"/></svg>';
 
-AxiomI18n.register({
+MexionI18n.register({
   en: {
     'nav.models': 'models', 'nav.docs': 'docs',
     'nav.status': 'status', 'nav.pricing': 'pricing',
@@ -19,14 +19,14 @@ AxiomI18n.register({
     'hero.l1': 'One key,',
     'hero.l2': '<span class="hero__mark">every' + _BRUSH + '</span> language model',
     'hero.l3': 'worth calling',
-    'sub.body': "In Euclid's geometry, an axiom is a proposition accepted as self-evidently true—all proofs depart from here. Axiom brings this structure to the age of AI: a single, <strong><em>unified endpoint</em></strong> as the foundation beneath your application, requiring no elaboration. Whether you call Claude, GPT, Gemini or DeepSeek, the form of invocation is <em>henceforth identical</em>.",
-    'cta':  'Sign in to Axiom',
+    'sub.body': "In Euclid's geometry, an mexion is a proposition accepted as self-evidently true—all proofs depart from here. Mexion brings this structure to the age of AI: a single, <strong><em>unified endpoint</em></strong> as the foundation beneath your application, requiring no elaboration. Whether you call Claude, GPT, Gemini or DeepSeek, the form of invocation is <em>henceforth identical</em>.",
+    'cta':  'Sign in to Mexion',
     'cta.loggedin': 'Open dashboard',
     'cta2': 'Browse the catalogue →',
     'plate.head': 'Frontispiece · Folio Recto',
     'plate.caption': 'Ink and wash, vermilion-touched.',
     'note.title': 'A Note on the Name',
-    'note.body': 'Axiom — from Greek ἀξίωμα, <em class="prop__quote">"that which is thought worthy."</em> A foundational truth, accepted without proof.<span class="prop__end"></span>',
+    'note.body': 'Mexion — from Greek ἀξίωμα, <em class="prop__quote">"that which is thought worthy."</em> A foundational truth, accepted without proof.<span class="prop__end"></span>',
     'status.status': 'Status', 'status.operational': 'operational',
     'status.latency': 'Latency',
     'status.updated': 'Updated',
@@ -40,8 +40,8 @@ AxiomI18n.register({
     'hero.l1': '一把钥匙，',
     'hero.l2': '通往<span class="hero__mark">所有' + _BRUSH + '</span>值得调用的',
     'hero.l3': '语言模型',
-    'sub.body': '欧几里得的几何中，公理是被直接接受为真的命题——一切证明从此出发。Axiom 把这种结构带入 AI 时代：一个<strong><em>统一的 endpoint</em></strong>，作为你应用之下、无需多言的基础层。无论你召唤的是 Claude、GPT、Gemini 还是 DeepSeek，调用的形式<em>从此恒等</em>。',
-    'cta':  '登录 Axiom',
+    'sub.body': '欧几里得的几何中，公理是被直接接受为真的命题——一切证明从此出发。Mexion 把这种结构带入 AI 时代：一个<strong><em>统一的 endpoint</em></strong>，作为你应用之下、无需多言的基础层。无论你召唤的是 Claude、GPT、Gemini 还是 DeepSeek，调用的形式<em>从此恒等</em>。',
+    'cta':  '登录 Mexion',
     'cta.loggedin': '前往控制台',
     'cta2': '浏览模型目录 →',
     'plate.head': '卷首插图 · 正文首页',
@@ -68,7 +68,7 @@ AxiomI18n.register({
   });
 })();
 
-AxiomI18n.onChange(function (lang) {
+MexionI18n.onChange(function (lang) {
   /* Restart hero ink animations so the brush stroke replays on switch.
      .caret is excluded on purpose: its blink (caret-blink, infinite step-end)
      doesn't depend on language, so there's no value in resetting it — and
@@ -80,29 +80,29 @@ AxiomI18n.onChange(function (lang) {
 });
 
 /* reapply so the newly-stamped [data-i18n-html] attrs pick up content */
-AxiomI18n.refresh();
+MexionI18n.refresh();
 
 function getStoredUser() {
   try {
-    var raw = (window.AxiomAuthStorage && window.AxiomAuthStorage.getItem)
-      ? window.AxiomAuthStorage.getItem('axiom_user')
-      : ((sessionStorage.getItem('axiom_user') || localStorage.getItem('axiom_user')) || 'null');
+    var raw = (window.MexionAuthStorage && window.MexionAuthStorage.getItem)
+      ? window.MexionAuthStorage.getItem('mexion_user')
+      : ((sessionStorage.getItem('mexion_user') || localStorage.getItem('mexion_user')) || 'null');
     return JSON.parse(raw || 'null');
   }
   catch (err) { return null; }
 }
 
 function getStoredUserId() {
-  var raw = (window.AxiomAuthStorage && window.AxiomAuthStorage.getItem)
-    ? window.AxiomAuthStorage.getItem('axiom_user_id')
-    : (sessionStorage.getItem('axiom_user_id') || localStorage.getItem('axiom_user_id') || '');
+  var raw = (window.MexionAuthStorage && window.MexionAuthStorage.getItem)
+    ? window.MexionAuthStorage.getItem('mexion_user_id')
+    : (sessionStorage.getItem('mexion_user_id') || localStorage.getItem('mexion_user_id') || '');
   if (raw) return raw;
   var user = getStoredUser();
   if (user && user.id) {
-    if (window.AxiomAuthStorage && window.AxiomAuthStorage.setItem) {
-      window.AxiomAuthStorage.setItem('axiom_user_id', String(user.id));
+    if (window.MexionAuthStorage && window.MexionAuthStorage.setItem) {
+      window.MexionAuthStorage.setItem('mexion_user_id', String(user.id));
     } else {
-      localStorage.setItem('axiom_user_id', String(user.id));
+      localStorage.setItem('mexion_user_id', String(user.id));
     }
     return String(user.id);
   }
@@ -123,7 +123,7 @@ function applyLoggedInHomeState(userOverride) {
   if (!isLoggedIn()) return;
   var user = userOverride || getStoredUser() || {};
   var dashboardUrl = '/dashboard';
-  var displayName = user.username || (user.email ? user.email.split('@')[0] : '') || AxiomI18n.t('nav.dashboardCta');
+  var displayName = user.username || (user.email ? user.email.split('@')[0] : '') || MexionI18n.t('nav.dashboardCta');
 
   document.querySelectorAll('.nav__brand').forEach(function (el) {
     el.setAttribute('href', dashboardUrl);
@@ -145,7 +145,7 @@ function applyLoggedInHomeState(userOverride) {
     var ctaLabel = cta.querySelector('.cta__label');
     if (ctaLabel) {
       ctaLabel.removeAttribute('data-i18n');
-      ctaLabel.textContent = AxiomI18n.t('cta.loggedin');
+      ctaLabel.textContent = MexionI18n.t('cta.loggedin');
     }
   }
 
@@ -157,10 +157,10 @@ function applyLoggedInHomeState(userOverride) {
 function bootHomeAuthState() {
   var storedUser = getStoredUser();
   if (storedUser && storedUser.id && !getStoredUserId()) {
-    if (window.AxiomAuthStorage && window.AxiomAuthStorage.setItem) {
-      window.AxiomAuthStorage.setItem('axiom_user_id', String(storedUser.id));
+    if (window.MexionAuthStorage && window.MexionAuthStorage.setItem) {
+      window.MexionAuthStorage.setItem('mexion_user_id', String(storedUser.id));
     } else {
-      localStorage.setItem('axiom_user_id', String(storedUser.id));
+      localStorage.setItem('mexion_user_id', String(storedUser.id));
     }
   }
 
@@ -169,14 +169,14 @@ function bootHomeAuthState() {
   }
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('axiom:user-updated', function (event) {
+    window.addEventListener('mexion:user-updated', function (event) {
       var user = event && event.detail ? event.detail.user : null;
       if (user) applyLoggedInHomeState(user);
     });
   }
 
-  if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser && getStoredUserId()) {
-    AxiomAuth.refreshUser({ force: true, source: 'home' }).then(function (user) {
+  if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser && getStoredUserId()) {
+    MexionAuth.refreshUser({ force: true, source: 'home' }).then(function (user) {
       if (user) applyLoggedInHomeState(user);
     }).catch(function () {
       applyLoggedInHomeState(storedUser || null);
@@ -349,7 +349,7 @@ window.addEventListener('load', function() { resizeCanvas(); });
         var dot = document.getElementById('statusDot');
         var val = document.getElementById('statusVal');
         if (dot) dot.style.background = '#d08700';
-        if (val) { val.removeAttribute('data-i18n'); val.textContent = (window.AxiomI18n && AxiomI18n.lang === 'en') ? 'degraded' : '维护中'; }
+        if (val) { val.removeAttribute('data-i18n'); val.textContent = (window.MexionI18n && MexionI18n.lang === 'en') ? 'degraded' : '维护中'; }
       });
   } catch (e) {}
 })();

@@ -1,7 +1,7 @@
 /* ─── I18N DICTIONARY ─── */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'referrals.tab.title': 'Axiom — Referrals',
+    'referrals.tab.title': 'Mexion — Referrals',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
     'nav.section.account': 'Account',
@@ -22,7 +22,7 @@ AxiomI18n.register({
     'referrals.crumb.referrals': 'Referrals',
     'referrals.page.title': 'Refer &amp; <span class="accent">earn</span>',
     'referrals.page.sub': 'Share your link · <strong>{rate}</strong> of your friend\'s spend lands back in your balance, automatically',
-    'referrals.page.sub.off': 'Share your invite link — bring friends to Axiom.',
+    'referrals.page.sub.off': 'Share your invite link — bring friends to Mexion.',
     'referrals.rate.off': 'Off',
     'referrals.copy.link': 'Copy invite link',
     'referrals.copied': 'Copied',
@@ -31,8 +31,8 @@ AxiomI18n.register({
     'referrals.toast.locked': 'Referral eligibility is not met yet. The invite link unlocks after the requirements are complete.',
     'referrals.invite.eyebrow': 'Affiliate · lifetime share',
     'referrals.invite.eyebrow.off': 'Affiliate · invite friends',
-    'referrals.invite.headline': 'Refer Axiom to a friend,<br><em>{rate} of their spend</em> is yours, forever.',
-    'referrals.invite.headline.off': 'Refer Axiom to a friend.<br><em>Better together.</em>',
+    'referrals.invite.headline': 'Refer Mexion to a friend,<br><em>{rate} of their spend</em> is yours, forever.',
+    'referrals.invite.headline.off': 'Refer Mexion to a friend.<br><em>Better together.</em>',
     'referrals.invite.lede': 'Calculated on <b>actual spend</b> · auto-credited as <b>usable balance</b>, deductible against any model call · no minimum · never expires.',
     'referrals.invite.copy': 'Copy',
     'referrals.invite.copy.checking': 'Checking',
@@ -58,7 +58,7 @@ AxiomI18n.register({
     'referrals.step1.head': 'Unlock your referral link',
     'referrals.step1.copy': 'After referral eligibility is complete, your unique <code style="font-family:var(--f-mono);font-size:13px;color:var(--verm)">?ref=…</code> link unlocks. The system uses it to attribute the signup to you — <b>cookie-independent</b>, so clearing the browser doesn\'t affect attribution.',
     'referrals.step2.head': 'Your friend signs up and starts using',
-    'referrals.step2.copy': 'Once they sign up through your link, they\'re <b>permanently bound</b> as your referee. Every subsequent call they make on Axiom counts toward your share, <em>every time</em>.',
+    'referrals.step2.copy': 'Once they sign up through your link, they\'re <b>permanently bound</b> as your referee. Every subsequent call they make on Mexion counts toward your share, <em>every time</em>.',
     'referrals.step3.head': 'For every $1 they spend, you get <b>{unit}</b> credit <span class="note">{rate}</span>',
     'referrals.step3.head.off': 'Once rebate is enabled, a share of their every spend auto-credits to your balance.',
     'referrals.step3.copy': 'Settled on the friend\'s <b>actual spend</b> (not top-ups, not subscription price), accruing in real time. Every calculation is transparent — see each entry and amount anytime in <a href="/billing" style="color:var(--verm);text-decoration:underline;text-decoration-color:color-mix(in oklab,var(--verm) 30%,transparent);text-underline-offset:3px">Wallet</a>.',
@@ -73,7 +73,7 @@ AxiomI18n.register({
     'referrals.faq.title': 'Frequently asked',
     'referrals.faq.help': 'View full docs',
     'referrals.faq.q1': 'Can the credit be withdrawn as cash?',
-    'referrals.faq.a1': 'No. The referral share is Axiom platform <b>spend credit</b>, usable only to offset your own model call charges; it cannot be withdrawn as cash or refunded to the original top-up channel. Think of it as a <em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">permanent discount</em> — the more you refer, the cheaper your own Axiom use becomes.',
+    'referrals.faq.a1': 'No. The referral share is Mexion platform <b>spend credit</b>, usable only to offset your own model call charges; it cannot be withdrawn as cash or refunded to the original top-up channel. Think of it as a <em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">permanent discount</em> — the more you refer, the cheaper your own Mexion use becomes.',
     'referrals.faq.q2': 'Does a friend\'s cancellation, refund, or inactivity affect my share?',
     'referrals.faq.a2': 'Credit already received <b>is not clawed back</b>. If a specific friend\'s spend is refunded, only the matching share is reversed — nothing more. The bond is lifelong; if a friend pauses for a year and returns, the share resumes to your account.',
     'referrals.faq.q3': 'Is there a referee cap? Can I see who they are?',
@@ -84,7 +84,7 @@ AxiomI18n.register({
     'referrals.transfer.btn': 'Transfer {amount} to balance',
   },
   zh: {
-    'referrals.tab.title': 'Axiom — 推荐计划',
+    'referrals.tab.title': 'Mexion — 推荐计划',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': '工作区',
     'nav.section.account': '账户',
@@ -105,7 +105,7 @@ AxiomI18n.register({
     'referrals.crumb.referrals': '推荐计划',
     'referrals.page.title': '推荐 <span class="accent">计划</span>',
     'referrals.page.sub': '分享赚佣 · 推荐用户消费的 <strong>{rate}</strong> 自动回到你的余额',
-    'referrals.page.sub.off': '分享你的专属邀请链接，邀请好友加入 Axiom。',
+    'referrals.page.sub.off': '分享你的专属邀请链接，邀请好友加入 Mexion。',
     'referrals.rate.off': '未开放',
     'referrals.copy.link': '复制邀请链接',
     'referrals.copied': '已复制',
@@ -114,8 +114,8 @@ AxiomI18n.register({
     'referrals.toast.locked': '邀请资格未完成，达标后才能复制邀请链接。',
     'referrals.invite.eyebrow': 'Affiliate · 终身分成',
     'referrals.invite.eyebrow.off': 'Affiliate · 邀请好友',
-    'referrals.invite.headline': '把 Axiom 推荐给一位朋友，<br><em>他消费的 {rate}</em>，永远是你的。',
-    'referrals.invite.headline.off': '把 Axiom 推荐给一位朋友，<br><em>一起用，更省心。</em>',
+    'referrals.invite.headline': '把 Mexion 推荐给一位朋友，<br><em>他消费的 {rate}</em>，永远是你的。',
+    'referrals.invite.headline.off': '把 Mexion 推荐给一位朋友，<br><em>一起用，更省心。</em>',
     'referrals.invite.lede': '按 <b>实际消费</b> 结算 · 自动作为<b>可用额度</b>进入你的余额，可抵扣任意模型调用 · 无最低门槛 · 永不过期。',
     'referrals.invite.copy': '复制',
     'referrals.invite.copy.checking': '检查中',
@@ -141,7 +141,7 @@ AxiomI18n.register({
     'referrals.step1.head': '达标后解锁你的专属链接',
     'referrals.step1.copy': '邀请资格完成后，系统会解锁你的唯一 <code style="font-family:var(--f-mono);font-size:13px;color:var(--verm)">?ref=…</code> 链接。它用于识别这次注册来自你，<b>不依赖 cookie</b>，朋友清浏览器也不影响归属。',
     'referrals.step2.head': '朋友通过链接注册并开始使用',
-    'referrals.step2.copy': '只要他通过你的链接首次注册成功，他就<b>永久绑定</b>为你的推荐人。后续他在 Axiom 上调用任意模型、消耗任意余额，<em>每一次</em>都会同步计入你的分成。',
+    'referrals.step2.copy': '只要他通过你的链接首次注册成功，他就<b>永久绑定</b>为你的推荐人。后续他在 Mexion 上调用任意模型、消耗任意余额，<em>每一次</em>都会同步计入你的分成。',
     'referrals.step3.head': '他每消费 $1，你立即获得 <b>{unit}</b> 额度 <span class="note">{rate}</span>',
     'referrals.step3.head.off': '返利开放后，他的每一笔消费都会按比例自动返到你的余额。',
     'referrals.step3.copy': '按朋友的<b>实际消费</b>结算（不是充值额、不是订阅价），实时累计。所有计算公开透明 —— 你随时能在<a href="/billing" style="color:var(--verm);text-decoration:underline;text-decoration-color:color-mix(in oklab,var(--verm) 30%,transparent);text-underline-offset:3px">钱包</a>看到每一笔来源与金额。',
@@ -156,7 +156,7 @@ AxiomI18n.register({
     'referrals.faq.title': '常见问题',
     'referrals.faq.help': '查看完整文档',
     'referrals.faq.q1': '这些额度可以提现成现金吗？',
-    'referrals.faq.a1': '不可以。推荐分成是 Axiom 平台的<b>消费额度</b>，仅用于抵扣你自己的模型调用费用，不能提现为现金，也不退还充值通道。你可以把它理解为<em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">持续返利</em> —— 推荐得越多，你自己用 Axiom 的成本越低。',
+    'referrals.faq.a1': '不可以。推荐分成是 Mexion 平台的<b>消费额度</b>，仅用于抵扣你自己的模型调用费用，不能提现为现金，也不退还充值通道。你可以把它理解为<em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">持续返利</em> —— 推荐得越多，你自己用 Mexion 的成本越低。',
     'referrals.faq.q2': '朋友取消、退款或长时间不用，会影响我的分成吗？',
     'referrals.faq.a2': '已到账的分成额度<b>不会被收回</b>。如果朋友的某次消费发生退款，仅对应的那笔分成会同步冲销 —— 仅此而已。绑定关系是终身的，朋友停用一年后回来继续使用，分成依然会回到你的账户。',
     'referrals.faq.q3': '能推荐的人数有上限吗？我能看到具体是谁吗？',
@@ -169,7 +169,7 @@ AxiomI18n.register({
 });
 
 function rt(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -198,8 +198,8 @@ function rt(k, vars){
   }
 
   function inviteUnavailableMessage() {
-    if (inviteShareState === 'loading') return AxiomI18n.t('referrals.toast.loading');
-    return inviteShareReason || AxiomI18n.t('referrals.toast.locked');
+    if (inviteShareState === 'loading') return MexionI18n.t('referrals.toast.loading');
+    return inviteShareReason || MexionI18n.t('referrals.toast.locked');
   }
 
   function canUseInviteLink() {
@@ -216,7 +216,7 @@ function rt(k, vars){
       ? 'referrals.invite.copy.checking'
       : 'referrals.invite.copy.locked';
     txt.removeAttribute('data-i18n');
-    txt.textContent = AxiomI18n.t(key);
+    txt.textContent = MexionI18n.t(key);
   }
 
   function renderInviteLinkText() {
@@ -228,7 +228,7 @@ function rt(k, vars){
       linkWrap.classList.toggle('is-loading', inviteShareState === 'loading');
     }
     if (!canUseInviteLink()) {
-      linkEl.textContent = AxiomI18n.t(inviteShareState === 'loading'
+      linkEl.textContent = MexionI18n.t(inviteShareState === 'loading'
         ? 'referrals.invite.link.checking'
         : 'referrals.invite.link.locked');
       return;
@@ -245,7 +245,7 @@ function rt(k, vars){
     qrCaption.childNodes.forEach(function(n){ if (n.nodeType === 3) textNodes.push(n); });
     textNodes.forEach(function(n){ n.textContent = ''; });
     if (strong) {
-      strong.textContent = locked ? AxiomI18n.t('referrals.qr.locked') : AxiomI18n.t('referrals.qr.scan');
+      strong.textContent = locked ? MexionI18n.t('referrals.qr.locked') : MexionI18n.t('referrals.qr.scan');
       if (!locked && affCode) strong.insertAdjacentHTML('afterend', '\nref · ' + escapeHTML(affCode));
     }
   }
@@ -303,10 +303,10 @@ function rt(k, vars){
       if (!allowed) btn.setAttribute('title', reason);
       else if (btn.dataset && btn.dataset.share) {
         var titleKey = btn.getAttribute('data-i18n-title');
-        if (titleKey) btn.setAttribute('title', AxiomI18n.t(titleKey));
+        if (titleKey) btn.setAttribute('title', MexionI18n.t(titleKey));
         else if (btn.dataset.defaultTitle) btn.setAttribute('title', btn.dataset.defaultTitle);
       } else if (btn.id === 'downloadPosterBtn') {
-        btn.setAttribute('title', AxiomI18n.t('referrals.qr.poster'));
+        btn.setAttribute('title', MexionI18n.t('referrals.qr.poster'));
       } else {
         btn.removeAttribute('title');
       }
@@ -328,7 +328,7 @@ function rt(k, vars){
   /* ─── Copy helper ─── */
   var doCopy = function(btn) {
     if (!canUseInviteLink()) { showToast(inviteUnavailableMessage()); return; }
-    if (!affCode) { showToast(AxiomI18n.t('referrals.toast.loading') || '加载中…'); return; }
+    if (!affCode) { showToast(MexionI18n.t('referrals.toast.loading') || '加载中…'); return; }
     var url = INVITE_BASE + affCode;
     try {
       navigator.clipboard.writeText(url).catch(function(){});
@@ -345,16 +345,16 @@ function rt(k, vars){
       var origKey = txt ? txt.getAttribute('data-i18n') : null;
       if (txt) {
         if (origKey) txt.removeAttribute('data-i18n');
-        txt.textContent = AxiomI18n.t('referrals.copied');
+        txt.textContent = MexionI18n.t('referrals.copied');
       }
       setTimeout(function(){
         btn.classList.remove('is-ok');
-        if (txt && origKey) { txt.setAttribute('data-i18n', origKey); txt.textContent = AxiomI18n.t(origKey); }
+        if (txt && origKey) { txt.setAttribute('data-i18n', origKey); txt.textContent = MexionI18n.t(origKey); }
         else if (txt && orig) txt.textContent = orig;
         setCopyButtonText(btn);
       }, 1600);
     }
-    showToast(AxiomI18n.t('referrals.toast.copied'));
+    showToast(MexionI18n.t('referrals.toast.copied'));
   };
 
   document.getElementById('copyLinkBtn')?.addEventListener('click', function(e){ doCopy(e.currentTarget); });
@@ -365,11 +365,11 @@ function rt(k, vars){
       if (!canUseInviteLink()) { showToast(inviteUnavailableMessage()); return; }
       var url = INVITE_BASE + affCode;
       var platform = b.getAttribute('data-share') || '';
-      var lang = AxiomI18n.lang || 'zh';
-      var title = lang === 'zh' ? 'Axiom — 统一 AI API 平台' : 'Axiom — Unified AI API Platform';
+      var lang = MexionI18n.lang || 'zh';
+      var title = lang === 'zh' ? 'Mexion — 统一 AI API 平台' : 'Mexion — Unified AI API Platform';
       var body = lang === 'zh'
-        ? '我在用 Axiom 调用 Claude / GPT / Gemini，一个 Key 搞定所有模型。通过我的链接注册：' + url
-        : 'I use Axiom for Claude / GPT / Gemini — one API key, all models. Sign up here: ' + url;
+        ? '我在用 Mexion 调用 Claude / GPT / Gemini，一个 Key 搞定所有模型。通过我的链接注册：' + url
+        : 'I use Mexion for Claude / GPT / Gemini — one API key, all models. Sign up here: ' + url;
 
       if (platform === 'x') {
         window.open('https://x.com/intent/post?text=' + encodeURIComponent(body), '_blank', 'width=600,height=400');
@@ -386,7 +386,7 @@ function rt(k, vars){
         navigator.share({ title: title, text: body, url: url }).catch(function(){});
         return;
       }
-      var t = b.getAttribute('title') || AxiomI18n.t('referrals.share.fallback');
+      var t = b.getAttribute('title') || MexionI18n.t('referrals.share.fallback');
       showToast(rt('referrals.share.toast', { n: t }));
     });
   });
@@ -395,7 +395,7 @@ function rt(k, vars){
   document.getElementById('downloadPosterBtn')?.addEventListener('click', function(){
     if (!canUseInviteLink()) { showToast(inviteUnavailableMessage()); return; }
     var url = INVITE_BASE + affCode;
-    var lang = AxiomI18n.lang || 'zh';
+    var lang = MexionI18n.lang || 'zh';
     var canvas = document.createElement('canvas');
     canvas.width = 800; canvas.height = 1200;
     var ctx = canvas.getContext('2d');
@@ -408,7 +408,7 @@ function rt(k, vars){
     // 品牌名
     ctx.fillStyle = '#1C1A17';
     ctx.font = 'italic 48px Georgia, "Times New Roman", serif';
-    ctx.fillText('Axiom', 60, 100);
+    ctx.fillText('Mexion', 60, 100);
     // 标语
     ctx.font = '500 28px system-ui, sans-serif';
     ctx.fillStyle = '#1C1A17';
@@ -457,13 +457,13 @@ function rt(k, vars){
       // 底部
       ctx.fillStyle = '#B0ACA5';
       ctx.font = '13px system-ui, sans-serif';
-      ctx.fillText('AXIOM · MMXXVI', 60, 1150);
+      ctx.fillText('MEXION · MMXXVI', 60, 1150);
       // 下载
       var link = document.createElement('a');
-      link.download = 'axiom-invite-' + affCode + '.png';
+      link.download = 'mexion-invite-' + affCode + '.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-      showToast(AxiomI18n.t('referrals.poster.toast'));
+      showToast(MexionI18n.t('referrals.poster.toast'));
     }
   });
 
@@ -511,7 +511,7 @@ function rt(k, vars){
     var old = section.querySelector('.invitees__list');
     if (old) old.remove();
     if (count > 0) {
-      var l = (typeof AxiomI18n!=='undefined' && AxiomI18n.lang) || 'zh';
+      var l = (typeof MexionI18n!=='undefined' && MexionI18n.lang) || 'zh';
       var wrap = document.createElement('div');
       wrap.className = 'invitees__list';
       wrap.innerHTML = '<div style="padding:18px 16px;font-size:13px;color:var(--ink);text-align:center">' +
@@ -524,7 +524,7 @@ function rt(k, vars){
   }
   // 二开(req4)：被邀请人评测状态徽章。1评测中/2有效/3已失效;0或缺省不显示。
   function inviteStatusBadge(status){
-    var zh = !(typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+    var zh = !(typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
     var map = {
       1: { t: zh?'评测中':'Evaluating', c:'#B5862B', bg:'rgba(181,134,43,.12)' },
       2: { t: zh?'有效':'Valid',       c:'#2E7D55', bg:'rgba(46,125,85,.12)' },
@@ -537,7 +537,7 @@ function rt(k, vars){
 
   function fmtInt(v) {
     var n = Math.max(0, Math.floor(Number(v) || 0));
-    var locale = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh') ? 'zh-CN' : 'en-US';
+    var locale = (typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh') ? 'zh-CN' : 'en-US';
     try { return n.toLocaleString(locale); } catch(_) { return String(n); }
   }
 
@@ -548,7 +548,7 @@ function rt(k, vars){
   }
 
   function getEligibilityContext(elig) {
-    var zh = !(typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+    var zh = !(typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
     var mode = String((elig && elig.gate_mode) || 'or').toLowerCase() === 'and' ? 'and' : 'or';
     var canInvite = !!(elig && elig.can_invite);
     var requiredTokens = Number((elig && elig.required_tokens) || 0);
@@ -581,7 +581,7 @@ function rt(k, vars){
   }
 
   function eligibilityGateRow(gate, mode, overallMet) {
-    var zh = !(typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+    var zh = !(typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
     var met = gate.required <= 0 || gate.current >= gate.required;
     var optional = !met && overallMet && mode === 'or';
     var pct = gate.required > 0 ? Math.min(100, Math.max(0, (gate.current / gate.required) * 100)) : 100;
@@ -608,7 +608,7 @@ function rt(k, vars){
   }
 
   function eligibilitySummary(gates, mode, canInvite) {
-    var zh = !(typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+    var zh = !(typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
     if (canInvite) return zh ? '现在发出的邀请会正常计入。' : 'New invites will be counted normally.';
     var missing = gates.filter(function(g){ return g.required > 0 && g.current < g.required; });
     if (!missing.length) return zh ? '资格状态正在同步，请稍后刷新。' : 'Eligibility is syncing. Refresh shortly.';
@@ -624,7 +624,7 @@ function rt(k, vars){
   }
 
   function inviteLockReasonFromEligibility(elig) {
-    var zh = !(typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+    var zh = !(typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
     if (!elig) {
       return zh ? '邀请资格状态未同步，暂不能复制邀请链接。' : 'Referral eligibility is not synced yet. The invite link is unavailable for now.';
     }
@@ -738,7 +738,7 @@ function rt(k, vars){
     if (allZero && list.length > 0) {
       var hint = document.createElement('div');
       hint.style.cssText = 'padding:12px 16px;font-size:12px;color:var(--mute-2);text-align:center;border-top:1px solid var(--border-2)';
-      var l = (typeof AxiomI18n!=='undefined' && AxiomI18n.lang) || 'zh';
+      var l = (typeof MexionI18n!=='undefined' && MexionI18n.lang) || 'zh';
       hint.textContent = l === 'zh' ? '受邀用户开始消费后，分成将自动计入你的余额' : 'Commissions will be credited once invited users start spending';
       wrap.appendChild(hint);
     }
@@ -747,7 +747,7 @@ function rt(k, vars){
 
   // 二开：被邀请人列表(匿名:仅 masked_name + 加入时间)来自真相源 /user/invitees(inviter_id)。
   function loadInvitees() {
-    return AxiomHttp.get('/user/invitees').then(function(data) {
+    return MexionHttp.get('/user/invitees').then(function(data) {
       return data || null;
     }).catch(function() { return null; });
   }
@@ -757,8 +757,8 @@ function rt(k, vars){
   if (transferBtn) {
     transferBtn.addEventListener('click', function(){
       transferBtn.disabled = true;
-      AxiomHttp.post('/user/aff_transfer', {}).then(function(data){
-        var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+      MexionHttp.post('/user/aff_transfer', {}).then(function(data){
+        var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
         var transferred = data === undefined ? _affQ : (data && data.quota ? fmt(data.quota / 500000) : fmt(_affQ));
         showToast(lang === 'zh' ? '已转移 $' + transferred + ' 到余额' : 'Transferred $' + transferred + ' to balance');
         // Refresh aff data
@@ -775,30 +775,30 @@ function rt(k, vars){
   var _rebatePct = null;
   var _inviteEligibility = null;
   function renderRebateCopy() {
-    if (_rebatePct == null || typeof AxiomI18n === 'undefined') return;
+    if (_rebatePct == null || typeof MexionI18n === 'undefined') return;
     var on = _rebatePct > 0;
     var rateStr = (Math.round(_rebatePct * 10) / 10) + '%';
     var unitStr = '$' + (_rebatePct / 100).toFixed(2);
-    function tt(key) { return AxiomI18n.t(key).replace(/\{rate\}/g, rateStr).replace(/\{unit\}/g, unitStr); }
+    function tt(key) { return MexionI18n.t(key).replace(/\{rate\}/g, rateStr).replace(/\{unit\}/g, unitStr); }
     function setHTML(sel, key) { var el = document.querySelector(sel); if (el) el.innerHTML = tt(key); }
     setHTML('.invite__headline', on ? 'referrals.invite.headline' : 'referrals.invite.headline.off');
     setHTML('.page-head__sub', on ? 'referrals.page.sub' : 'referrals.page.sub.off');
     setHTML('#step3Head', on ? 'referrals.step3.head' : 'referrals.step3.head.off');
     var eyebrow = document.querySelector('.invite__eyebrow');
-    if (eyebrow) eyebrow.textContent = AxiomI18n.t(on ? 'referrals.invite.eyebrow' : 'referrals.invite.eyebrow.off');
+    if (eyebrow) eyebrow.textContent = MexionI18n.t(on ? 'referrals.invite.eyebrow' : 'referrals.invite.eyebrow.off');
     var rateLabel = document.querySelector('.invitees__rate strong');
-    if (rateLabel) rateLabel.textContent = on ? rateStr : AxiomI18n.t('referrals.rate.off');
+    if (rateLabel) rateLabel.textContent = on ? rateStr : MexionI18n.t('referrals.rate.off');
   }
 
   function loadAffData() {
-    AxiomHttp.get('/user/self').then(function(d) {
+    MexionHttp.get('/user/self').then(function(d) {
       affCode = d.aff_code || '';
       // 二开：返利比例由后端按实际配置下发(停用=0);不再硬兜底 2%
       var rate = (d.effective_rebate_rate_percent != null) ? d.effective_rebate_rate_percent : 0;
       var invitees = d.invitees || d.aff_invitees || d.affiliate_users || d.invited_users || [];
-      var storedUserId = window.AxiomAuthStorage && window.AxiomAuthStorage.getItem
-        ? window.AxiomAuthStorage.getItem('axiom_user_id')
-        : localStorage.getItem('axiom_user_id');
+      var storedUserId = window.MexionAuthStorage && window.MexionAuthStorage.getItem
+        ? window.MexionAuthStorage.getItem('mexion_user_id')
+        : localStorage.getItem('mexion_user_id');
       var userId = Number(d.id || storedUserId || 0);
 
       // 邀请链接和二维码必须等资格接口返回后再展示，避免未达标用户复制/截图无效链接。
@@ -827,7 +827,7 @@ function rt(k, vars){
         transferBtn.style.display = _affQ > 0 ? '' : 'none';
         transferBtn.disabled = false;
         var label = document.getElementById('affTransferLabel');
-        if (label) label.textContent = AxiomI18n.t('referrals.transfer.btn').replace('{amount}', fmt(_affQ));
+        if (label) label.textContent = MexionI18n.t('referrals.transfer.btn').replace('{amount}', fmt(_affQ));
       }
 
       // 二开：被邀请人列表与计数统一以真相源 /user/invitees 为准(匿名)。
@@ -845,8 +845,8 @@ function rt(k, vars){
 
   /* ─── 等 defer 脚本就绪后再调 API ─── */
   function boot() {
-    if (typeof AxiomHttp === 'undefined') return;
-    AxiomHttp.get('/status').then(function(settings) {
+    if (typeof MexionHttp === 'undefined') return;
+    MexionHttp.get('/status').then(function(settings) {
       if (settings.affiliate_enabled === false) {
         var el = document.getElementById('affDisabled');
         if (el) el.classList.add('is-show');
@@ -861,9 +861,9 @@ function rt(k, vars){
     setInviteShareState('loading');
     boot();
   });
-  // 二开：语言切换后 AxiomI18n 会按 data-i18n 重渲，但返利/资格文案由 JS 拥有(已去 data-i18n),需在此重渲。
-  if (typeof AxiomI18n !== 'undefined' && AxiomI18n.onChange) {
-    AxiomI18n.onChange(function(){
+  // 二开：语言切换后 MexionI18n 会按 data-i18n 重渲，但返利/资格文案由 JS 拥有(已去 data-i18n),需在此重渲。
+  if (typeof MexionI18n !== 'undefined' && MexionI18n.onChange) {
+    MexionI18n.onChange(function(){
       renderRebateCopy();
       updateInviteShareUi();
       renderInviteEligibility(_inviteEligibility);

@@ -197,10 +197,10 @@
 
 /* ── 免登录公开页:隐藏需登录的 chrome,主区铺满 ───────────── */
 .status-login { display:none; }
-.axiom-anon .side { display:none; }
-.axiom-anon .app { grid-template-columns:minmax(0, 1fr); }
-.axiom-anon .notif-bell-wrap, .axiom-anon .user-menu { display:none; }
-.axiom-anon .status-login { display:inline-flex; }
+.mexion-anon .side { display:none; }
+.mexion-anon .app { grid-template-columns:minmax(0, 1fr); }
+.mexion-anon .notif-bell-wrap, .mexion-anon .user-menu { display:none; }
+.mexion-anon .status-login { display:inline-flex; }
 
 /* ── 窄屏 ─────────────────────────────────────────────────── */
 @media (max-width: 560px) {

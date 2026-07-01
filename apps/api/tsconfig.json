@@ -12,7 +12,7 @@
       "vitest/globals"
     ],
     "paths": {
-      "@axion/shared": [
+      "@mexion/shared": [
         "../../packages/shared/src/index.ts"
       ],
       "@shared/*": [

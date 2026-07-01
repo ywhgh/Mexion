@@ -1,7 +1,7 @@
 /* ─── I18N DICTIONARY ─── */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'models.tab.title': 'Axiom — Model Groups',
+    'models.tab.title': 'Mexion — Model Groups',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
     'nav.section.account': 'Account',
@@ -156,7 +156,7 @@ AxiomI18n.register({
     'models.cap.video': 'Video',
   },
   zh: {
-    'models.tab.title': 'Axiom — 模型分组',
+    'models.tab.title': 'Mexion — 模型分组',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': '工作区',
     'nav.section.account': '账户',
@@ -310,7 +310,7 @@ AxiomI18n.register({
 });
 
 function tt(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -406,7 +406,7 @@ const CAP_KEYS = {
   'video':  'models.cap.video',
 };
 /* Per-unit suffix translations for "from" prices */
-AxiomI18n.register({
+MexionI18n.register({
   en: { 'models.unit.tok1m': '/ 1M tokens', 'models.unit.image': '/ image', 'models.unit.min': '/ min' },
   zh: { 'models.unit.tok1m': '/ 百万 Token', 'models.unit.image': '/ 张',     'models.unit.min': '/ 分钟' }
 });
@@ -646,8 +646,8 @@ var USABLE_GROUPS = {};   // 当前用户可用分组（/api/pricing.usable_grou
 // 二开：手动分区（管理端配置）。{sections:[{id,name,icon,order}], assign:{分组名:sectionId}}。手动优先于自动 provider。
 var SECTION_CONFIG = { sections: [], assign: {} };
 function loadSectionConfig(){
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
-  return AxiomHttp.get('/section_config').then(function(d){
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return MexionHttp.get('/section_config').then(function(d){
     if (d && (Array.isArray(d.sections) || d.assign)) {
       SECTION_CONFIG = { sections: d.sections || [], assign: d.assign || {} };
     }
@@ -655,9 +655,9 @@ function loadSectionConfig(){
 }
 
 function attachGroupPrices(){
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
-  return AxiomHttp.get('/pricing').then(function(p){
-    // AxiomHttp 解包到 json.data，故 p 是模型数组，group_ratio 被剥离。
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return MexionHttp.get('/pricing').then(function(p){
+    // MexionHttp 解包到 json.data，故 p 是模型数组，group_ratio 被剥离。
     // 分组倍率改从已加载的 GROUPS（/user/groups + /user/group-access，有效 .ratio）构建，键用分组名（= enable_groups 项）。
     PRICING_ROWS = Array.isArray(p) ? p : ((p && (p.data || p.models)) || []);
     PRICING_GROUP_RATIOS = {};
@@ -716,8 +716,8 @@ function recomputeGroupPrices(){
 // 二开：分组邀请解锁状态(分组名 -> {rule,invitees,topup_usd,unlocked,ratio,matched_tier,next_tier})
 var GROUP_ACCESS = {};
 function loadGroupAccess() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
-  return AxiomHttp.get('/user/group-access').then(function(d){
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return MexionHttp.get('/user/group-access').then(function(d){
     GROUP_ACCESS = {};
     ((d && d.groups) || []).forEach(function(x){ if (x && x.group) GROUP_ACCESS[x.group] = x; });
   }).catch(function(){ GROUP_ACCESS = {}; });
@@ -750,7 +750,7 @@ function applyGroupAccessRatios() {
 function inviteLockHint(acc) {
   if (!acc) return '';
   var r = acc.rule || {}, parts = [];
-  var zh = !(typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'en');
+  var zh = !(typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'en');
   var tiers = Array.isArray(r.tiers) ? r.tiers.slice().sort(function(a,b){ return (a.invitees || 0) - (b.invitees || 0); }) : [];
   function fmtRatio(v) {
     var n = Number(v);
@@ -818,13 +818,13 @@ function inviteTierHTML(g) {
   var need = next ? Math.max(0, Math.ceil(next.invitees - count)) : 0;
   var summary = next
     ? tt(acc.unlocked === false ? 'models.invite.unlock' : 'models.invite.next', { n: need, ratio: fmtRatio(next.ratio) })
-    : AxiomI18n.t('models.invite.best');
-  var zh = !(typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'en');
+    : MexionI18n.t('models.invite.best');
+  var zh = !(typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'en');
 
   return `
-    <div class="gcard__invite" aria-label="${AxiomI18n.t('models.invite.title')}">
+    <div class="gcard__invite" aria-label="${MexionI18n.t('models.invite.title')}">
       <div class="gcard__invite-top">
-        <span class="gcard__invite-title">${AxiomI18n.t('models.invite.title')}</span>
+        <span class="gcard__invite-title">${MexionI18n.t('models.invite.title')}</span>
         <span class="gcard__invite-count">${tt('models.invite.count', { n: Math.floor(count) })}</span>
       </div>
       <div class="gcard__invite-next">${summary}</div>
@@ -833,7 +833,7 @@ function inviteTierHTML(g) {
           var isCurrent = current && current.invitees === tierItem.invitees;
           var isNext = next && next.invitees === tierItem.invitees;
           var cls = 'gcard__invite-step' + (isCurrent ? ' is-current' : '') + (isNext ? ' is-next' : '') + (!isCurrent && !isNext && count >= tierItem.invitees ? ' is-done' : '');
-          var badge = isCurrent ? AxiomI18n.t('models.invite.current') : (isNext ? AxiomI18n.t('models.invite.next.badge') : '');
+          var badge = isCurrent ? MexionI18n.t('models.invite.current') : (isNext ? MexionI18n.t('models.invite.next.badge') : '');
           return `<span class="${cls}"><span>${Math.floor(tierItem.invitees)}${zh ? '人' : ''}</span><b>×${fmtRatio(tierItem.ratio)}</b>${badge ? `<i>${badge}</i>` : ''}</span>`;
         }).join('')}
       </div>
@@ -842,7 +842,7 @@ function inviteTierHTML(g) {
 
 function loadGroups() {
   var stream = $('#groupStream');
-  if (typeof AxiomHttp === 'undefined') {
+  if (typeof MexionHttp === 'undefined') {
     if (isPreviewRuntime()) {
       useSampleGroups();
       return;
@@ -852,11 +852,11 @@ function loadGroups() {
     updateTierCounts();
     updateProvCounts();
     updateFilteredCount(0);
-    stream.innerHTML = '<div class="grid"><div class="empty"><div class="empty__title">' + AxiomI18n.t('models.empty.title') + '</div><div class="empty__sub">' + (AxiomI18n.lang==='en' ? 'Service is not ready, please refresh' : '服务尚未就绪，请刷新重试') + '</div></div></div>';
+    stream.innerHTML = '<div class="grid"><div class="empty"><div class="empty__title">' + MexionI18n.t('models.empty.title') + '</div><div class="empty__sub">' + (MexionI18n.lang==='en' ? 'Service is not ready, please refresh' : '服务尚未就绪，请刷新重试') + '</div></div></div>';
     return;
   }
   stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">加载中…</div>';
-  AxiomHttp.get('/user/groups').then(function(data) {
+  MexionHttp.get('/user/groups').then(function(data) {
     /* new-api returns {"slug": {desc, ratio}, ...} — convert to old format array */
     var items = [];
     if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -910,7 +910,7 @@ function loadGroups() {
     updateTierCounts();
     updateProvCounts();
     updateFilteredCount(0);
-    stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">' + (AxiomI18n.lang==='en' ? 'Failed to load, please refresh' : '加载失败，请刷新重试') + '</div>';
+    stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">' + (MexionI18n.lang==='en' ? 'Failed to load, please refresh' : '加载失败，请刷新重试') + '</div>';
   });
 }
 
@@ -926,7 +926,7 @@ function tier(r){
 }
 function tierLabel(r){
   if(r<1.00)   return tt('models.tier.label.save', { n: Math.round((1-r)*100) });
-  if(r===1.00) return AxiomI18n.t('models.tier.label.standard');
+  if(r===1.00) return MexionI18n.t('models.tier.label.standard');
   return tt('models.tier.label.express', { n: r });
 }
 function tierClass(r){
@@ -954,7 +954,7 @@ function displayDescWithRatio(desc, ratio) {
 }
 function providerLabel(provider) {
   var cfg = PROVIDERS[provider] || PROVIDERS.others;
-  return AxiomI18n.t(cfg.labelKey);
+  return MexionI18n.t(cfg.labelKey);
 }
 function groupProviderLabels(g) {
   var providers = (g.providers || []).filter(function(provider) {
@@ -1005,8 +1005,8 @@ function gcardHTML(g,idx){
   const providerChips = groupProviderLabels(g);
   const inviteTiersHTML = inviteTierHTML(g);
   const providerChipsHTML = providerChips.length > 1 ? `
-    <div class="gcard__providers" aria-label="${AxiomI18n.t('models.card.providers')}">
-      <span class="gcard__providers-label">${AxiomI18n.t('models.card.providers')}</span>
+    <div class="gcard__providers" aria-label="${MexionI18n.t('models.card.providers')}">
+      <span class="gcard__providers-label">${MexionI18n.t('models.card.providers')}</span>
       ${providerChips.map(p=>`<span class="gcard__provider-chip" style="--provider-dot:${p.dot}">${p.label}</span>`).join('')}
     </div>` : '';
   return `
@@ -1017,8 +1017,8 @@ function gcardHTML(g,idx){
           <span class="gcard__name" title="${nm}">${nm}</span>
         </div>
         <div class="gcard__badges">
-          ${lock ? `<span class="b" style="background:var(--verm-soft,#fde8e8);color:var(--verm)">🔒 ${AxiomI18n.lang==='en'?'Invite to unlock':'邀请解锁'}</span>` : ''}
-          ${g.badges.map(b=>`<span class="b ${badgeClass(b)}">${AxiomI18n.t(BADGE_KEYS[b]||'')}</span>`).join('')}
+          ${lock ? `<span class="b" style="background:var(--verm-soft,#fde8e8);color:var(--verm)">🔒 ${MexionI18n.lang==='en'?'Invite to unlock':'邀请解锁'}</span>` : ''}
+          ${g.badges.map(b=>`<span class="b ${badgeClass(b)}">${MexionI18n.t(BADGE_KEYS[b]||'')}</span>`).join('')}
         </div>
       </div>
       <div class="gcard__hero">
@@ -1036,16 +1036,16 @@ function gcardHTML(g,idx){
       </div>
       <div class="gcard__foot">
         <div class="gcard__caps">
-          ${g.caps.slice(0,4).map(c=>`<span class="cap">${AxiomI18n.t(CAP_KEYS[c]||'')}</span>`).join('')}
+          ${g.caps.slice(0,4).map(c=>`<span class="cap">${MexionI18n.t(CAP_KEYS[c]||'')}</span>`).join('')}
         </div>
       </div>
       <div class="gcard__foot" style="border-top:none;padding-top:0;padding-bottom:13px;background:transparent">
         ${lock
           ? `<span style="font-size:10px;color:var(--verm);line-height:1.3">🔒 ${inviteLockHint(lock)}</span>
-             <button class="gcard__select" data-act="create" data-id="${g.id}" data-locked="1" style="opacity:.55">${AxiomI18n.lang==='en'?'Locked':'未解锁'}</button>`
-          : `<span style="font-family:var(--f-mono);font-size:10px;color:var(--mute-2);letter-spacing:.04em">${AxiomI18n.t('models.card.bind-hint')}</span>
+             <button class="gcard__select" data-act="create" data-id="${g.id}" data-locked="1" style="opacity:.55">${MexionI18n.lang==='en'?'Locked':'未解锁'}</button>`
+          : `<span style="font-family:var(--f-mono);font-size:10px;color:var(--mute-2);letter-spacing:.04em">${MexionI18n.t('models.card.bind-hint')}</span>
              <button class="gcard__select" data-act="create" data-id="${g.id}">
-               ${AxiomI18n.t('models.card.cta')}
+               ${MexionI18n.t('models.card.cta')}
                <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7m0 0L7 3.5m2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
              </button>`
         }
@@ -1081,7 +1081,7 @@ function renderStream(){
     return true;
   });
 
-  const sortLocale = AxiomI18n.lang === 'zh' ? 'zh-CN' : 'en';
+  const sortLocale = MexionI18n.lang === 'zh' ? 'zh-CN' : 'en';
   if(sort==='ratio-asc')      filtered.sort((a,b)=>a.ratio-b.ratio);
   else if(sort==='ratio-desc')filtered.sort((a,b)=>b.ratio-a.ratio);
   else if(sort==='name')      filtered.sort((a,b)=>a.name.localeCompare(b.name,sortLocale));
@@ -1094,8 +1094,8 @@ function renderStream(){
     stream.innerHTML = `
       <div class="grid"><div class="empty">
         <div class="empty__icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.3"/><line x1="13.5" y1="13.5" x2="17" y2="17" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-        <div class="empty__title">${AxiomI18n.t('models.empty.title')}</div>
-        <div class="empty__sub">${AxiomI18n.t('models.empty.sub')}</div>
+        <div class="empty__title">${MexionI18n.t('models.empty.title')}</div>
+        <div class="empty__sub">${MexionI18n.t('models.empty.sub')}</div>
       </div></div>`;
     return;
   }
@@ -1143,7 +1143,7 @@ function renderStream(){
       const provCfg = PROVIDERS[info.prov];
       cls = provCfg ? provCfg.cls : '';
       headMark = '<span class="prov-section__mark" style="background:var(--mark-bg)">'+(provCfg?provIcon(provCfg.iconKey,20):'')+'</span>';
-      headTitle = provCfg ? AxiomI18n.t(provCfg.labelKey) : secEsc(info.prov);
+      headTitle = provCfg ? MexionI18n.t(provCfg.labelKey) : secEsc(info.prov);
     }
     return `
       <section class="prov-section ${cls}" id="sec-${k.replace(/[^a-zA-Z0-9_-]/g,'_')}">
@@ -1176,11 +1176,11 @@ function mpEsc(s){
 }
 function mpIsPerReq(m){ return m.quotaType === 1 || (m.modelPrice && m.modelPrice > 0); }
 function mpTypeLabel(m){
-  return mpIsPerReq(m) ? (AxiomI18n.lang==='zh'?'按次':'Per-call')
-                       : (AxiomI18n.lang==='zh'?'按量':'Per-token');
+  return mpIsPerReq(m) ? (MexionI18n.lang==='zh'?'按次':'Per-call')
+                       : (MexionI18n.lang==='zh'?'按量':'Per-token');
 }
 // 二开：图片分辨率档价 / 视频每秒价 的展示文案（仅在 /api/pricing 下发对应字段时注册生效）。
-AxiomI18n.register({
+MexionI18n.register({
   en: { 'models.price.image': 'Image $/img', 'models.price.video': 'Video', 'models.price.persec': 'per sec' },
   zh: { 'models.price.image': '图片 $/张', 'models.price.video': '视频', 'models.price.persec': '/秒' }
 });
@@ -1196,11 +1196,11 @@ function mpExtraPricing(m){
       var inner = tiers.map(function(t){
         return '<span class="mp-extra__tier">'+t.toUpperCase()+' <b>'+mpFmtUsd(m.imgResPrice[t])+'</b></span>';
       }).join('');
-      parts.push('<span class="mp-extra__item"><span class="mp-extra__k">'+AxiomI18n.t('models.price.image')+'</span>'+inner+'</span>');
+      parts.push('<span class="mp-extra__item"><span class="mp-extra__k">'+MexionI18n.t('models.price.image')+'</span>'+inner+'</span>');
     }
   }
   if (m.videoSecondPrice != null && m.videoSecondPrice > 0){
-    parts.push('<span class="mp-extra__item"><span class="mp-extra__k">'+AxiomI18n.t('models.price.video')+'</span><b>'+mpFmtUsd(m.videoSecondPrice)+'</b> '+AxiomI18n.t('models.price.persec')+'</span>');
+    parts.push('<span class="mp-extra__item"><span class="mp-extra__k">'+MexionI18n.t('models.price.video')+'</span><b>'+mpFmtUsd(m.videoSecondPrice)+'</b> '+MexionI18n.t('models.price.persec')+'</span>');
   }
   if (!parts.length) return '';
   return '<div class="mp-row__extra">'+parts.join('')+'</div>';
@@ -1250,7 +1250,7 @@ function renderModelPrices(){
   if (!host) return;
   if (!MODEL_PRICING.length){
     host.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">'+
-      (AxiomI18n.lang==='zh'?'价格加载中…':'Loading prices…')+'</div>';
+      (MexionI18n.lang==='zh'?'价格加载中…':'Loading prices…')+'</div>';
     return;
   }
   var search = ($('#filterSearch').value || '').trim().toLowerCase();
@@ -1285,7 +1285,7 @@ function renderModelPrices(){
     m._gp = mpGroupPrices(m);
     m._min = m._gp.length ? m._gp[0].sortKey : (mpIsPerReq(m) ? perCallBase(m) : Infinity);
   });
-  var loc = AxiomI18n.lang === 'zh' ? 'zh-CN' : 'en';
+  var loc = MexionI18n.lang === 'zh' ? 'zh-CN' : 'en';
   if (sort === 'name')            list.sort(function(a,b){ return a.name.localeCompare(b.name, loc); });
   else if (sort === 'ratio-desc') list.sort(function(a,b){ return b._min - a._min; });
   else                            list.sort(function(a,b){ return a._min - b._min; }); // 默认最便宜优先
@@ -1293,11 +1293,11 @@ function renderModelPrices(){
   updateFilteredCount(list.length);
   if (!list.length){
     host.innerHTML = '<div class="grid"><div class="empty">'+
-      '<div class="empty__title">'+AxiomI18n.t('models.empty.title')+'</div>'+
-      '<div class="empty__sub">'+AxiomI18n.t('models.empty.sub')+'</div></div></div>';
+      '<div class="empty__title">'+MexionI18n.t('models.empty.title')+'</div>'+
+      '<div class="empty__sub">'+MexionI18n.t('models.empty.sub')+'</div></div></div>';
     return;
   }
-  var hdr = AxiomI18n.lang==='zh'
+  var hdr = MexionI18n.lang==='zh'
     ? { in:'输入 $/1M', out:'输出 $/1M', grp:'分组与价格（同模型多分组可横向对比）', per:'按次' }
     : { in:'Input $/1M', out:'Output $/1M', grp:'Groups & price (compare across groups)', per:'per-call' };
   host.innerHTML = list.map(function(m){
@@ -1407,7 +1407,7 @@ function ratioLabelFull(r){
 function openCreate(group){
   currentGroup = group;
   var nm = group.name;
-  var desc = displayDescWithRatio(group.description, group.ratio) || AxiomI18n.t('models.modal.desc.fallback');
+  var desc = displayDescWithRatio(group.description, group.ratio) || MexionI18n.t('models.modal.desc.fallback');
   $('#mcTitle').textContent = nm;
   $('#mcDesc').textContent  = desc;
   $('#mcRatio').textContent = '×'+fmtRatio(group.ratio);
@@ -1448,8 +1448,8 @@ document.addEventListener('click', (e)=>{
       const id0 = createBtn.dataset.id;
       const g0 = GROUPS.find(x=>String(x.id)===id0 || String(x.slug)===id0);
       const acc0 = g0 && groupLock(g0);
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show((AxiomI18n.lang==='en'?'Locked group · ':'分组未解锁 · ') + (acc0 ? inviteLockHint(acc0) : ''), { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show((MexionI18n.lang==='en'?'Locked group · ':'分组未解锁 · ') + (acc0 ? inviteLockHint(acc0) : ''), { tone: 'error' });
       }
       return;
     }
@@ -1533,9 +1533,9 @@ $('#mcSubmit').addEventListener('click', ()=>{
 
   const btn = $('#mcSubmit');
   const orig = btn.innerHTML;
-  btn.innerHTML = AxiomI18n.t('models.modal.submit.busy');
+  btn.innerHTML = MexionI18n.t('models.modal.submit.busy');
   btn.disabled = true;
-  if (usingSampleGroups || typeof AxiomHttp === 'undefined') {
+  if (usingSampleGroups || typeof MexionHttp === 'undefined') {
     setTimeout(function(){
       btn.innerHTML = orig;
       btn.disabled = false;
@@ -1545,13 +1545,13 @@ $('#mcSubmit').addEventListener('click', ()=>{
       okEl.id = 'mcError';
       okEl.style.cssText = 'color:#2F5F42;font-size:12px;margin-top:8px;padding:8px 12px;background:#E6EFE7;border-radius:6px;display:flex;align-items:center;gap:6px';
       okEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 7.1l1.6 1.6 3.5-3.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-        (AxiomI18n.lang === 'zh' ? '预览密钥已生成，真实环境会进入“API 密钥”页面' : 'Preview token generated. Production will open API keys.');
+        (MexionI18n.lang === 'zh' ? '预览密钥已生成，真实环境会进入“API 密钥”页面' : 'Preview token generated. Production will open API keys.');
       btn.closest('.modal__foot').prepend(okEl);
       setTimeout(()=>{ if(okEl) okEl.remove(); }, 5000);
     }, 360);
     return;
   }
-  AxiomHttp.post('/token/', payload).then(()=>{
+  MexionHttp.post('/token/', payload).then(()=>{
     btn.innerHTML = orig; btn.disabled = false;
     closeCreate();
     window.location.href = 'api-keys.html';
@@ -1564,7 +1564,7 @@ $('#mcSubmit').addEventListener('click', ()=>{
       errEl.style.cssText = 'color:var(--verm);font-size:12px;margin-top:8px;padding:8px 12px;background:var(--verm-soft);border-radius:6px;display:flex;align-items:center;gap:6px';
       btn.closest('.modal__foot').prepend(errEl);
     }
-    var msg = (err && err.message) || (AxiomI18n.lang==='zh' ? '创建失败，请稍后重试' : 'Failed to create, please try again');
+    var msg = (err && err.message) || (MexionI18n.lang==='zh' ? '创建失败，请稍后重试' : 'Failed to create, please try again');
     errEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4.5v3M7 9v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + msg;
     setTimeout(()=>{ if(errEl) errEl.remove(); }, 5000);
   });
@@ -1574,14 +1574,14 @@ $('#mcSubmit').addEventListener('click', ()=>{
    the user's scroll position + any focused filter input survive the
    stream rebuild.  Coupled with View Transitions in the runtime, the
    switch is visually a crossfade with no scroll jump. */
-AxiomI18n.onChange(function(){ AxiomI18n.preserve(function(){
+MexionI18n.onChange(function(){ MexionI18n.preserve(function(){
   updateProvCounts();
   updateHero();
   renderActiveView();
   /* refresh modal display if it's open */
   if (backdrop.getAttribute('aria-hidden') === 'false' && currentGroup) {
     $('#mcTitle').textContent = currentGroup.name;
-    $('#mcDesc').textContent  = displayDescWithRatio(currentGroup.description, currentGroup.ratio) || AxiomI18n.t('models.modal.desc.fallback');
+    $('#mcDesc').textContent  = displayDescWithRatio(currentGroup.description, currentGroup.ratio) || MexionI18n.t('models.modal.desc.fallback');
     $('#mcRatio').textContent = '×'+fmtRatio(currentGroup.ratio);
     $('#mcGroup').textContent = currentGroup.name;
     $('#mcRatioRow').textContent = ratioLabelFull(currentGroup.ratio);
@@ -1619,12 +1619,12 @@ function updateProvCounts(){
   const prev = container.querySelector('.prov-chip[aria-pressed="true"]');
   const activeVal = prev ? prev.dataset.prov : 'all';
 
-  const allLabel = AxiomI18n.t('models.prov.all');
+  const allLabel = MexionI18n.t('models.prov.all');
   let html = `<button class="prov-chip" data-prov="all" aria-pressed="${activeVal==='all'?'true':'false'}">${allLabel}</button>`;
   DISPLAY_PROVIDER_ORDER.forEach(function(p){
     if(!counts[p]) return;
     const cfg = PROVIDERS[p];
-    const label = AxiomI18n.t(cfg.labelKey);
+    const label = MexionI18n.t(cfg.labelKey);
     html += `<button class="prov-chip" data-prov="${p}" aria-pressed="${activeVal===p?'true':'false'}">` +
       `<span class="prov-chip__dot" style="background:${cfg.dot}"></span>${label} ` +
       `<span class="prov-chip__count">${counts[p]}</span></button>`;
@@ -1641,7 +1641,7 @@ function updateProvCounts(){
     var provN = Object.keys(providerSet).length || Object.keys(counts).filter(function(p){ return p !== 'mixed' && p !== 'domestic' && p !== 'others'; }).length;
     var ratios = GROUPS.map(g=>g.ratio).sort((a,b)=>a-b);
     var range = GROUPS.length ? '×' + fmtRatio(ratios[0]) + ' – ×' + fmtRatio(ratios[ratios.length-1]) : '–';
-    var l = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) || 'zh';
+    var l = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) || 'zh';
     subEl.innerHTML = l === 'zh'
       ? '选定访问通道 · 为该分组创建专属令牌 · 共 <strong>' + GROUPS.length + '</strong> 个分组 · <strong>' + provN + '</strong> 家提供方 · 倍率区间 <strong>' + range + '</strong>'
       : 'Select a channel · mint a token · <strong>' + GROUPS.length + '</strong> groups · <strong>' + provN + '</strong> providers · range <strong>' + range + '</strong>';
@@ -1654,15 +1654,15 @@ function updateProvCounts(){
   if (!el) return;
   el.textContent = window.location.origin + '/v1';
   el.style.cursor = 'pointer';
-  el.title = (window.AxiomI18n && AxiomI18n.lang === 'en') ? 'Click to copy' : '点击复制';
+  el.title = (window.MexionI18n && MexionI18n.lang === 'en') ? 'Click to copy' : '点击复制';
   el.addEventListener('click', function () {
     var t = el.textContent;
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).catch(function () {});
-    if (window.AxiomToast && window.AxiomToast.show) window.AxiomToast.show((window.AxiomI18n && AxiomI18n.lang === 'en') ? 'Copied' : '已复制');
+    if (window.MexionToast && window.MexionToast.show) window.MexionToast.show((window.MexionI18n && MexionI18n.lang === 'en') ? 'Copied' : '已复制');
   });
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AxiomAuth !== 'undefined') AxiomAuth.guard();
+  if (typeof MexionAuth !== 'undefined') MexionAuth.guard();
   loadGroups();
 });

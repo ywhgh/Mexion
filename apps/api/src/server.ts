@@ -17,6 +17,6 @@ serve(
     hostname,
   },
   (info) => {
-    console.info(`AXION listening at http://${info.address}:${info.port}`);
+    console.info(`MEXION listening at http://${info.address}:${info.port}`);
   },
 );

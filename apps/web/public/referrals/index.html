@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("axiom_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
 <meta name="theme-color" content="#F4F3EE">
 <meta charset="UTF-8">
-<script>/* Sidebar rail FOUC guard — adds .axiom-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("axiom_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("axiom-rail-init")}catch(e){}})();</script>
+<script>/* Sidebar rail FOUC guard — adds .mexion-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("mexion_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("mexion-rail-init")}catch(e){}})();</script>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="referrals.tab.title">Axiom — 推荐计划</title>
+<title data-i18n="referrals.tab.title">Mexion — 推荐计划</title>
 <script src="/assets/i18n.js"></script>
 <script src="/assets/mock.js"></script>
 <script src="/assets/core.js" defer></script>
@@ -21,13 +21,13 @@
 <link rel="stylesheet" href="/assets/referrals.css">
 </head>
 <body>
-<script>/* local mirror: login guard disabled */try{localStorage.setItem('axiom_user_id','10248');localStorage.setItem('axiom_auth_persist','local')}catch(e){}</script>
+<script>/* local mirror: login guard disabled */try{localStorage.setItem('mexion_user_id','10248');localStorage.setItem('mexion_auth_persist','local')}catch(e){}</script>
 
 <div class="app">
 
 <!-- ══ SIDEBAR ══ -->
 <!-- SIDEBAR -->
-  <aside class="side" id="axiom-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
 <script src="/assets/sidebar.js" defer></script>
 
 <!-- ══ MAIN ══ -->
@@ -49,16 +49,16 @@
     </div>
     <div class="user-menu">
       <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
-        <span class="user__avatar" data-axiom-avatar>A</span>
-        <span class="user__name" data-axiom-user="name">—</span>
+        <span class="user__avatar" data-mexion-avatar>A</span>
+        <span class="user__name" data-mexion-user="name">—</span>
         <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       </button>
       <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
         <div class="user-menu__head">
-          <div class="user-menu__avatar-lg" data-axiom-avatar aria-hidden="true">A</div>
+          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
           <div class="user-menu__id">
-            <div class="user-menu__name" data-axiom-user="name">—</div>
-            <div class="user-menu__email" data-axiom-user="email">—</div>
+            <div class="user-menu__name" data-mexion-user="name">—</div>
+            <div class="user-menu__email" data-mexion-user="email">—</div>
           </div>
         </div>
         <div class="user-menu__list">
@@ -90,7 +90,7 @@
       </nav>
       <div class="page-head__title" data-i18n-html="referrals.page.title">推荐 <span class="accent">计划</span></div>
       <div class="page-head__sub">
-        分享你的专属邀请链接，邀请好友加入 Axiom。
+        分享你的专属邀请链接，邀请好友加入 Mexion。
       </div>
     </div>
   </div>
@@ -101,7 +101,7 @@
     <div class="invite__body">
       <span class="invite__eyebrow">Affiliate</span>
       <h1 class="invite__headline">
-        把 Axiom 推荐给一位朋友。
+        把 Mexion 推荐给一位朋友。
       </h1>
       <p class="invite__lede" data-i18n-html="referrals.invite.lede">
         按 <b>实际消费</b> 结算 · 自动作为<b>可用额度</b>进入你的余额，可抵扣任意模型调用 · 无最低门槛 · 永不过期。
@@ -235,7 +235,7 @@
         <div class="howto-step__body">
           <h3 class="howto-step__head" data-i18n="referrals.step2.head">朋友通过链接注册并开始使用</h3>
           <p class="howto-step__copy" data-i18n-html="referrals.step2.copy">
-            只要他通过你的链接首次注册成功，他就<b>永久绑定</b>为你的推荐人。后续他在 Axiom 上调用任意模型、消耗任意余额，<em>每一次</em>都会同步计入你的分成。
+            只要他通过你的链接首次注册成功，他就<b>永久绑定</b>为你的推荐人。后续他在 Mexion 上调用任意模型、消耗任意余额，<em>每一次</em>都会同步计入你的分成。
           </p>
         </div>
       </article>
@@ -308,7 +308,7 @@
   <section class="faq fade-in fade-in--4">
     <div class="faq__head">
       <h2 class="faq__title"><span data-i18n="referrals.faq.title">常见问题</span><span class="faq__title-tail">/ FAQ</span></h2>
-      <a class="faq__help" href="https://axiom-doc.pages.dev/" target="_blank" rel="noopener" data-i18n="referrals.faq.help">查看完整文档</a>
+      <a class="faq__help" href="https://mexion-doc.pages.dev/" target="_blank" rel="noopener" data-i18n="referrals.faq.help">查看完整文档</a>
     </div>
 
     <div class="faq__list" id="faqList">
@@ -325,7 +325,7 @@
         </button>
         <div class="faq-item__panel"><div class="faq-item__panel-inner">
           <div class="faq-item__a" data-i18n-html="referrals.faq.a1">
-            不可以。推荐分成是 Axiom 平台的<b>消费额度</b>，仅用于抵扣你自己的模型调用费用，不能提现为现金，也不退还充值通道。你可以把它理解为<em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">永久折扣</em> —— 推荐得越多，你自己用 Axiom 的成本越低。
+            不可以。推荐分成是 Mexion 平台的<b>消费额度</b>，仅用于抵扣你自己的模型调用费用，不能提现为现金，也不退还充值通道。你可以把它理解为<em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">永久折扣</em> —— 推荐得越多，你自己用 Mexion 的成本越低。
           </div>
         </div></div>
       </div>

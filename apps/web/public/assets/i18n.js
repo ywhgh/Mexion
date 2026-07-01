@@ -1,11 +1,11 @@
 /* ══════════════════════════════════════════════════════════════════════
-   Axiom — unified i18n runtime
+   Mexion — unified i18n runtime
    ──────────────────────────────────────────────────────────────────────
    Single source of truth across every page. Each page registers its own
-   dictionary via AxiomI18n.register({ en: {...}, zh: {...} }) and the
+   dictionary via MexionI18n.register({ en: {...}, zh: {...} }) and the
    library handles persistence, toggling, and DOM application.
 
-   Public API (window.AxiomI18n):
+   Public API (window.MexionI18n):
      t(key)               -> string  (falls back to en then key)
      get lang             -> 'en' | 'zh'
      set(lang)            -> persist + re-apply
@@ -30,7 +30,7 @@
    Page bootstrap:
      <script src="assets/i18n.js" defer></script>
      <script defer>
-       AxiomI18n.register({
+       MexionI18n.register({
          en: { 'page.key': 'English …' },
          zh: { 'page.key': '中文 …' }
        });
@@ -39,7 +39,7 @@
 (function (global) {
   'use strict';
 
-  var STORAGE_KEY = 'axiom_lang';
+  var STORAGE_KEY = 'mexion_lang';
   var DEFAULT_LANG = 'zh';
   var SUPPORTED = ['en', 'zh'];
 
@@ -203,17 +203,17 @@
   function wireToggles() {
     /* single-button alternating toggle (id=langToggle OR class lang-toggle on the button itself) */
     var btn = document.getElementById('langToggle');
-    if (btn && btn.tagName === 'BUTTON' && !btn.__axiomI18nWired) {
-      btn.__axiomI18nWired = true;
+    if (btn && btn.tagName === 'BUTTON' && !btn.__mexionI18nWired) {
+      btn.__mexionI18nWired = true;
       btn.addEventListener('click', toggle);
     }
     /* two-button toggle: any button with [data-lang="en"|"zh"] */
     document.querySelectorAll('[data-lang]').forEach(function (b) {
-      if (b.__axiomI18nWired) return;
+      if (b.__mexionI18nWired) return;
       if (b.tagName !== 'BUTTON' && b.tagName !== 'A') return;
       var v = b.getAttribute('data-lang');
       if (SUPPORTED.indexOf(v) < 0) return;
-      b.__axiomI18nWired = true;
+      b.__mexionI18nWired = true;
       b.addEventListener('click', function (e) {
         e.preventDefault();
         set(v);
@@ -222,9 +222,9 @@
   }
 
   function injectStyles() {
-    if (document.getElementById('axiom-i18n-style')) return;
+    if (document.getElementById('mexion-i18n-style')) return;
     var s = document.createElement('style');
-    s.id = 'axiom-i18n-style';
+    s.id = 'mexion-i18n-style';
     s.textContent =
       '@media (prefers-reduced-motion: no-preference){' +
         '::view-transition-old(root),::view-transition-new(root){' +
@@ -254,8 +254,8 @@
      returns a <span data-i18n="key">current-text</span> blob, so the
      freshly-rendered DOM is BOTH translated now AND auto-updates on
      future language switches via applyDom().  Callers that previously
-     wrote `'+AxiomI18n.t(k)+'` inside innerHTML can drop in
-     `AxiomI18n.tspan(k)` and skip re-rendering on language change. */
+     wrote `'+MexionI18n.t(k)+'` inside innerHTML can drop in
+     `MexionI18n.tspan(k)` and skip re-rendering on language change. */
   function tspan(key) {
     if (key == null) return '';
     var safeKey = String(key).replace(/"/g, '&quot;');
@@ -265,7 +265,7 @@
   /* State-preserving wrapper for heavy onChange handlers.  When a page
      MUST re-render large DOM trees during language switch (e.g. lists
      that include dynamic timestamps / quotas), wrap the renderer in
-     AxiomI18n.preserve(fn) so the user's scroll position and input
+     MexionI18n.preserve(fn) so the user's scroll position and input
      focus survive the rebuild.
 
      Captures BEFORE  : window scroll, every scrollable container's
@@ -324,7 +324,7 @@
     }
   }
 
-  global.AxiomI18n = {
+  global.MexionI18n = {
     t: t,
     tspan: tspan,
     preserve: preserve,

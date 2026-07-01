@@ -1,4 +1,4 @@
-/* Local offline runtime shim for the mirrored Axiom profile UI.
+/* Local offline runtime shim for the mirrored Mexion profile UI.
    It seeds a demo login, mocks the small API surface used by /profile, and keeps the original UI assets intact. */
 (function () {
   'use strict';
@@ -7,7 +7,7 @@
     id: 10248,
     username: 'codex_demo',
     display_name: 'Codex Demo',
-    email: 'demo@axiom.local',
+    email: 'demo@mexion.local',
     role: 1,
     status: 1,
     group: 'gpt-codex',
@@ -15,7 +15,7 @@
     used_quota: 46250000,
     request_count: 38426,
     created_at: nowSec - 86400 * 186,
-    aff_code: 'AXIOM-DEMO',
+    aff_code: 'MEXION-DEMO',
     effective_rebate_rate_percent: 8,
     aff_count: 3,
     aff_quota: 3250000,
@@ -35,7 +35,7 @@
     wechat_id: '',
     setting: {
       notify_method: 'email',
-      notify_email: 'demo@axiom.local',
+      notify_email: 'demo@mexion.local',
       notify_webhook_url: '',
       notify_webhook_secret: '',
       notify_bark_url: '',
@@ -139,9 +139,9 @@
   function apiMessage(message) { return apiData({ message: message || 'ok' }); }
   function updateStoredUser() {
     try {
-      localStorage.setItem('axiom_auth_persist', 'local');
-      localStorage.setItem('axiom_user_id', String(demoUser.id));
-      localStorage.setItem('axiom_user', JSON.stringify({
+      localStorage.setItem('mexion_auth_persist', 'local');
+      localStorage.setItem('mexion_user_id', String(demoUser.id));
+      localStorage.setItem('mexion_user', JSON.stringify({
         id: demoUser.id,
         email: demoUser.email,
         username: demoUser.display_name || demoUser.username,
@@ -163,7 +163,7 @@
     } catch (e) {}
   }
   updateStoredUser();
-  window.__AXIOM_LOCAL_MOCK__ = { user: demoUser, levels: levels, checkin: checkin };
+  window.__MEXION_LOCAL_MOCK__ = { user: demoUser, levels: levels, checkin: checkin };
 
   var originalFetch = window.fetch ? window.fetch.bind(window) : null;
   window.fetch = function (input, init) {

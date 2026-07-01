@@ -1,8 +1,8 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'axiom_dismissed_announcements';
-  var READ_KEY = 'axiom_read_announcements';
+  var STORAGE_KEY = 'mexion_dismissed_announcements';
+  var READ_KEY = 'mexion_read_announcements';
   var POLL_INTERVAL = 300000;
   var announcements = [];
   var bellBtn = null;
@@ -41,7 +41,7 @@
     var d = new Date(iso);
     var now = new Date();
     var diff = Math.floor((now - d) / 1000);
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     if (diff < 60) return zh ? '刚刚' : 'Just now';
     if (diff < 3600) return Math.floor(diff / 60) + (zh ? ' 分钟前' : 'm ago');
     if (diff < 86400) return Math.floor(diff / 3600) + (zh ? ' 小时前' : 'h ago');
@@ -54,7 +54,7 @@
   function fmtFullDate(iso) {
     if (!iso) return '';
     var d = new Date(iso);
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     var mm = String(d.getMonth()+1).padStart(2,'0');
     var dd = String(d.getDate()).padStart(2,'0');
     var hh = String(d.getHours()).padStart(2,'0');
@@ -189,7 +189,7 @@
 
   function renderSidebar() {
     if (!readerEl) return;
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     var read = getRead();
     var head = readerEl.querySelector('.nr-sidebar__head');
     var un = unreadCount();
@@ -243,7 +243,7 @@
 
   function guessTag(a) {
     var t = (a.title || '') + (a.content || '');
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     if (/维护|升级|migration|maintenance/i.test(t)) return { label: zh ? '维护' : 'Maintenance', cls: 'nr-tag--warn' };
     if (/邀请|活动|奖|reward|invite|event/i.test(t)) return { label: zh ? '活动' : 'Event', cls: 'nr-tag--green' };
     if (/新功能|上线|launch|feature|update/i.test(t)) return { label: zh ? '新功能' : 'New', cls: 'nr-tag--blue' };
@@ -252,7 +252,7 @@
 
   function renderContent(a) {
     if (!readerEl) return;
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     var tag = guessTag(a);
     var content = readerEl.querySelector('.nr-content');
     content.innerHTML =
@@ -275,7 +275,7 @@
 
   function renderEmptyContent() {
     if (!readerEl) return;
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
     readerEl.querySelector('.nr-content').innerHTML =
       '<div class="nr-content__empty">' +
         '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="color:var(--mute-3);margin-bottom:12px"><circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/><path d="M14 17h12M14 23h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' +
@@ -287,7 +287,7 @@
   function showPopup(a) {
     var dismissed = getDismissed();
     if (dismissed.indexOf(a.id) !== -1) return;
-    var zh = typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh';
+    var zh = typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh';
 
     var overlay = document.createElement('div');
     overlay.className = 'nr-popup-overlay';
@@ -318,8 +318,8 @@
 
   /* ── Fetch ── */
   function fetchAnnouncements() {
-    if (typeof AxiomHttp === 'undefined') return;
-    AxiomHttp.get('/notice').then(function(raw) {
+    if (typeof MexionHttp === 'undefined') return;
+    MexionHttp.get('/notice').then(function(raw) {
       var data = [];
       if (typeof raw === 'string' && raw.length > 0) {
         data = [{ id: 1, title: 'Notice', content: raw, type: 'banner', notify_mode: 'banner' }];

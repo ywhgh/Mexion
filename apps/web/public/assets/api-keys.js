@@ -14,9 +14,9 @@
   }, deadline);
 })();
 
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'apikeys.tab.title': 'Axiom — API Keys',
+    'apikeys.tab.title': 'Mexion — API Keys',
     'topbar.notify.title': 'Notifications',
     'apikeys.crumb.overview': 'Overview',
     'apikeys.crumb.keys': 'API Keys',
@@ -165,7 +165,7 @@ AxiomI18n.register({
     'apikeys.group.cell.count': '<b>{n}</b> keys'
   },
   zh: {
-    'apikeys.tab.title': 'Axiom — API 密钥',
+    'apikeys.tab.title': 'Mexion — API 密钥',
     'topbar.notify.title': '通知',
     'apikeys.crumb.overview': '概览',
     'apikeys.crumb.keys': 'API 密钥',
@@ -316,7 +316,7 @@ AxiomI18n.register({
 });
 
 function tt(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -408,8 +408,8 @@ function copyText(text) {
     document.body.removeChild(ta);
   }
   // 统一复制反馈（原先无任何提示、点了像没点）——复用 core.js 全局 toast
-  if (text && String(text).trim() && window.AxiomToast && window.AxiomToast.show) {
-    window.AxiomToast.show((window.AxiomI18n && AxiomI18n.lang === 'en') ? 'Copied' : '已复制');
+  if (text && String(text).trim() && window.MexionToast && window.MexionToast.show) {
+    window.MexionToast.show((window.MexionI18n && MexionI18n.lang === 'en') ? 'Copied' : '已复制');
   }
 }
 
@@ -479,14 +479,14 @@ function tokenUpdateBody(k, over) {
 }
 
 /* Add per-language unit suffix for quota cap */
-AxiomI18n.register({
+MexionI18n.register({
   en: { 'apikeys.quota.unit.d': '/day', 'apikeys.quota.unit.h': '/hr', 'apikeys.quota.unit.m': '/min' },
   zh: { 'apikeys.quota.unit.d': '/天',  'apikeys.quota.unit.h': '/小时', 'apikeys.quota.unit.m': '/分钟' }
 });
 
 function loadGroups() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
-  return AxiomHttp.get('/user/groups').then(function(data) {
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return MexionHttp.get('/user/groups').then(function(data) {
     var list = [];
     window.__groupIdToSlug = {};
     if (data && typeof data === 'object' && !Array.isArray(data)) {
@@ -517,8 +517,8 @@ function loadGroups() {
 // 二开：分组邀请解锁状态。slug -> {group, rule:{invitees,topup_usd,tiers}, invitees(进度), topup_usd(进度), unlocked, ratio, matched_tier, next_tier}
 var GROUP_ACCESS = {};
 function loadGroupAccess() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
-  return AxiomHttp.get('/user/group-access').then(function(data){
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return MexionHttp.get('/user/group-access').then(function(data){
     GROUP_ACCESS = {};
     var arr = (data && data.groups) || [];
     arr.forEach(function(x){ if (x && x.group) GROUP_ACCESS[x.group] = x; });
@@ -553,7 +553,7 @@ function groupLockFor(gid) {
 function inviteLockHint(acc) {
   if (!acc) return '';
   var r = acc.rule || {}, parts = [];
-  var zh = !(typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'en');
+  var zh = !(typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'en');
   var tiers = Array.isArray(r.tiers) ? r.tiers.slice().sort(function(a,b){ return (a.invitees || 0) - (b.invitees || 0); }) : [];
   function fmtRatio(v) {
     var n = Number(v);
@@ -578,8 +578,8 @@ function inviteLockHint(acc) {
 }
 
 function loadKeys(cb) {
-  if (typeof AxiomHttp === 'undefined') return;
-  AxiomHttp.get('/token/?p=0&size=100').then(function(data) {
+  if (typeof MexionHttp === 'undefined') return;
+  MexionHttp.get('/token/?p=0&size=100').then(function(data) {
     KEYS_DATA = (data.items || []).map(mapApiKey);
     renderGroupBar();
     renderKeyList();
@@ -597,7 +597,7 @@ function updatePageStats() {
   var groupSet = {};
   KEYS_DATA.forEach(function(k) { if (k.group != null) groupSet[k.group] = 1; });
   var gc = Object.keys(groupSet).length;
-  var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'en';
+  var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'en';
   if (lang === 'zh') {
     el.innerHTML = '共 <strong>' + total + '</strong> 个密钥 · <strong>' + gc + '</strong> 个分组 · <strong>' + active + '</strong> 已启用';
   } else {
@@ -618,22 +618,22 @@ function escapeHtml(s){
   });
 }
 function relTime(str){
-  if (!str) return AxiomI18n.t('apikeys.rel.never');
+  if (!str) return MexionI18n.t('apikeys.rel.never');
   var d = new Date(str);
   if (isNaN(d.getTime())) return str;
   var diff = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (diff < 60) return AxiomI18n.t('apikeys.rel.justnow');
+  if (diff < 60) return MexionI18n.t('apikeys.rel.justnow');
   if (diff < 3600) return tt('apikeys.rel.min', { n: Math.floor(diff / 60) });
   if (diff < 86400) return tt('apikeys.rel.hr', { n: Math.floor(diff / 3600) });
   return tt('apikeys.rel.d', { n: Math.floor(diff / 86400) });
 }
 function expiresLabel(str){
-  if (!str) return AxiomI18n.t('apikeys.detail.expires.never');
+  if (!str) return MexionI18n.t('apikeys.detail.expires.never');
   return str;
 }
 function quotaLabel(k){
-  if (k.quotaN == null) return AxiomI18n.t('apikeys.detail.none');
-  return k.quotaN.toLocaleString() + AxiomI18n.t('apikeys.quota.unit.' + (k.quotaUnit || 'd'));
+  if (k.quotaN == null) return MexionI18n.t('apikeys.detail.none');
+  return k.quotaN.toLocaleString() + MexionI18n.t('apikeys.quota.unit.' + (k.quotaUnit || 'd'));
 }
 
 // ── STATE ─────────────────────────────────────────
@@ -681,7 +681,7 @@ function renderGroupBar(){
   var total = KEYS_DATA.length;
   var html = '<button class="gchip is-active-all" data-gid="all">' +
     '<span class="gchip__count">' + total + '</span>' +
-    AxiomI18n.t('apikeys.group.all') +
+    MexionI18n.t('apikeys.group.all') +
     '</button>';
   bar.innerHTML = html;
   bar.querySelectorAll('.gchip').forEach(function(chip){
@@ -740,7 +740,7 @@ function openGroupChipDropdown(chip, k){
       if (item.getAttribute('data-locked') === '1'){ // 二开(req2)：未解锁分组不可选(后端 token 写入侧亦强制兜底)
         var rg = item.getAttribute('data-gid');
         var acc = groupLockFor(isNaN(Number(rg)) ? rg : Number(rg));
-        if (window.AxiomToast && AxiomToast.show) AxiomToast.show((window.AxiomI18n && AxiomI18n.lang==='en'?'Locked group · ':'分组未解锁 · ')+inviteLockHint(acc), { tone:'error' });
+        if (window.MexionToast && MexionToast.show) MexionToast.show((window.MexionI18n && MexionI18n.lang==='en'?'Locked group · ':'分组未解锁 · ')+inviteLockHint(acc), { tone:'error' });
         return;
       }
       var gidStr = item.getAttribute('data-gid');
@@ -755,19 +755,19 @@ function applyGroupChange(k, groupId){
   if (groupId === k.group) return; // 没变
   var lockAcc = groupLockFor(groupId); // 二开(req2)：双保险——锁定组不切换(即便被程序化调用)
   if (lockAcc){
-    var zhl = !(window.AxiomI18n && AxiomI18n.lang === 'en');
-    if (window.AxiomToast && AxiomToast.show) AxiomToast.show((zhl?'分组未解锁 · ':'Locked group · ')+inviteLockHint(lockAcc), { tone:'error' });
+    var zhl = !(window.MexionI18n && MexionI18n.lang === 'en');
+    if (window.MexionToast && MexionToast.show) MexionToast.show((zhl?'分组未解锁 · ':'Locked group · ')+inviteLockHint(lockAcc), { tone:'error' });
     return;
   }
   var slug = window.__groupIdToSlug ? (window.__groupIdToSlug[groupId] || '') : '';
-  var zh = !(window.AxiomI18n && AxiomI18n.lang === 'en');
-  if (typeof AxiomHttp !== 'undefined' && k._apiId) {
+  var zh = !(window.MexionI18n && MexionI18n.lang === 'en');
+  if (typeof MexionHttp !== 'undefined' && k._apiId) {
     // 复用 tokenUpdateBody 整对象 PUT(只覆盖 group,不清其它字段——见 401 那次的坑)
-    AxiomHttp.put('/token/', tokenUpdateBody(k, { group: slug })).then(function(){
-      if (window.AxiomToast && AxiomToast.show) AxiomToast.show(zh ? '分组已切换' : 'Group switched');
+    MexionHttp.put('/token/', tokenUpdateBody(k, { group: slug })).then(function(){
+      if (window.MexionToast && MexionToast.show) MexionToast.show(zh ? '分组已切换' : 'Group switched');
       loadKeys();
     }).catch(function(err){
-      if (window.AxiomToast && AxiomToast.show) AxiomToast.show((err && err.message) || (zh ? '切换失败,请重试' : 'Switch failed'), { tone: 'error' });
+      if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (zh ? '切换失败,请重试' : 'Switch failed'), { tone: 'error' });
     });
   } else {
     k.group = groupId; renderKeyList(); renderDetail();
@@ -782,7 +782,7 @@ function renderKeyList(){
   countEl.innerHTML = tt('apikeys.list.count', { n: keys.length });
 
   if (keys.length === 0) {
-    list.innerHTML = '<div class="empty-list"><div class="no-keys-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="9" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 9h6M14 7.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>'+AxiomI18n.t('apikeys.list.empty')+'</span></div>';
+    list.innerHTML = '<div class="empty-list"><div class="no-keys-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="9" r="4" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 9h6M14 7.5v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div><span>'+MexionI18n.t('apikeys.list.empty')+'</span></div>';
     return;
   }
 
@@ -797,9 +797,9 @@ function renderKeyList(){
 
     // 二开：分组被删/改名后 groupSlug 不在有效分组里 → group==null，给「分组已失效，请重选」提示
     var orphaned = (k.group == null && k.groupSlug && k.groupSlug !== 'auto');
-    var grpHint = (AxiomI18n.lang === 'en') ? 'click to switch group' : '点击切换分组';
+    var grpHint = (MexionI18n.lang === 'en') ? 'click to switch group' : '点击切换分组';
     var groupBadge = orphaned
-      ? '<span class="key-group key-group--orphan key-group--clickable" data-group-chip="1" data-kid="'+k.id+'" title="'+AxiomI18n.t('apikeys.group.orphan.title')+'">⚠ '+AxiomI18n.t('apikeys.group.orphan.badge')+'<span class="key-group__caret">▾</span></span>'
+      ? '<span class="key-group key-group--orphan key-group--clickable" data-group-chip="1" data-kid="'+k.id+'" title="'+MexionI18n.t('apikeys.group.orphan.title')+'">⚠ '+MexionI18n.t('apikeys.group.orphan.badge')+'<span class="key-group__caret">▾</span></span>'
       : '<span class="key-group key-group--clickable" data-group-chip="1" data-kid="'+k.id+'" style="background:'+g.soft+';color:'+g.color+';border-color:'+g.border+'" title="'+escapeHtml(g.name)+' ('+ratioBadgeText(g.mult)+') · '+grpHint+'">' +
           '<span style="width:5px;height:5px;border-radius:50%;background:'+g.color+';"></span>' +
           escapeHtml(g.name) +
@@ -816,14 +816,14 @@ function renderKeyList(){
           '<span class="key-code__mask">'+k.mask+'</span>' +
           '<span class="key-code__suffix">'+k.suffix+'</span>' +
         '</span>' +
-        '<button class="key-copy-btn" data-val="'+k.fullKey+'" data-kid="'+k.id+'" title="'+AxiomI18n.t('apikeys.row.copy.title')+'">' +
+        '<button class="key-copy-btn" data-val="'+k.fullKey+'" data-kid="'+k.id+'" title="'+MexionI18n.t('apikeys.row.copy.title')+'">' +
           '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="5" y="5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V3a1 1 0 0 1 1-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
         '</button>' +
       '</div>' +
       groupBadge +
       notesCell +
       '<span class="key-meta">'+relTime(k.lastUsed)+'</span>' +
-      '<button class="key-more" data-kid="'+k.id+'" title="'+AxiomI18n.t('apikeys.row.more.title')+'">···</button>' +
+      '<button class="key-more" data-kid="'+k.id+'" title="'+MexionI18n.t('apikeys.row.more.title')+'">···</button>' +
     '</div>';
   });
   list.innerHTML = html;
@@ -867,8 +867,8 @@ function renderKeyList(){
         flash(val);
       } else {
         var k = kid ? KEYS_DATA.find(function(x){ return x.id === kid; }) : null;
-        if (k && k._apiId && typeof AxiomHttp !== 'undefined') {
-          AxiomHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
+        if (k && k._apiId && typeof MexionHttp !== 'undefined') {
+          MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
             var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || val);
             k.fullKey = fk;
             flash(fk);
@@ -915,11 +915,11 @@ function renderDetail(){
     '<div class="kdh">' +
       '<div class="kdh__top">' +
         '<span class="pill '+(k.active?'pill--ok':'pill--off')+'">' +
-          '<span class="pill__dot"></span>'+AxiomI18n.t(k.active?'apikeys.detail.status.on':'apikeys.detail.status.off')+'</span>' +
+          '<span class="pill__dot"></span>'+MexionI18n.t(k.active?'apikeys.detail.status.on':'apikeys.detail.status.off')+'</span>' +
         '<div class="kdh__actions">' +
           '<button class="kdh-btn" id="kdToggle">'+(k.active?
-            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="4" x2="4" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> '+AxiomI18n.t('apikeys.detail.action.disable'):
-            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6l2 2 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> '+AxiomI18n.t('apikeys.detail.action.enable')
+            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="4" x2="4" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> '+MexionI18n.t('apikeys.detail.action.disable'):
+            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6l2 2 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> '+MexionI18n.t('apikeys.detail.action.enable')
           )+'</button>' +
         '</div>' +
       '</div>' +
@@ -930,30 +930,30 @@ function renderDetail(){
           '<span class="mask"> ············ </span>' +
           '<span class="suffix">'+k.suffix+'</span>' +
         '</span>' +
-        '<button class="kd-icbtn" id="kdRevealBtn" title="'+AxiomI18n.t('apikeys.detail.action.reveal.title')+'">' +
+        '<button class="kd-icbtn" id="kdRevealBtn" title="'+MexionI18n.t('apikeys.detail.action.reveal.title')+'">' +
           '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 7S4 3 7 3s5.5 4 5.5 4S11 11 7 11 1.5 7 1.5 7z" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>' +
         '</button>' +
-        '<button class="kd-icbtn" id="kdCopyFull" data-val="'+k.fullKey+'" title="'+AxiomI18n.t('apikeys.detail.action.copyfull.title')+'">' +
+        '<button class="kd-icbtn" id="kdCopyFull" data-val="'+k.fullKey+'" title="'+MexionI18n.t('apikeys.detail.action.copyfull.title')+'">' +
           '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="5" y="5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V3a1 1 0 0 1 1-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
         '</button>' +
       '</div>' +
     '</div>' +
     // notes (always show — friendly empty state if missing)
     '<div class="kds">' +
-      '<div class="kds__title">'+AxiomI18n.t('apikeys.detail.section.notes')+'</div>' +
+      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.notes')+'</div>' +
       (k.notes && k.notes.trim()
         ? '<div class="kd-notes-text">'+escapeHtml(k.notes)+'</div>'
-        : '<div class="kd-notes-text kd-notes-text--empty">'+AxiomI18n.t('apikeys.detail.notes.empty')+'</div>') +
+        : '<div class="kd-notes-text kd-notes-text--empty">'+MexionI18n.t('apikeys.detail.notes.empty')+'</div>') +
     '</div>' +
     // usage sparkline
     '<div class="kds">' +
-      '<div class="kds__title">'+AxiomI18n.t('apikeys.detail.section.usage')+' <span style="margin-left:auto;font-weight:500;color:var(--ink);letter-spacing:0">'+(sparkTotal > 0 ? sparkTotal + (AxiomI18n.lang==='zh'?' 次':' calls') : (AxiomI18n.lang==='zh'?'暂无调用':'no calls'))+'</span></div>' +
+      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.usage')+' <span style="margin-left:auto;font-weight:500;color:var(--ink);letter-spacing:0">'+(sparkTotal > 0 ? sparkTotal + (MexionI18n.lang==='zh'?' 次':' calls') : (MexionI18n.lang==='zh'?'暂无调用':'no calls'))+'</span></div>' +
       '<div class="kd-spark">'+sparkBars+'</div>' +
       '<div class="kd-spark__labels"><span>'+days[0]+'</span><span>'+days[3]+'</span><span>'+days[6]+'</span></div>' +
     '</div>' +
     // group card
     '<div class="kds">' +
-      '<div class="kds__title">'+AxiomI18n.t('apikeys.detail.meta.group')+'</div>' +
+      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.meta.group')+'</div>' +
       '<div class="kd-group-card" style="background:'+g.soft+';border-color:'+g.border+'">' +
         '<span class="kd-group-card__dot" style="background:'+g.color+'"></span>' +
         '<div class="kd-group-card__info">' +
@@ -965,25 +965,25 @@ function renderDetail(){
     '</div>' +
     // metadata
     '<div class="kds">' +
-      '<div class="kds__title">'+AxiomI18n.t('apikeys.detail.section.meta')+'</div>' +
+      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.meta')+'</div>' +
       '<div class="kd-kv">' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.quota')+'</span><span class="kd-kv-v '+(k.quotaN?'':'is-none')+'">'+quotaLabel(k)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.expires')+'</span><span class="kd-kv-v '+(k.expires?'':'is-none')+'">'+expiresLabel(k.expires)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.created')+'</span><span class="kd-kv-v">'+k.created+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.lastused')+'</span><span class="kd-kv-v">'+relTime(k.lastUsed)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.ip')+'</span><span class="kd-kv-v '+(k.ipRestrict?'':'is-none')+'">'+(k.ipRestrict||AxiomI18n.t('apikeys.detail.none'))+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+AxiomI18n.t('apikeys.detail.meta.id')+'</span><span class="kd-kv-v" style="font-size:11px;color:var(--mute-2)">'+k.id+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.quota')+'</span><span class="kd-kv-v '+(k.quotaN?'':'is-none')+'">'+quotaLabel(k)+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.expires')+'</span><span class="kd-kv-v '+(k.expires?'':'is-none')+'">'+expiresLabel(k.expires)+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.created')+'</span><span class="kd-kv-v">'+k.created+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.lastused')+'</span><span class="kd-kv-v">'+relTime(k.lastUsed)+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.ip')+'</span><span class="kd-kv-v '+(k.ipRestrict?'':'is-none')+'">'+(k.ipRestrict||MexionI18n.t('apikeys.detail.none'))+'</span></div>' +
+        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.id')+'</span><span class="kd-kv-v" style="font-size:11px;color:var(--mute-2)">'+k.id+'</span></div>' +
       '</div>' +
     '</div>' +
     // footer actions
     '<div class="kd-foot">' +
       '<button class="kd-foot-btn" id="kdEditBtn">' +
         '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M10.5 2.5l1 1L5 10H4V9L10.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
-        AxiomI18n.t('apikeys.detail.footer.edit') +
+        MexionI18n.t('apikeys.detail.footer.edit') +
       '</button>' +
       '<button class="kd-foot-btn kd-foot-btn--danger" id="kdDeleteBtn">' +
         '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V4M12 4l-.8 7.2A1 1 0 0 1 10.2 12H3.8a1 1 0 0 1-1-.8L2 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
-        AxiomI18n.t('apikeys.detail.footer.delete') +
+        MexionI18n.t('apikeys.detail.footer.delete') +
       '</button>' +
     '</div>';
 
@@ -992,8 +992,8 @@ function renderDetail(){
   // fetchFullKey helper
   function fetchFullKey(cb) {
     if (k.fullKey && k.fullKey.indexOf('*') < 0) { cb(k.fullKey); return; }
-    if (k._apiId && typeof AxiomHttp !== 'undefined') {
-      AxiomHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
+    if (k._apiId && typeof MexionHttp !== 'undefined') {
+      MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
         var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
         k.fullKey = fk;
         cb(fk);
@@ -1022,15 +1022,15 @@ function renderDetail(){
   // copy full key
   var copyFullBtn = document.getElementById('kdCopyFull');
   copyFullBtn && copyFullBtn.addEventListener('click', function(){
-    fetchFullKey(function(fk) { (window.AxiomCopy || copyText)(fk, copyFullBtn); });
+    fetchFullKey(function(fk) { (window.MexionCopy || copyText)(fk, copyFullBtn); });
   });
 
   // toggle active state
   var toggleBtn = document.getElementById('kdToggle');
   toggleBtn && toggleBtn.addEventListener('click', function(){
-    if (typeof AxiomHttp !== 'undefined' && k._apiId) {
+    if (typeof MexionHttp !== 'undefined' && k._apiId) {
       var newStatus = k.active ? 2 : 1;
-      AxiomHttp.put('/token/', tokenUpdateBody(k, { status: newStatus })).then(function() {
+      MexionHttp.put('/token/', tokenUpdateBody(k, { status: newStatus })).then(function() {
         loadKeys();
       }).catch(function() {});
     } else {
@@ -1056,7 +1056,7 @@ function renderDetail(){
 // ── DELETE MODAL ─────────────────────────────────
 function openDeleteModal(k) {
   var modal = document.getElementById('deleteModal');
-  var lang = (typeof AxiomI18n !== 'undefined') ? AxiomI18n.lang : 'zh';
+  var lang = (typeof MexionI18n !== 'undefined') ? MexionI18n.lang : 'zh';
   document.getElementById('delModalSub').textContent = k.prefix + '····' + k.suffix + '  (' + escapeHtml(k.name) + ')';
   modal.classList.add('is-open');
 
@@ -1070,15 +1070,15 @@ function openDeleteModal(k) {
 
   confirmBtn.disabled = false;
   confirmBtn.style.opacity = '';
-  confirmSpan.textContent = AxiomI18n.t('apikeys.delete.confirm');
+  confirmSpan.textContent = MexionI18n.t('apikeys.delete.confirm');
 
   confirmBtn.onclick = function() {
     confirmBtn.disabled = true;
     confirmBtn.style.opacity = '0.6';
     confirmSpan.textContent = lang === 'zh' ? '删除中…' : 'Deleting…';
 
-    if (typeof AxiomHttp !== 'undefined' && k._apiId) {
-      AxiomHttp.delete('/token/' + k._apiId).then(function() {
+    if (typeof MexionHttp !== 'undefined' && k._apiId) {
+      MexionHttp.delete('/token/' + k._apiId).then(function() {
         if (selectedKeyId === k.id) selectedKeyId = null;
         closeDelModal();
         loadKeys();
@@ -1086,7 +1086,7 @@ function openDeleteModal(k) {
         confirmBtn.disabled = false;
         confirmBtn.style.opacity = '';
         confirmSpan.textContent = (err && err.message) || (lang === 'zh' ? '删除失败' : 'Delete failed');
-        setTimeout(function() { confirmSpan.textContent = AxiomI18n.t('apikeys.delete.confirm'); }, 2000);
+        setTimeout(function() { confirmSpan.textContent = MexionI18n.t('apikeys.delete.confirm'); }, 2000);
       });
     } else {
       var i = KEYS_DATA.findIndex(function(x) { return x.id === k.id; });
@@ -1105,7 +1105,7 @@ var _editStatus = 'active';
 
 function openEditModal(k) {
   var modal = document.getElementById('editModal');
-  var lang = (typeof AxiomI18n !== 'undefined') ? AxiomI18n.lang : 'zh';
+  var lang = (typeof MexionI18n !== 'undefined') ? MexionI18n.lang : 'zh';
 
   document.getElementById('editModalKeyHint').textContent = k.prefix + '····' + k.suffix;
   document.getElementById('editKeyName').value = k.name || '';
@@ -1175,8 +1175,8 @@ function openEditModal(k) {
     if (opt.getAttribute('data-locked') === '1') {
       var rg = opt.getAttribute('data-gid');
       var acc = groupLockFor(isNaN(Number(rg)) ? rg : Number(rg));
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show((lang === 'en' ? 'Locked group · ' : '分组未解锁 · ') + inviteLockHint(acc), { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show((lang === 'en' ? 'Locked group · ' : '分组未解锁 · ') + inviteLockHint(acc), { tone: 'error' });
       }
       return;
     }
@@ -1225,7 +1225,7 @@ function openEditModal(k) {
 
   confirmBtn.disabled = false;
   confirmBtn.style.opacity = '';
-  confirmSpan.textContent = AxiomI18n.t('apikeys.edit.save');
+  confirmSpan.textContent = MexionI18n.t('apikeys.edit.save');
 
   confirmBtn.onclick = function() {
     var newName = document.getElementById('editKeyName').value.trim();
@@ -1235,9 +1235,9 @@ function openEditModal(k) {
     confirmBtn.style.opacity = '0.6';
     confirmSpan.textContent = lang === 'zh' ? '保存中…' : 'Saving…';
 
-    if (typeof AxiomHttp !== 'undefined' && k._apiId) {
+    if (typeof MexionHttp !== 'undefined' && k._apiId) {
       var editSlug = window.__groupIdToSlug ? (window.__groupIdToSlug[_editGroupId] || '') : '';
-      AxiomHttp.put('/token/', tokenUpdateBody(k, {
+      MexionHttp.put('/token/', tokenUpdateBody(k, {
         name: newName,
         group: editSlug,
         status: _editStatus === 'active' ? 1 : 2
@@ -1248,7 +1248,7 @@ function openEditModal(k) {
         confirmBtn.disabled = false;
         confirmBtn.style.opacity = '';
         confirmSpan.textContent = (err && err.message) || (lang === 'zh' ? '保存失败' : 'Save failed');
-        setTimeout(function() { confirmSpan.textContent = AxiomI18n.t('apikeys.edit.save'); }, 2000);
+        setTimeout(function() { confirmSpan.textContent = MexionI18n.t('apikeys.edit.save'); }, 2000);
       });
     } else {
       k.name = newName;
@@ -1377,8 +1377,8 @@ document.addEventListener('keydown', function(e){
       if (k.fullKey && k.fullKey.indexOf('*') < 0) {
         copyText(k.fullKey);
         flashOk(item);
-      } else if (k._apiId && typeof AxiomHttp !== 'undefined') {
-        AxiomHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
+      } else if (k._apiId && typeof MexionHttp !== 'undefined') {
+        MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
           var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
           k.fullKey = fk;
           copyText(fk);
@@ -1392,11 +1392,11 @@ document.addEventListener('keydown', function(e){
     }
     if (act === 'copy-conn') {
       var doCopy = function(fk) {
-        // 二开：连接信息随 base_url 格式开关(dashboard 卡持久化的 axiom_api_fmt)。
+        // 二开：连接信息随 base_url 格式开关(dashboard 卡持久化的 mexion_api_fmt)。
         // Claude Code 用 ANTHROPIC_BASE_URL(不带 /v1) + ANTHROPIC_AUTH_TOKEN;OpenAI 用 /v1。
         var origin = window.location.origin.replace(/\/+$/, '');
         var fmt = 'openai';
-        try { if (localStorage.getItem('axiom_api_fmt') === 'claude') fmt = 'claude'; } catch(e){}
+        try { if (localStorage.getItem('mexion_api_fmt') === 'claude') fmt = 'claude'; } catch(e){}
         var conn = (fmt === 'claude')
           ? 'ANTHROPIC_BASE_URL=' + origin + '\nANTHROPIC_AUTH_TOKEN=' + fk
           : 'OPENAI_BASE_URL=' + origin + '/v1\nOPENAI_API_KEY=' + fk;
@@ -1405,8 +1405,8 @@ document.addEventListener('keydown', function(e){
       };
       if (k.fullKey && k.fullKey.indexOf('*') < 0) {
         doCopy(k.fullKey);
-      } else if (k._apiId && typeof AxiomHttp !== 'undefined') {
-        AxiomHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
+      } else if (k._apiId && typeof MexionHttp !== 'undefined') {
+        MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
           var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
           k.fullKey = fk;
           doCopy(fk);
@@ -1427,8 +1427,8 @@ document.addEventListener('keydown', function(e){
       var dk = KEYS_DATA.find(function(x){ return x.id === currentKid; });
       if (selectedKeyId === currentKid) selectedKeyId = null;
       close();
-      if (dk && dk._apiId && typeof AxiomHttp !== 'undefined') {
-        AxiomHttp.delete('/token/' + dk._apiId).then(function() {
+      if (dk && dk._apiId && typeof MexionHttp !== 'undefined') {
+        MexionHttp.delete('/token/' + dk._apiId).then(function() {
           loadKeys();
         }).catch(function() {});
       } else {
@@ -1487,7 +1487,7 @@ function openModal(){
   var cb = document.getElementById('modalConfirm');
   if (cb) {
     cb.disabled = false;
-    cb.innerHTML = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + AxiomI18n.t('apikeys.modal.save') + '</span>';
+    cb.innerHTML = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + MexionI18n.t('apikeys.modal.save') + '</span>';
     cb.onclick = null;
   }
 }
@@ -1644,7 +1644,7 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
       var lock = groupLockFor(g.id); // 二开：邀请未解锁则锁定
       var multHtml = g.mult
         ? '<span class="grp-item__mult" style="background:'+g.soft+';color:'+g.color+'">'+tt('apikeys.group.mult.label',{n:g.mult})+'</span>'
-        : '<span class="grp-item__mult" style="background:var(--bg-2);color:var(--mute-2)">'+AxiomI18n.t('apikeys.group.mult.auto')+'</span>';
+        : '<span class="grp-item__mult" style="background:var(--bg-2);color:var(--mute-2)">'+MexionI18n.t('apikeys.group.mult.auto')+'</span>';
       var sub = lock
         ? '<div class="grp-item__tags" style="color:var(--verm)">🔒 '+inviteLockHint(lock)+'</div>'
         : '<div class="grp-item__tags">'+(g.tags || '')+'</div>';
@@ -1663,8 +1663,8 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
         if (item.getAttribute('data-locked') === '1') {
           var rg = item.getAttribute('data-gid');
           var acc = groupLockFor(isNaN(Number(rg)) ? rg : Number(rg));
-          if (window.AxiomToast && window.AxiomToast.show) {
-            window.AxiomToast.show((AxiomI18n.lang==='en'?'Locked group · ':'分组未解锁 · ')+inviteLockHint(acc), { tone: 'error' });
+          if (window.MexionToast && window.MexionToast.show) {
+            window.MexionToast.show((MexionI18n.lang==='en'?'Locked group · ':'分组未解锁 · ')+inviteLockHint(acc), { tone: 'error' });
           }
           return; // 二开：未解锁分组不可选(后端亦强制兜底)
         }
@@ -1765,11 +1765,11 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
 
   function pad2(n){ return n < 10 ? '0'+n : ''+n; }
   function fmtMonthTitle(y, m){
-    return AxiomI18n.t('apikeys.modal.expire.cal.monthtitle')
+    return MexionI18n.t('apikeys.modal.expire.cal.monthtitle')
       .replace('{y}', y).replace('{m}', m+1);
   }
   function fmtFullDate(d){
-    return AxiomI18n.t('apikeys.modal.expire.fmt.date')
+    return MexionI18n.t('apikeys.modal.expire.fmt.date')
       .replace('{y}', d.getFullYear())
       .replace('{m}', d.getMonth()+1)
       .replace('{d}', d.getDate());
@@ -1803,7 +1803,7 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
     $timeIn.disabled = disabled;
   }
   function renderWkHead(){
-    var raw = AxiomI18n.t('apikeys.modal.expire.cal.wk'); // "一,二,三,四,五,六,日"
+    var raw = MexionI18n.t('apikeys.modal.expire.cal.wk'); // "一,二,三,四,五,六,日"
     var arr = raw.split(',');
     $wkhead.innerHTML = arr.map(function(w){ return '<span>'+w+'</span>'; }).join('');
   }
@@ -1961,11 +1961,11 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
     } else {
       $trigger.classList.add('is-empty');
       $label.setAttribute('data-i18n', 'apikeys.modal.expire.placeholder');
-      $label.textContent = AxiomI18n.t('apikeys.modal.expire.placeholder');
+      $label.textContent = MexionI18n.t('apikeys.modal.expire.placeholder');
     }
   }
   function fmtPillShort(d){
-    return AxiomI18n.t('apikeys.modal.expire.pill.short')
+    return MexionI18n.t('apikeys.modal.expire.pill.short')
       .replace('{m}', d.getMonth()+1)
       .replace('{d}', d.getDate())
       .replace('{h}', pad2(d.getHours()))
@@ -1976,12 +1976,12 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
     if (!exp){
       $status.classList.remove('is-set', 'is-warn');
       $status.setAttribute('data-i18n-html', 'apikeys.modal.expire.status.never');
-      $status.innerHTML = AxiomI18n.t('apikeys.modal.expire.status.never');
+      $status.innerHTML = MexionI18n.t('apikeys.modal.expire.status.never');
       // Stuck-pill: never state.
       if ($pill){
         $pill.classList.remove('is-set');
         $pill.setAttribute('data-i18n', 'apikeys.modal.expire.never');
-        $pill.textContent = AxiomI18n.t('apikeys.modal.expire.never');
+        $pill.textContent = MexionI18n.t('apikeys.modal.expire.never');
       }
       return;
     }
@@ -1992,7 +1992,7 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
       $status.classList.remove('is-set');
       $status.classList.add('is-warn');
       $status.removeAttribute('data-i18n-html');
-      $status.innerHTML = AxiomI18n.t('apikeys.modal.expire.status.past').replace('{date}', '<b>'+dateStr+'</b>');
+      $status.innerHTML = MexionI18n.t('apikeys.modal.expire.status.past').replace('{date}', '<b>'+dateStr+'</b>');
       if ($pill){
         $pill.classList.remove('is-set');
         $pill.removeAttribute('data-i18n');
@@ -2006,16 +2006,16 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
     var mins = totalMin % 60;
     var rel;
     if (days > 0) {
-      rel = AxiomI18n.t('apikeys.modal.expire.rel.dh').replace('{d}', days).replace('{h}', hours);
+      rel = MexionI18n.t('apikeys.modal.expire.rel.dh').replace('{d}', days).replace('{h}', hours);
     } else if (hours > 0) {
-      rel = AxiomI18n.t('apikeys.modal.expire.rel.hm').replace('{h}', hours).replace('{m}', mins);
+      rel = MexionI18n.t('apikeys.modal.expire.rel.hm').replace('{h}', hours).replace('{m}', mins);
     } else {
-      rel = AxiomI18n.t('apikeys.modal.expire.rel.m').replace('{m}', Math.max(1, mins));
+      rel = MexionI18n.t('apikeys.modal.expire.rel.m').replace('{m}', Math.max(1, mins));
     }
     $status.classList.add('is-set');
     $status.classList.remove('is-warn');
     $status.removeAttribute('data-i18n-html');
-    $status.innerHTML = AxiomI18n.t('apikeys.modal.expire.status.set')
+    $status.innerHTML = MexionI18n.t('apikeys.modal.expire.status.set')
       .replace('{date}', '<b>'+dateStr+'</b>')
       .replace('{rel}', rel);
     // Stuck-pill: compact "06/15 · 14:30" — full date+countdown stays in the status row below.
@@ -2221,7 +2221,7 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
   window.__expCloseCal = closeCal;
 
   // Re-render on language flip (preserve current selection)
-  AxiomI18n.onChange(function(){
+  MexionI18n.onChange(function(){
     refreshTriggerLabel();
     refreshStatus();
     if (calOpen) renderCalendar();
@@ -2232,11 +2232,11 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
   var name = (document.getElementById('newKeyName')||{}).value||'';
   name = name.trim();
   if (!name) { var ni = document.getElementById('newKeyName'); ni && ni.focus(); return; }
-  if (typeof AxiomHttp === 'undefined') return;
+  if (typeof MexionHttp === 'undefined') return;
 
   if (selGroupId == null) {
-    if (window.AxiomToast && window.AxiomToast.show) {
-      window.AxiomToast.show(AxiomI18n.lang === 'zh' ? '请先选择一个分组' : 'Please select a group first', { tone: 'error' });
+    if (window.MexionToast && window.MexionToast.show) {
+      window.MexionToast.show(MexionI18n.lang === 'zh' ? '请先选择一个分组' : 'Please select a group first', { tone: 'error' });
     }
     return;
   }
@@ -2274,11 +2274,11 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
     body.innerHTML =
       '<div class="warn-box">' +
         '<svg width="15" height="15" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M7 1L1 13h12L7 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><line x1="7" y1="6" x2="7" y2="9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="11" r="0.5" fill="currentColor"/></svg>' +
-        '<span>'+AxiomI18n.t('apikeys.modal.reveal.warn')+'</span>' +
+        '<span>'+MexionI18n.t('apikeys.modal.reveal.warn')+'</span>' +
       '</div>' +
       '<div class="reveal-box">' +
         '<span class="reveal-key">'+newKey+'</span>' +
-        '<button class="kd-icbtn" id="newKeyCopy" style="color:rgba(255,255,255,0.5)" title="'+AxiomI18n.t('apikeys.modal.copy.title')+'">' +
+        '<button class="kd-icbtn" id="newKeyCopy" style="color:rgba(255,255,255,0.5)" title="'+MexionI18n.t('apikeys.modal.copy.title')+'">' +
           '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="5" y="5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V3a1 1 0 0 1 1-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
         '</button>' +
       '</div>';
@@ -2288,11 +2288,11 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
     });
     confirmBtn.disabled = false;
     confirmBtn.removeAttribute('data-i18n');
-    confirmBtn.innerHTML = '<span>'+AxiomI18n.t('apikeys.modal.done')+'</span>';
+    confirmBtn.innerHTML = '<span>'+MexionI18n.t('apikeys.modal.done')+'</span>';
     confirmBtn.onclick = closeModal;
   }
 
-  AxiomHttp.post('/token/', payload).then(function(resp) {
+  MexionHttp.post('/token/', payload).then(function(resp) {
     loadKeys(function() {
       // 取「后端 id 最大」者 = 刚创建的 token。原来取 KEYS_DATA[length-1],但列表是「最新在前」,
       // length-1 实为最旧的 token → 弹窗一次性密钥显示成了别的(旧)key,与列表新 key 不一致。
@@ -2302,15 +2302,15 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
       renderDetail();
       // Fetch full key for the new token
       if (newest && newest.id) {
-        AxiomHttp.post('/token/' + newest.id + '/key', {}).then(function(keyData) {
+        MexionHttp.post('/token/' + newest.id + '/key', {}).then(function(keyData) {
           var fullKey = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || '');
           if (fullKey) showNewKey(fullKey);
         }).catch(function() {
-          var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (AxiomI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
+          var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (MexionI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
           showNewKey(maskedKey);
         });
       } else {
-        var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (AxiomI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
+        var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (MexionI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
         showNewKey(maskedKey);
       }
     });
@@ -2322,8 +2322,8 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
 
 // ── INITIAL RENDER ────────────────────────────────
 /* Re-render dynamic content on language flip */
-AxiomI18n.onChange(function(){
-  AxiomI18n.preserve(function(){
+MexionI18n.onChange(function(){
+  MexionI18n.preserve(function(){
     applyGrpCurrentLabels();
     renderGroupBar();
     renderKeyList();
@@ -2333,12 +2333,12 @@ AxiomI18n.onChange(function(){
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AxiomAuth !== 'undefined') AxiomAuth.guard();
+  if (typeof MexionAuth !== 'undefined') MexionAuth.guard();
   loadGroups()
     .then(function() { return loadGroupAccess(); })
     .then(function() { loadKeys(); });
   document.addEventListener('user-menu:signout', function() {
-    if (typeof AxiomAuth !== 'undefined') AxiomAuth.logout();
+    if (typeof MexionAuth !== 'undefined') MexionAuth.logout();
   });
 });
 

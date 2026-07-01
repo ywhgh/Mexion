@@ -1,7 +1,7 @@
 /* ================== I18N DICTIONARY ================== */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'subscription.tab.title': 'Axiom — Plans',
+    'subscription.tab.title': 'Mexion — Plans',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
     'nav.section.account': 'Account',
@@ -281,7 +281,7 @@ AxiomI18n.register({
     'subscription.plan.deepseek-200-monthly.badge': 'Save 22%'
   },
   zh: {
-    'subscription.tab.title': 'Axiom — 订阅套餐',
+    'subscription.tab.title': 'Mexion — 订阅套餐',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': '工作区',
     'nav.section.account': '账户',
@@ -559,7 +559,7 @@ AxiomI18n.register({
 });
 
 function st(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -684,7 +684,7 @@ function renderSeriesChips(){
   const all = PLANS.length;
   const counts = {};
   Object.keys(SERIES).forEach(k => counts[k] = PLANS.filter(p=>p.series===k).length);
-  const html = [`<button class="ctrl-chip" data-series="all" aria-pressed="${state.series==='all'}">${AxiomI18n.t('subscription.ctrl.all')} <span class="ctrl-chip__count">${all}</span></button>`];
+  const html = [`<button class="ctrl-chip" data-series="all" aria-pressed="${state.series==='all'}">${MexionI18n.t('subscription.ctrl.all')} <span class="ctrl-chip__count">${all}</span></button>`];
   Object.values(SERIES).forEach(s => {
     if(counts[s.id]===0) return;
     html.push(`<button class="ctrl-chip" data-series="${s.id}" aria-pressed="${state.series===s.id}"><span class="ctrl-chip__dot" style="background:${s.color}"></span>${sname(s)} <span class="ctrl-chip__count">${counts[s.id]}</span></button>`);
@@ -699,7 +699,7 @@ function renderBillingChips(){
   const counts = {};
   Object.keys(BILLING).forEach(k => counts[k] = pool.filter(p=>p.billing===k).length);
   const total = pool.length;
-  const html = [`<button class="ctrl-chip" data-billing="all" aria-pressed="${state.billing==='all'}">${AxiomI18n.t('subscription.ctrl.allbilling')} <span class="ctrl-chip__count">${total}</span></button>`];
+  const html = [`<button class="ctrl-chip" data-billing="all" aria-pressed="${state.billing==='all'}">${MexionI18n.t('subscription.ctrl.allbilling')} <span class="ctrl-chip__count">${total}</span></button>`];
   Object.values(BILLING).forEach(b => {
     if(counts[b.id]===0) return;
     html.push(`<button class="ctrl-chip" data-billing="${b.id}" aria-pressed="${state.billing===b.id}">${bname(b)} <span class="ctrl-chip__count">${counts[b.id]}</span></button>`);
@@ -791,7 +791,7 @@ function countUp(el, target, fmt){
 // — Card body (per-series grouping)
 function renderCardBody(plans){
   if(!plans.length){
-    return `<div class="empty-pane"><h3>${AxiomI18n.t('subscription.empty.title')}</h3><p>${AxiomI18n.t('subscription.empty.copy')}</p></div>`;
+    return `<div class="empty-pane"><h3>${MexionI18n.t('subscription.empty.title')}</h3><p>${MexionI18n.t('subscription.empty.copy')}</p></div>`;
   }
   const groups = {};
   plans.forEach(p => { (groups[p.series] = groups[p.series] || []).push(p); });
@@ -824,9 +824,9 @@ function renderSkuCard(plan, color, idx){
   const billing = BILLING[plan.billing];
   const stopSale = plan._forSale === false && !plan.current;
   const flagHTML = (() => {
-    if(plan.current) return `<span class="sku-card__flag sku-card__flag--cur">${AxiomI18n.t('subscription.flag.current')}</span>`;
-    if(stopSale) return `<span class="sku-card__flag sku-card__flag--stop">${AxiomI18n.t('subscription.flag.stopsale')}</span>`;
-    if(plan.popular) return `<span class="sku-card__flag sku-card__flag--pop">${AxiomI18n.t('subscription.flag.popular')}</span>`;
+    if(plan.current) return `<span class="sku-card__flag sku-card__flag--cur">${MexionI18n.t('subscription.flag.current')}</span>`;
+    if(stopSale) return `<span class="sku-card__flag sku-card__flag--stop">${MexionI18n.t('subscription.flag.stopsale')}</span>`;
+    if(plan.popular) return `<span class="sku-card__flag sku-card__flag--pop">${MexionI18n.t('subscription.flag.popular')}</span>`;
     if(plan.badged) {
       const b = pbadge(plan);
       if (b) return `<span class="sku-card__flag sku-card__flag--save">${b}</span>`;
@@ -835,7 +835,7 @@ function renderSkuCard(plan, color, idx){
   })();
   const cls = `sku-card${plan.popular?' is-popular':''}${plan.current?' is-current':''}${stopSale?' is-stopsale':''}`;
   const quotaPct = plan.quotaDaily ? Math.min(100, Math.round((plan.quotaDaily / 400) * 100)) : 8;
-  const quotaLabel = plan.quotaDaily ? `<b>$${plan.quotaDaily}</b> / ${AxiomI18n.lang === 'zh' ? '日' : 'day'}` : `<b>${pper(plan)}</b>`;
+  const quotaLabel = plan.quotaDaily ? `<b>$${plan.quotaDaily}</b> / ${MexionI18n.lang === 'zh' ? '日' : 'day'}` : `<b>${pper(plan)}</b>`;
   const amtLabel = `$${price.toFixed(price % 1 === 0 ? 0 : 2)}`;
   return `
     <div class="${cls}" style="--sku-c:${color};--enter-i:${idx||0}" data-id="${plan.id}">
@@ -867,13 +867,13 @@ function renderSkuCard(plan, color, idx){
       </div>
       <button class="sku-card__cta${plan.current?' sku-card__cta--current':''}${stopSale?' sku-card__cta--stop':''}" type="button"${stopSale || (!window.__paymentReady && !plan.current) ? ' style="opacity:.45;cursor:not-allowed"' : ''}>
         ${plan.current
-          ? `<span class="pay-label">${AxiomI18n.t('subscription.cta.current')}</span>
+          ? `<span class="pay-label">${MexionI18n.t('subscription.cta.current')}</span>
              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 5.5l2.5 2.5L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : stopSale
-            ? `<span class="pay-label">${AxiomI18n.t('subscription.cta.stopsale')}</span>`
+            ? `<span class="pay-label">${MexionI18n.t('subscription.cta.stopsale')}</span>`
           : !window.__paymentReady
-            ? `<span class="pay-label">${AxiomI18n.lang === 'zh' ? '暂未开放购买' : 'Not available yet'}</span>`
-            : `<span class="pay-label">${AxiomI18n.t('subscription.cta.subscribe')}</span>
+            ? `<span class="pay-label">${MexionI18n.lang === 'zh' ? '暂未开放购买' : 'Not available yet'}</span>`
+            : `<span class="pay-label">${MexionI18n.t('subscription.cta.subscribe')}</span>
                <span class="sku-card__cta-amt">· ${amtLabel}</span>
                <svg class="sku-card__cta-arrow" width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5h8M6 2l3.5 3.5L6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
         }
@@ -885,7 +885,7 @@ function renderSkuCard(plan, color, idx){
 // — Ladder body (group by series → billing → tiers)
 function renderLadderBody(plans){
   if(!plans.length){
-    return `<div class="empty-pane"><h3>${AxiomI18n.t('subscription.empty.title')}</h3><p>${AxiomI18n.t('subscription.empty.copy')}</p></div>`;
+    return `<div class="empty-pane"><h3>${MexionI18n.t('subscription.empty.title')}</h3><p>${MexionI18n.t('subscription.empty.copy')}</p></div>`;
   }
   const groups = {};
   plans.forEach(p => {
@@ -935,8 +935,8 @@ function renderLadderTier(plan){
   const billing = BILLING[plan.billing];
   const stopSale = plan._forSale === false && !plan.current;
   const cls = `ladder-tier${plan.popular?' is-popular':''}${plan.current?' is-current':''}${stopSale?' is-stopsale':''}`;
-  const flag = plan.current ? `<span class="ladder-tier__flag ladder-tier__flag--cur">${AxiomI18n.t('subscription.flag.current')}</span>` : (stopSale ? `<span class="ladder-tier__flag ladder-tier__flag--stop">${AxiomI18n.t('subscription.flag.stopsale')}</span>` : (plan.popular ? `<span class="ladder-tier__flag ladder-tier__flag--pop">${AxiomI18n.t('subscription.flag.popular')}</span>` : ''));
-  const quotaLabel = plan.quotaDaily ? `<b>$${plan.quotaDaily}</b> / ${AxiomI18n.lang === 'zh' ? '日' : 'day'}` : `<b>${pper(plan)}</b>`;
+  const flag = plan.current ? `<span class="ladder-tier__flag ladder-tier__flag--cur">${MexionI18n.t('subscription.flag.current')}</span>` : (stopSale ? `<span class="ladder-tier__flag ladder-tier__flag--stop">${MexionI18n.t('subscription.flag.stopsale')}</span>` : (plan.popular ? `<span class="ladder-tier__flag ladder-tier__flag--pop">${MexionI18n.t('subscription.flag.popular')}</span>` : ''));
+  const quotaLabel = plan.quotaDaily ? `<b>$${plan.quotaDaily}</b> / ${MexionI18n.lang === 'zh' ? '日' : 'day'}` : `<b>${pper(plan)}</b>`;
   return `
     <div class="${cls}" style="--sku-c:${SERIES[plan.series].color}" data-id="${plan.id}">
       <span class="ladder-tier__sheen" aria-hidden="true"></span>
@@ -947,7 +947,7 @@ function renderLadderTier(plan){
         <div class="ladder-tier__per">${pper(plan)}</div>
       </div>
       <button class="ladder-tier__cta${stopSale?' ladder-tier__cta--stop':''}" type="button"${stopSale ? ' style="opacity:.5;cursor:not-allowed"' : ''}>
-        <span class="pay-label">${plan.current ? AxiomI18n.t('subscription.cta.short.current') : (stopSale ? AxiomI18n.t('subscription.cta.stopsale') : AxiomI18n.t('subscription.cta.short.subscribe'))}</span>
+        <span class="pay-label">${plan.current ? MexionI18n.t('subscription.cta.short.current') : (stopSale ? MexionI18n.t('subscription.cta.stopsale') : MexionI18n.t('subscription.cta.short.subscribe'))}</span>
         ${plan.current
           ? `<svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M2 5.5l2.5 2.5L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : `<svg width="9" height="9" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5h8M6 2l3.5 3.5L6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`}
@@ -1013,20 +1013,20 @@ function renderMySubscriptions(subs) {
   var heroCount = $('#heroSubCount');
   if (heroCount) heroCount.textContent = subs.length;
 
-  var lang = AxiomI18n.lang || 'zh';
+  var lang = MexionI18n.lang || 'zh';
   var upsellHtml = '<div class="empty-pane" style="text-align:left;padding:18px 22px;display:flex;align-items:center;gap:20px">' +
     '<div style="flex:1">' +
-    '<h3 style="font-size:15px;margin-bottom:2px">' + AxiomI18n.t('subscription.upsell.title') + '</h3>' +
-    '<p style="margin:0;font-size:13px">' + AxiomI18n.t('subscription.upsell.copy') + '</p>' +
+    '<h3 style="font-size:15px;margin-bottom:2px">' + MexionI18n.t('subscription.upsell.title') + '</h3>' +
+    '<p style="margin:0;font-size:13px">' + MexionI18n.t('subscription.upsell.copy') + '</p>' +
     '</div>' +
     '<button class="ticket__act" id="goBrowse" style="white-space:nowrap;padding:9px 16px">' +
-    '<span>' + AxiomI18n.t('subscription.upsell.cta') + '</span> ' +
+    '<span>' + MexionI18n.t('subscription.upsell.cta') + '</span> ' +
     '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5h8M6 2l3.5 3.5L6 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
     '</button></div>';
 
   if (!subs.length) {
     body.innerHTML = '<div class="empty-pane" style="padding:32px 22px;text-align:center">' +
-      '<p style="color:var(--mute-2);font-size:14px">' + AxiomI18n.t('subscription.my.empty') + '</p>' +
+      '<p style="color:var(--mute-2);font-size:14px">' + MexionI18n.t('subscription.my.empty') + '</p>' +
       '</div>' + upsellHtml;
     var gb = body.querySelector('#goBrowse');
     if (gb) gb.addEventListener('click', function() { switchTab('browse'); });
@@ -1064,7 +1064,7 @@ function renderMySubscriptions(subs) {
 
       '<div class="ticket__stub">' +
         '<div>' +
-          '<div class="ticket__stub-label">Axiom · ' + pm.label + ' Pass</div>' +
+          '<div class="ticket__stub-label">Mexion · ' + pm.label + ' Pass</div>' +
           '<div class="ticket__stub-id">#' + (sub.id || '--') + (startStr ? ' · ' + startStr + ' ' + (lang === 'zh' ? '启用' : 'started') : '') + '</div>' +
         '</div>' +
         '<div>' +
@@ -1128,21 +1128,21 @@ function renderMySubscriptions(subs) {
     btn.addEventListener('click', function() {
       var act = btn.dataset.act;
       var subId = btn.dataset.subId;
-      var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+      var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
       // newapi 无 renew/change 端点，续费/变更=重新购买，故跳转套餐列表 + toast 引导（避免"点了像没反应"）
       if (act === 'renew') {
         switchTab('browse');
-        if (window.AxiomToast && window.AxiomToast.show) window.AxiomToast.show(lang === 'zh' ? '请在下方选择套餐完成续费' : 'Pick a plan below to renew');
+        if (window.MexionToast && window.MexionToast.show) window.MexionToast.show(lang === 'zh' ? '请在下方选择套餐完成续费' : 'Pick a plan below to renew');
       }
       else if (act === 'change') {
         switchTab('browse');
-        if (window.AxiomToast && window.AxiomToast.show) window.AxiomToast.show(lang === 'zh' ? '请在下方选择要变更的套餐' : 'Pick a plan below to switch');
+        if (window.MexionToast && window.MexionToast.show) window.MexionToast.show(lang === 'zh' ? '请在下方选择要变更的套餐' : 'Pick a plan below to switch');
       }
       else if (act === 'cancel') {
         // newapi 订阅无 auto_renew、也无自助取消端点：到期自动结束，提前取消需联系管理员。
         // 原先调不存在的 /user/subscription/cancel 必 404→catch，改为直接给出准确说明。
-        if (window.AxiomToast && window.AxiomToast.show) {
-          window.AxiomToast.show(lang === 'zh' ? '订阅到期将自动结束；如需提前取消请联系管理员' : 'Subscription ends at expiry; contact support for early cancellation');
+        if (window.MexionToast && window.MexionToast.show) {
+          window.MexionToast.show(lang === 'zh' ? '订阅到期将自动结束；如需提前取消请联系管理员' : 'Subscription ends at expiry; contact support for early cancellation');
         }
       }
     });
@@ -1152,7 +1152,7 @@ function renderMySubscriptions(subs) {
 var SUBSCRIPTION_PAYMENT_SYNC_TIMER = null;
 
 function getSubscriptionLang() {
-  return (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+  return (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
 }
 
 function getSubscriptionPayStatus() {
@@ -1174,19 +1174,19 @@ function clearSubscriptionPayStatus() {
 
 function syncSubscriptionBalance(user) {
   if (!user) return;
-  window.__axiomBalance = typeof window.AxiomQuota !== 'undefined'
-    ? window.AxiomQuota.getUserBalance(user)
+  window.__mexionBalance = typeof window.MexionQuota !== 'undefined'
+    ? window.MexionQuota.getUserBalance(user)
     : (user.balance || Math.round((user.quota || 0) / 500000 * 100) / 100);
 }
 
 function refreshSubscriptionUser(source) {
-  if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-    return AxiomAuth.refreshUser({ source: source || 'subscription-refresh', force: true }).then(function(user) {
+  if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+    return MexionAuth.refreshUser({ source: source || 'subscription-refresh', force: true }).then(function(user) {
       syncSubscriptionBalance(user);
       return user;
     });
   }
-  return AxiomHttp.get('/user/self').then(function(user) {
+  return MexionHttp.get('/user/self').then(function(user) {
     syncSubscriptionBalance(user);
     return user;
   });
@@ -1242,7 +1242,7 @@ function startSubscriptionPaymentSync() {
 }
 
 function loadActiveSubscriptions() {
-  return AxiomHttp.get('/subscription/self').then(function(data) {
+  return MexionHttp.get('/subscription/self').then(function(data) {
     var raw = Array.isArray(data) ? data : (data && data.subscriptions) || (data && data.all_subscriptions) || [];
     var subs = raw.map(function(item) {
       var s = item.subscription || item;
@@ -1260,7 +1260,7 @@ function loadActiveSubscriptions() {
 }
 
 function loadPaymentPlans() {
-  var lang = AxiomI18n.lang || 'zh';
+  var lang = MexionI18n.lang || 'zh';
 
   var BILLING_META = {
     days:   { label: lang === 'zh' ? '日购' : 'Daily',   unitLabel: lang === 'zh' ? '/天' : '/day',   short: lang === 'zh' ? '日' : 'D' },
@@ -1269,9 +1269,9 @@ function loadPaymentPlans() {
   };
 
   return Promise.all([
-    AxiomHttp.get('/subscription/plans').catch(function() { return []; }),
-    AxiomHttp.get('/user/groups').catch(function() { return {}; }),
-    AxiomHttp.get('/user/topup/info').catch(function() { return {}; })
+    MexionHttp.get('/subscription/plans').catch(function() { return []; }),
+    MexionHttp.get('/user/groups').catch(function() { return {}; }),
+    MexionHttp.get('/user/topup/info').catch(function() { return {}; })
   ]).then(function(results) {
     var plansData = results[0];
     var rawGroups = results[1];
@@ -1438,8 +1438,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* On language flip, re-render active panels (preserves scroll/focus). */
-  AxiomI18n.onChange(function(){
-    AxiomI18n.preserve(function(){
+  MexionI18n.onChange(function(){
+    MexionI18n.preserve(function(){
       renderMySubscriptions(activeSubscriptions);
       if (state.tab === 'browse') renderBrowse();
     });
@@ -1468,8 +1468,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 停止售卖：仍展示套餐，但点击只提示、不可下单
     if (plan._forSale === false) {
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show(getSubscriptionLang() === 'zh' ? '本套餐暂时停止售卖' : 'This plan is temporarily unavailable for purchase', { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show(getSubscriptionLang() === 'zh' ? '本套餐暂时停止售卖' : 'This plan is temporarily unavailable for purchase', { tone: 'error' });
       }
       return;
     }
@@ -1525,15 +1525,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   var payStatus = getSubscriptionPayStatus();
 
-  if (typeof AxiomAuth !== 'undefined' && AxiomAuth.fetchUser) {
-    AxiomAuth.fetchUser().then(function(user) {
+  if (typeof MexionAuth !== 'undefined' && MexionAuth.fetchUser) {
+    MexionAuth.fetchUser().then(function(user) {
       syncSubscriptionBalance(user);
       if (payStatus === 'success' || payStatus === 'pending') {
         startSubscriptionPaymentSync();
       }
     }).catch(function(){});
   } else {
-    AxiomHttp.get('/user/self').then(function(user) {
+    MexionHttp.get('/user/self').then(function(user) {
       syncSubscriptionBalance(user);
       if (payStatus === 'success' || payStatus === 'pending') {
         startSubscriptionPaymentSync();
@@ -1541,7 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(function(){});
   }
 
-  window.addEventListener('axiom:user-updated', function (event) {
+  window.addEventListener('mexion:user-updated', function (event) {
     var user = event && event.detail ? event.detail.user : null;
     if (!user) return;
     syncSubscriptionBalance(user);
@@ -1552,14 +1552,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (payStatus === 'success') {
     setTimeout(function() {
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show(getSubscriptionLang() === 'zh' ? '订阅支付成功，正在同步状态' : 'Subscription payment succeeded, syncing status', { tone: 'success' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show(getSubscriptionLang() === 'zh' ? '订阅支付成功，正在同步状态' : 'Subscription payment succeeded, syncing status', { tone: 'success' });
       }
     }, 120);
   } else if (payStatus === 'fail') {
     setTimeout(function() {
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show(getSubscriptionLang() === 'zh' ? '订阅支付未完成，请重试' : 'Subscription payment was not completed', { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show(getSubscriptionLang() === 'zh' ? '订阅支付未完成，请重试' : 'Subscription payment was not completed', { tone: 'error' });
       }
     }, 120);
   }
@@ -1591,7 +1591,7 @@ function openPayModal(plan, originEl, clickX, clickY){
   $('#payConfirmAmt').textContent = `$${price.toFixed(2)}`;
 
   var walletBalance = 0;
-  try { walletBalance = window.__axiomBalance || 0; } catch(e) {}
+  try { walletBalance = window.__mexionBalance || 0; } catch(e) {}
   var methods = window.__paymentMethods || {};
   var checkoutD = window.__checkoutData || {};
   var balanceDisabled = checkoutD.balance_disabled === true || checkoutD.payment_compliance_confirmed === false;
@@ -1614,21 +1614,21 @@ function openPayModal(plan, originEl, clickX, clickY){
     setPayMethodVisible(wechatEl, wechatAvail);
     wechatEl.classList.toggle('is-disabled', !wechatAvail);
     if (!wechatAvail) wechatEl.querySelector('.pay-method__meta').textContent =
-      AxiomI18n.lang === 'zh' ? '暂未开通' : 'Not available';
+      MexionI18n.lang === 'zh' ? '暂未开通' : 'Not available';
   }
   if (alipayEl) {
     setPayMethodVisible(alipayEl, alipayAvail);
     alipayEl.classList.toggle('is-disabled', !alipayAvail);
     if (!alipayAvail) alipayEl.querySelector('.pay-method__meta').textContent =
-      AxiomI18n.lang === 'zh' ? '暂未开通' : 'Not available';
+      MexionI18n.lang === 'zh' ? '暂未开通' : 'Not available';
   }
   if (walletEl) {
     setPayMethodVisible(walletEl, true);
     var walletInsufficient = walletAvail && walletBalance < price;
     walletEl.classList.toggle('is-disabled', !walletAvail || walletInsufficient);
     walletEl.querySelector('.pay-method__meta').textContent =
-      !walletAvail ? (AxiomI18n.lang === 'zh' ? '暂未开通' : 'Not available') :
-      AxiomI18n.lang === 'en'
+      !walletAvail ? (MexionI18n.lang === 'zh' ? '暂未开通' : 'Not available') :
+      MexionI18n.lang === 'en'
         ? 'Balance $' + walletBalance.toFixed(2) + (walletInsufficient ? ' · insufficient' : '')
         : '余额 $' + walletBalance.toFixed(2) + (walletInsufficient ? ' · 余额不足' : '');
   }
@@ -1769,7 +1769,7 @@ function markCardAsCurrent(){
   cta.classList.remove('is-paid');
   if(!isLadder) cta.classList.add('sku-card__cta--current');
   const labelKey = isLadder ? 'subscription.cta.short.current' : 'subscription.cta.current';
-  cta.innerHTML = `<span class="pay-label">${AxiomI18n.t(labelKey)}</span>
+  cta.innerHTML = `<span class="pay-label">${MexionI18n.t(labelKey)}</span>
     <svg width="${isLadder?9:11}" height="${isLadder?9:11}" viewBox="0 0 11 11" fill="none"><path d="M2 5.5l2.5 2.5L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
   // Add a current-flag badge if not already present (card view only)
@@ -1778,7 +1778,7 @@ function markCardAsCurrent(){
     if(head && !head.querySelector('.sku-card__flag--cur')){
       // Remove any existing popular/save flag first
       head.querySelectorAll('.sku-card__flag').forEach(f => f.remove());
-      head.insertAdjacentHTML('beforeend', `<span class="sku-card__flag sku-card__flag--cur">${AxiomI18n.t('subscription.flag.current')}</span>`);
+      head.insertAdjacentHTML('beforeend', `<span class="sku-card__flag sku-card__flag--cur">${MexionI18n.t('subscription.flag.current')}</span>`);
     }
   }
 }
@@ -1813,16 +1813,16 @@ function wirePayModal(){
       foot.classList.add('is-processing');
     });
 
-    const lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    const lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
 
-    if (typeof AxiomHttp !== 'undefined' && payContext.plan && payContext.plan._planId) {
+    if (typeof MexionHttp !== 'undefined' && payContext.plan && payContext.plan._planId) {
       var selectedMethod = document.querySelector('.pay-method.is-selected');
       if (!selectedMethod || selectedMethod.classList.contains('is-disabled')) {
         btn.removeAttribute('disabled');
         btn.classList.remove('is-processing');
         foot.classList.remove('is-processing');
-        if (window.AxiomToast && window.AxiomToast.show) {
-          window.AxiomToast.show(lang === 'zh' ? '请选择可用的支付方式' : 'Please choose an available payment method', { tone: 'error' });
+        if (window.MexionToast && window.MexionToast.show) {
+          window.MexionToast.show(lang === 'zh' ? '请选择可用的支付方式' : 'Please choose an available payment method', { tone: 'error' });
         }
         return;
       }
@@ -1835,7 +1835,7 @@ function wirePayModal(){
         ? { plan_id: payContext.plan._planId }
         : { plan_id: payContext.plan._planId, payment_method: apiPayType };
 
-      AxiomHttp.post(requestPath, requestBody).then(function(data) {
+      MexionHttp.post(requestPath, requestBody).then(function(data) {
         if (payType !== 'wallet') {
           if (!data || !data.url) {
             throw new Error(lang === 'zh' ? '支付网关返回异常' : 'Invalid payment gateway response');
@@ -1846,8 +1846,8 @@ function wirePayModal(){
           foot.classList.remove('is-processing');
           closePayModal();
           startSubscriptionPaymentSync();
-          if (window.AxiomToast && window.AxiomToast.show) {
-            window.AxiomToast.show(lang === 'zh' ? '已打开支付页面，请在新窗口完成支付' : 'Payment page opened. Complete payment in the new window.');
+          if (window.MexionToast && window.MexionToast.show) {
+            window.MexionToast.show(lang === 'zh' ? '已打开支付页面，请在新窗口完成支付' : 'Payment page opened. Complete payment in the new window.');
           }
           return;
         }
@@ -1876,16 +1876,16 @@ function wirePayModal(){
         } else if (!msg) {
           msg = lang === 'zh' ? '支付失败，请重试' : 'Payment failed';
         }
-        if (window.AxiomToast && window.AxiomToast.show) {
-          window.AxiomToast.show(msg, { tone: 'error' });
+        if (window.MexionToast && window.MexionToast.show) {
+          window.MexionToast.show(msg, { tone: 'error' });
         }
       });
     } else {
       btn.removeAttribute('disabled');
       btn.classList.remove('is-processing');
       foot.classList.remove('is-processing');
-      if (window.AxiomToast && window.AxiomToast.show) {
-        window.AxiomToast.show(lang === 'zh' ? '支付系统尚未开放' : 'Payment not available yet', { tone: 'error' });
+      if (window.MexionToast && window.MexionToast.show) {
+        window.MexionToast.show(lang === 'zh' ? '支付系统尚未开放' : 'Payment not available yet', { tone: 'error' });
       }
     }
   });

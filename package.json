@@ -1,13 +1,13 @@
 {
-  "name": "axion",
+  "name": "mexion",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.2",
   "scripts": {
-    "dev": "concurrently -n api,web -c auto \"pnpm --filter @axion/api dev\" \"pnpm --filter @axion/web dev\"",
+    "dev": "concurrently -n api,web -c auto \"pnpm --filter @mexion/api dev\" \"pnpm --filter @mexion/web dev\"",
     "build": "pnpm -r build",
-    "start": "pnpm --filter @axion/api start",
+    "start": "pnpm --filter @mexion/api start",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run --coverage --passWithNoTests",
     "typecheck": "pnpm -r typecheck",

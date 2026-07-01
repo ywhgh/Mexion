@@ -12,7 +12,7 @@ export type SettingsPublic = {
 };
 
 const defaults: SettingsPublic = {
-  instanceName: "Axion",
+  instanceName: "Mexion",
   theme: "light",
   lang: "zh",
   updatedAt: new Date(0).toISOString(),

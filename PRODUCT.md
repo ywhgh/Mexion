@@ -8,7 +8,7 @@ product
 Self-hosting developers and small infrastructure operators who need a compact management console for subscription conversion, API tokens, relay routing, and audit logs.
 
 ## Product Purpose
-Axion unifies subscription conversion and API relay management in one local-first control plane. Success means an operator can bootstrap the instance, create a subscription endpoint, issue a limited token, proxy a route, and audit the traffic without SaaS-dashboard clutter.
+Mexion unifies subscription conversion and API relay management in one local-first control plane. Success means an operator can bootstrap the instance, create a subscription endpoint, issue a limited token, proxy a route, and audit the traffic without SaaS-dashboard clutter.
 
 ## Brand Personality
 Editorial, rigorous, restrained. The interface should feel like a printed technical journal that happens to operate live infrastructure.

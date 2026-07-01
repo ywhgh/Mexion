@@ -1,5 +1,5 @@
 {
-  "name": "@axion/api",
+  "name": "@mexion/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "init-db": "tsx ../../scripts/init-db.ts"
   },
   "dependencies": {
-    "@axion/shared": "workspace:*",
+    "@mexion/shared": "workspace:*",
     "@hono/node-server": "^1.19.8",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.5.0",

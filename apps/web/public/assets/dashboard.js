@@ -2,7 +2,7 @@
 /* page strings registered into the shared runtime (assets/i18n.js).
    Legacy globals window.__T / __setLang / __lang / __onLang are still
    exposed by the runtime, so chart/donut/heatmap code below works unchanged. */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
       'topbar.new':'New',
       'side.workspace':'Workspace','side.account':'Account','nav.section.other':'Other',
@@ -624,13 +624,13 @@ function gp(n){n=(n||'').toLowerCase();if(n.indexOf('claude')>=0)return'anthropi
   var body = document.getElementById('liveBody');
   var __useRealFeed = false;
   body.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--mute-2);font-size:13px">' +
-    (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh' ? '暂无调用记录' : 'No calls yet') + '</div>';
+    (typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh' ? '暂无调用记录' : 'No calls yet') + '</div>';
   window.__liveFeedSet = function(realRows){
     __useRealFeed = true;
     ROWS = realRows;
     body.innerHTML = ROWS.length ? ROWS.map(function(r){ return rowHTML(r, false); }).join('')
       : '<div style="text-align:center;padding:40px 16px;color:var(--mute-2);font-size:13px">' +
-        (AxiomI18n.lang==='zh'?'暂无调用记录':'No calls yet') + '</div>';
+        (MexionI18n.lang==='zh'?'暂无调用记录':'No calls yet') + '</div>';
   };
 
   function refreshCounter(){
@@ -982,8 +982,8 @@ function gp(n){n=(n||'').toLowerCase();if(n.indexOf('claude')>=0)return'anthropi
 })();
 
 function initDashboardData() {
-  if (typeof AxiomHttp === 'undefined') return;
-  var lang = function(){ return (typeof AxiomI18n !== 'undefined') ? AxiomI18n.lang : 'en'; };
+  if (typeof MexionHttp === 'undefined') return;
+  var lang = function(){ return (typeof MexionI18n !== 'undefined') ? MexionI18n.lang : 'en'; };
 
   // ── 1. Dynamic date ──
   (function(){
@@ -1003,7 +1003,7 @@ function initDashboardData() {
       heroDate.removeAttribute('data-i18n');
     }
     renderDate();
-    if (typeof AxiomI18n !== 'undefined') AxiomI18n.onChange(renderDate);
+    if (typeof MexionI18n !== 'undefined') MexionI18n.onChange(renderDate);
   })();
 
   function getDashboardUserStatus(user) {
@@ -1015,8 +1015,8 @@ function initDashboardData() {
   function renderDashboardBalance(user) {
     var creds = document.querySelector('.creds__amount');
     if (!creds) return;
-    var bal = window.AxiomQuota.getUserBalance(user);
-    var balParts = window.AxiomQuota.getMoneyParts(bal);
+    var bal = window.MexionQuota.getUserBalance(user);
+    var balParts = window.MexionQuota.getMoneyParts(bal);
     creds.innerHTML = '<span class="creds__amount-cur">$</span>' + balParts.sign + Number(balParts.int).toLocaleString() + '<span class="creds__amount-frac">.' + balParts.frac + '</span>';
   }
 
@@ -1097,17 +1097,17 @@ function initDashboardData() {
 
   function applyDashboardUser(user, options) {
     if (!user) return;
-    if (typeof AxiomAuth.hydrateUI === 'function') AxiomAuth.hydrateUI();
+    if (typeof MexionAuth.hydrateUI === 'function') MexionAuth.hydrateUI();
     renderDashboardBalance(user);
     renderDashboardMeta(user);
     renderDashboardSummary(user, !!(options && options.animate));
   }
 
-  AxiomAuth.fetchUser().then(function(user) {
+  MexionAuth.fetchUser().then(function(user) {
     applyDashboardUser(user, { animate: true });
   }).catch(function(){});
 
-  window.addEventListener('axiom:user-updated', function (event) {
+  window.addEventListener('mexion:user-updated', function (event) {
     var user = event && event.detail ? event.detail.user : null;
     if (!user) return;
     applyDashboardUser(user, { animate: false });
@@ -1124,38 +1124,38 @@ function initDashboardData() {
       try { document.execCommand('copy'); } catch(e) {}
       document.body.removeChild(ta);
     }
-    if (text && String(text).trim() && window.AxiomToast && window.AxiomToast.show) {
-      window.AxiomToast.show((window.AxiomI18n && AxiomI18n.lang === 'en') ? 'Copied' : '已复制');
+    if (text && String(text).trim() && window.MexionToast && window.MexionToast.show) {
+      window.MexionToast.show((window.MexionI18n && MexionI18n.lang === 'en') ? 'Copied' : '已复制');
     }
   }
 
-  AxiomHttp.get('/status').then(function(settings) {
+  MexionHttp.get('/status').then(function(settings) {
     var epUrl = document.querySelector('.creds__endpoint-url');
     var base = (settings.api_base_url || window.location.origin).replace(/\/+$/, '');
-    window.__axiomApiBase = base; // 供「复制连接信息 / cURL」复用
+    window.__mexionApiBase = base; // 供「复制连接信息 / cURL」复用
     // 二开：base_url 格式切换 —— OpenAI(带 /v1) vs Claude Code(不带 /v1)。
-    // 选择持久化到 localStorage('axiom_api_fmt')，api-keys 的「复制连接信息」同步该格式。
+    // 选择持久化到 localStorage('mexion_api_fmt')，api-keys 的「复制连接信息」同步该格式。
     function urlFor(fmt){ return fmt === 'claude' ? base : base + '/v1'; }
     function applyFmt(fmt){
-      try { localStorage.setItem('axiom_api_fmt', fmt); } catch(e){}
+      try { localStorage.setItem('mexion_api_fmt', fmt); } catch(e){}
       var u = urlFor(fmt);
       if (epUrl) epUrl.textContent = u;
       document.querySelectorAll('.creds__fmt-btn').forEach(function(b){
         b.classList.toggle('is-on', b.dataset.fmt === fmt);
       });
       var copyEpBtn = document.getElementById('copyEpBtn');
-      if (copyEpBtn) copyEpBtn.onclick = function(){ window.AxiomCopy(u, copyEpBtn); };
+      if (copyEpBtn) copyEpBtn.onclick = function(){ window.MexionCopy(u, copyEpBtn); };
     }
     document.querySelectorAll('.creds__fmt-btn').forEach(function(b){
       b.onclick = function(){ applyFmt(b.dataset.fmt); };
     });
     var saved = 'openai';
-    try { if (localStorage.getItem('axiom_api_fmt') === 'claude') saved = 'claude'; } catch(e){}
+    try { if (localStorage.getItem('mexion_api_fmt') === 'claude') saved = 'claude'; } catch(e){}
     applyFmt(saved);
-  }).catch(function(){ window.__axiomApiBase = window.location.origin; });
+  }).catch(function(){ window.__mexionApiBase = window.location.origin; });
 
   // ── 5. Keys → credential card：多 key 快速获取(从用户视角:这张卡是快速拿到自己每个 key 的地方) ──
-  AxiomHttp.get('/token/?p=0&size=50').then(function(data) {
+  MexionHttp.get('/token/?p=0&size=50').then(function(data) {
     var keys = (data.items || []).filter(function(k){ return k && k.id != null; }).map(function(k){ k.id = String(k.id); return k; });
     var keyValEl = document.getElementById('keyVal');
     var keyGroupEl = document.getElementById('keyGroup');
@@ -1168,7 +1168,7 @@ function initDashboardData() {
     if (keys.length === 0) {
       keyValEl.innerHTML = '<span style="color:var(--muted)">' + (lang()==='zh'?'尚无 API Key':'No keys yet') + '</span>';
       // 无 key 时仍给反馈（原先按钮无 handler、点了完全没反应）
-      var _noKey = function(){ if (window.AxiomToast) window.AxiomToast.show(lang()==='zh'?'请先创建 API 密钥':'Create an API key first'); };
+      var _noKey = function(){ if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'请先创建 API 密钥':'Create an API key first'); };
       if (revealBtn) revealBtn.onclick = _noKey;
       if (copyBtn) copyBtn.onclick = _noKey;
       if (selEl) selEl.hidden = true;
@@ -1183,7 +1183,7 @@ function initDashboardData() {
       if (fullKeyCache[id]) { cb(fullKeyCache[id]); return; }
       if (pending[id]) { pending[id].push(cb); return; } // 在途请求:回调排队,避免重复 POST / 丢动作
       pending[id] = [cb];
-      AxiomHttp.post('/token/' + id + '/key', {}).then(function(keyData){
+      MexionHttp.post('/token/' + id + '/key', {}).then(function(keyData){
         var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || '');
         if (fk) fullKeyCache[id] = fk; // 只缓存成功取到的真实密钥
         var cbs = pending[id] || []; delete pending[id];
@@ -1248,8 +1248,8 @@ function initDashboardData() {
         cp.onclick = function(e){
           e.stopPropagation();
           fetchFullKey(cp.dataset.copyId, function(fk){
-            if (fk) window.AxiomCopy(fk, cp);
-            else if (window.AxiomToast) window.AxiomToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
+            if (fk) window.MexionCopy(fk, cp);
+            else if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
           });
         };
       });
@@ -1285,14 +1285,14 @@ function initDashboardData() {
       if (!current) return;
       var c = current;
       fetchFullKey(c.id, function(fk){
-        if (fk) { window.AxiomCopy(fk, copyBtn); }   // 失败时别把打码值当真实 key 复制走 —— 提示重试
-        else if (window.AxiomToast) window.AxiomToast.show(lang()==='zh' ? '获取密钥失败，请重试' : 'Failed to fetch key');
+        if (fk) { window.MexionCopy(fk, copyBtn); }   // 失败时别把打码值当真实 key 复制走 —— 提示重试
+        else if (window.MexionToast) window.MexionToast.show(lang()==='zh' ? '获取密钥失败，请重试' : 'Failed to fetch key');
       });
     };
 
     // 复制连接信息 / cURL —— 随当前选中 key + base_url 格式(OpenAI/Claude)生成,失败给提示
-    function apiBase(){ return (window.__axiomApiBase || window.location.origin).replace(/\/+$/, ''); }
-    function curFmt(){ try { return localStorage.getItem('axiom_api_fmt') === 'claude' ? 'claude' : 'openai'; } catch(e){ return 'openai'; } }
+    function apiBase(){ return (window.__mexionApiBase || window.location.origin).replace(/\/+$/, ''); }
+    function curFmt(){ try { return localStorage.getItem('mexion_api_fmt') === 'claude' ? 'claude' : 'openai'; } catch(e){ return 'openai'; } }
     function connStr(fk){
       var base = apiBase();
       return curFmt() === 'claude'
@@ -1318,8 +1318,8 @@ function initDashboardData() {
       var c = current;
       fetchFullKey(c.id, function(fk){
         // 仅接受形如 sk-xxx 的纯密钥(字母/数字/_/-),杜绝异常字符注入到 shell/env 片段
-        if (fk && /^[\w-]+$/.test(fk)) window.AxiomCopy(build(fk), btn);
-        else if (window.AxiomToast) window.AxiomToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
+        if (fk && /^[\w-]+$/.test(fk)) window.MexionCopy(build(fk), btn);
+        else if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
       });
     }
     var copyConnBtn = document.getElementById('copyConnBtn');
@@ -1335,14 +1335,14 @@ function initDashboardData() {
 
   // ── 6. Usage records → heatmap, model mix, live feed, chart ──
   function loadAllUsage() {
-    return AxiomHttp.get('/log/self?p=1&page_size=100').then(function(data) {
+    return MexionHttp.get('/log/self?p=1&page_size=100').then(function(data) {
       var items = (data && (data.items || data.logs)) || (Array.isArray(data) ? data : []);
       var total = (data && (data.total || data.total_count)) || items.length;
       if (total <= 100) return items;
       // 二开修复:后端 page_size 硬上限100(common/page_info.go),原 size=200 实回100、又按 /200 算页数+上限20页→漏拉大半历史→热力图缺天
       var pages = Math.min(Math.ceil(total / 100), 40);
       var reqs = [];
-      for (var p = 2; p <= pages; p++) reqs.push(AxiomHttp.get('/log/self?p=' + p + '&page_size=100'));
+      for (var p = 2; p <= pages; p++) reqs.push(MexionHttp.get('/log/self?p=' + p + '&page_size=100'));
       return Promise.all(reqs).then(function(results) {
         results.forEach(function(r) { items = items.concat((r && (r.items || r.logs)) || []); });
         return items;
@@ -1653,18 +1653,18 @@ function initDashboardData() {
     // Chart summary
     if (__dashState.chartData) updateChartSummary(__dashState.chartData);
     // Re-hydrate greeting
-    if (typeof AxiomAuth !== 'undefined' && AxiomAuth.hydrateUI) AxiomAuth.hydrateUI();
+    if (typeof MexionAuth !== 'undefined' && MexionAuth.hydrateUI) MexionAuth.hydrateUI();
     // 凭证卡(分组标签/状态/最近使用)随语言重渲
     if (window.__credsReRender) window.__credsReRender();
   }
 
-  if (typeof AxiomI18n !== 'undefined') {
-    AxiomI18n.onChange(function(){ setTimeout(reapplyOnLangSwitch, 50); });
+  if (typeof MexionI18n !== 'undefined') {
+    MexionI18n.onChange(function(){ setTimeout(reapplyOnLangSwitch, 50); });
   }
 
   // ── Auto-refresh live feed every 30s ──
   setInterval(function() {
-    AxiomHttp.get('/log/self?p=1&size=8').then(function(data) {
+    MexionHttp.get('/log/self?p=1&size=8').then(function(data) {
       var items = data.items || [];
       if (!items.length || !window.__liveFeedSet) return;
       var feedRows = items.map(function(r) {

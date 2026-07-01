@@ -1,13 +1,13 @@
 /* ───── i18n ───── */
 /* registers strings into shared runtime (assets/i18n.js) */
-AxiomI18n.register({
+MexionI18n.register({
   zh: {
     'plate.meta': 'Vol.\u2009I · Issue 01',
     'plate.label': '§ 论旨',
     'plate.hero1': '一把钥匙，',
     'plate.hero2': '通往所有值得调用的',
     'plate.hero3': '语言模型',
-    'plate.sub': '欧几里得的几何中，公理是被直接接受为真的命题——一切证明从此出发。Axiom 把这种结构带入 AI 时代：一个<strong>统一的 endpoint</strong>，让一切调用<em>从此恒等</em>。',
+    'plate.sub': '欧几里得的几何中，公理是被直接接受为真的命题——一切证明从此出发。Mexion 把这种结构带入 AI 时代：一个<strong>统一的 endpoint</strong>，让一切调用<em>从此恒等</em>。',
     'status.status': '状态', 'status.operational': '正常运行',
     'status.latency': '延迟', 'status.updated': '更新于',
     'top.new': '还没有账号？', 'top.signup': '创建账号',
@@ -22,7 +22,7 @@ AxiomI18n.register({
     'field.show': '显示', 'field.hide': '隐藏',
     'field.caps': '⇧ 大写锁定',
     'field.remember': '保持登录状态',
-    'form.submit': '登录 Axiom',
+    'form.submit': '登录 Mexion',
     'form.no-account': '还没有账号？', 'form.go-signup': '创建账号',
     'form.kbd': '按', 'form.kbd2': '快捷登录',
     'trust.compliance': 'SOC 2 Type II',
@@ -30,14 +30,14 @@ AxiomI18n.register({
     'trust.uptime': '99.99% 可用性',
     'legal.body': '登录即表示你同意',
     'legal.terms': '用户协议', 'legal.and': '与', 'legal.privacy': '隐私政策',
-    'colophon.seal': 'AXIOM · MMXXVI',
-    'colophon.set': 'AXIOM CODE',
+    'colophon.seal': 'MEXION · MMXXVI',
+    'colophon.set': 'MEXION CODE',
     'colophon.edition': '第 0001 号 / 卷 I',
     /* ── SIGNUP ── */
     'top.have': '已有账号？', 'top.signin': '登录',
     'signup.eyebrow': '§ 注册',
     'signup.title': '立此<em>存照</em>。',
-    'signup.lede': '三十秒，加入 Axiom，开启你的统一调用。',
+    'signup.lede': '三十秒，加入 Mexion，开启你的统一调用。',
     'signup.divider': '或自行注册',
     'signup.field.username': '用户名',
     'signup.field.username.hint': '3–20 位字符，不含空格',
@@ -98,10 +98,10 @@ AxiomI18n.register({
     'plate.hero1': 'One key,',
     'plate.hero2': 'every language model',
     'plate.hero3': 'worth calling',
-    'plate.sub': "In Euclid's geometry, an axiom is a proposition accepted as self-evidently true—all proofs depart from here. Axiom brings this structure to the age of AI: a single, <strong>unified endpoint</strong>, where invocation is <em>henceforth identical</em>.",
+    'plate.sub': "In Euclid's geometry, an mexion is a proposition accepted as self-evidently true—all proofs depart from here. Mexion brings this structure to the age of AI: a single, <strong>unified endpoint</strong>, where invocation is <em>henceforth identical</em>.",
     'status.status': 'Status', 'status.operational': 'operational',
     'status.latency': 'Latency', 'status.updated': 'Updated',
-    'top.new': 'New to Axiom?', 'top.signup': 'Create an account',
+    'top.new': 'New to Mexion?', 'top.signup': 'Create an account',
     'form.eyebrow': '§ Sign in',
     'form.title': 'Welcome <em>back.</em>',
     'form.lede': 'Enter your credentials to continue to the console.',
@@ -113,7 +113,7 @@ AxiomI18n.register({
     'field.show': 'Show', 'field.hide': 'Hide',
     'field.caps': '⇧ Caps Lock',
     'field.remember': 'Keep me signed in',
-    'form.submit': 'Sign in to Axiom',
+    'form.submit': 'Sign in to Mexion',
     'form.no-account': 'No account yet?', 'form.go-signup': 'Create one',
     'form.kbd': 'Press', 'form.kbd2': 'to sign in',
     'trust.compliance': 'SOC 2 Type II',
@@ -121,14 +121,14 @@ AxiomI18n.register({
     'trust.uptime': '99.99% Uptime',
     'legal.body': 'By signing in you agree to our',
     'legal.terms': 'User Agreement', 'legal.and': 'and', 'legal.privacy': 'Privacy Policy',
-    'colophon.seal': 'AXIOM · MMXXVI',
-    'colophon.set': 'AXIOM CODE',
+    'colophon.seal': 'MEXION · MMXXVI',
+    'colophon.set': 'MEXION CODE',
     'colophon.edition': 'No. 0001 / Vol. I',
     /* ── SIGNUP ── */
-    'top.have': 'Already an Axiom user?', 'top.signin': 'Sign in',
+    'top.have': 'Already an Mexion user?', 'top.signin': 'Sign in',
     'signup.eyebrow': '§ Join',
     'signup.title': 'Begin <em>here.</em>',
-    'signup.lede': 'Thirty seconds. Join Axiom and unify every model call.',
+    'signup.lede': 'Thirty seconds. Join Mexion and unify every model call.',
     'signup.divider': 'or with email',
     'signup.field.username': 'Username',
     'signup.field.username.hint': '3–20 characters, no spaces',
@@ -197,12 +197,12 @@ AxiomI18n.register({
 })();
 
 /* Add submit busy strings (referenced in form.submit handler below) */
-AxiomI18n.register({
+MexionI18n.register({
   zh: { 'form.submit.busy': '正在登录…', 'form.error.generic': '操作失败，请重试' },
   en: { 'form.submit.busy': 'Signing in…', 'form.error.generic': 'Something went wrong, please try again' },
 });
 
-AxiomI18n.refresh();
+MexionI18n.refresh();
 
 /* ───── Password show/hide ───── */
 const pwdInput  = document.getElementById('password');
@@ -211,7 +211,7 @@ let pwdVisible = false;
 pwdToggle.addEventListener('click', () => {
   pwdVisible = !pwdVisible;
   pwdInput.type = pwdVisible ? 'text' : 'password';
-  pwdToggle.textContent = AxiomI18n.t(pwdVisible ? 'field.hide' : 'field.show');
+  pwdToggle.textContent = MexionI18n.t(pwdVisible ? 'field.hide' : 'field.show');
 });
 
 /* ───── Form submit ───── */
@@ -226,7 +226,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
   const pwdV = form.querySelector('#password');
   const emailMsg = document.getElementById('loginEmailMsg');
   const pwdMsg = document.getElementById('loginPwdMsg');
-  const lang = (typeof AxiomI18n !== 'undefined') ? AxiomI18n.lang : 'zh';
+  const lang = (typeof MexionI18n !== 'undefined') ? MexionI18n.lang : 'zh';
   const accountValue = emailV && typeof emailV.value === 'string' ? emailV.value.trim() : '';
 
   if (emailMsg) { emailMsg.textContent = ''; emailMsg.className = 'field__sublabel'; }
@@ -280,12 +280,12 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
   if (fig) { fig.style.transition = 'transform 0.6s cubic-bezier(0.22,0.61,0.36,1)'; fig.style.transform = 'perspective(800px) rotateX(3deg) rotateY(0deg) translateY(2px)'; }
 
   const submitLabel = btn.querySelector('[data-i18n="form.submit"]');
-  if (submitLabel) submitLabel.textContent = AxiomI18n.t('form.submit.busy');
+  if (submitLabel) submitLabel.textContent = MexionI18n.t('form.submit.busy');
   btn.disabled = true;
   btn.style.opacity = 0.78;
 
   function resetBtn() {
-    if (submitLabel) submitLabel.textContent = AxiomI18n.t('form.submit');
+    if (submitLabel) submitLabel.textContent = MexionI18n.t('form.submit');
     btn.disabled = false;
     btn.style.opacity = '';
     if (fig) fig.style.transform = '';
@@ -293,10 +293,10 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
 
   var rememberInput = document.getElementById('remember');
   Promise.resolve().then(function() {
-    if (!window.AxiomAuth || typeof window.AxiomAuth.login !== 'function') {
-      throw new Error(AxiomI18n.t('form.error.generic'));
+    if (!window.MexionAuth || typeof window.MexionAuth.login !== 'function') {
+      throw new Error(MexionI18n.t('form.error.generic'));
     }
-    return window.AxiomAuth.login(accountValue, pwdV.value, !!(rememberInput && rememberInput.checked));
+    return window.MexionAuth.login(accountValue, pwdV.value, !!(rememberInput && rememberInput.checked));
   }).then(function() {
     setTimeout(function() { window.location.href = '/dashboard'; }, 720);
   }).catch(function(err) {
@@ -309,7 +309,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
       errEl.style.cssText = 'color:var(--verm);font-size:0.82rem;text-align:center;padding:0.5em 0;margin:-0.2em 0 0.4em;';
       form.insertBefore(errEl, form.firstChild);
     }
-    errEl.textContent = err && err.message ? err.message : AxiomI18n.t('form.error.generic');
+    errEl.textContent = err && err.message ? err.message : MexionI18n.t('form.error.generic');
     errEl.style.display = 'block';
     var clearOnInput = function() {
       errEl.style.display = 'none';
@@ -435,7 +435,7 @@ document.addEventListener('keydown', (e) => {
         sendCodeBtn.disabled = false;
         sendCodeBtn.classList.remove('is-counting', 'is-done');
         sendCodeBtn.style.removeProperty('--progress');
-        sendCodeBtn.textContent = AxiomI18n.t('signup.field.send');
+        sendCodeBtn.textContent = MexionI18n.t('signup.field.send');
         sendCodeBtn.setAttribute('data-i18n', 'signup.field.send');
       }
     }
@@ -443,7 +443,7 @@ document.addEventListener('keydown', (e) => {
 
   syncInviteCodeUI();
   syncVerificationUI();
-  window.AxiomLoginSignupState = {
+  window.MexionLoginSignupState = {
     setEmailVerificationRequired: function(value) {
       emailVerificationRequired = !!value;
       syncVerificationUI();
@@ -554,13 +554,13 @@ document.addEventListener('keydown', (e) => {
     var btn = document.getElementById('forgotSubmit');
     var emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRx.test(email)) {
-      if (msgEl) { msgEl.textContent = AxiomI18n.t(email ? 'signup.err.email.format' : 'signup.err.email.empty'); msgEl.className = 'field__sublabel field__sublabel--err is-shown'; }
+      if (msgEl) { msgEl.textContent = MexionI18n.t(email ? 'signup.err.email.format' : 'signup.err.email.empty'); msgEl.className = 'field__sublabel field__sublabel--err is-shown'; }
       return;
     }
     if (msgEl) { msgEl.textContent = ''; msgEl.className = 'field__sublabel'; }
     btn.disabled = true;
-    btn.querySelector('.submit-btn__text').textContent = AxiomI18n.t('forgot.submit.busy');
-    AxiomHttp.get('/reset_password?email=' + encodeURIComponent(email)).then(function() {
+    btn.querySelector('.submit-btn__text').textContent = MexionI18n.t('forgot.submit.busy');
+    MexionHttp.get('/reset_password?email=' + encodeURIComponent(email)).then(function() {
       document.getElementById('forgotSuccess').hidden = false;
       document.getElementById('forgotFields').style.display = 'none';
       btn.style.display = 'none';
@@ -592,7 +592,7 @@ document.addEventListener('keydown', (e) => {
     btn.addEventListener('click', () => {
       visible = !visible;
       inp.type = visible ? 'text' : 'password';
-      btn.textContent = AxiomI18n.t(visible ? 'field.hide' : 'field.show');
+      btn.textContent = MexionI18n.t(visible ? 'field.hide' : 'field.show');
     });
   }
   wirePwdToggle('suPassword', 'suPwdToggle');
@@ -620,10 +620,10 @@ document.addEventListener('keydown', (e) => {
     const v = suUser.value;
     if (!v) { suUserMsg.className = 'field__sublabel'; suUserMsg.textContent = ''; return; }
     if (v.length < 3) {
-      suUserMsg.textContent = AxiomI18n.t('signup.field.username.tooshort');
+      suUserMsg.textContent = MexionI18n.t('signup.field.username.tooshort');
       suUserMsg.className = 'field__sublabel field__sublabel--err is-shown';
     } else if (!usernameRx.test(v)) {
-      suUserMsg.textContent = AxiomI18n.t('signup.field.username.invalid');
+      suUserMsg.textContent = MexionI18n.t('signup.field.username.invalid');
       suUserMsg.className = 'field__sublabel field__sublabel--err is-shown';
     } else {
       suUserMsg.className = 'field__sublabel';
@@ -666,7 +666,7 @@ document.addEventListener('keydown', (e) => {
     suStrength.setAttribute('data-level', String(lvl));
     const k = STRENGTH_KEY[Math.max(1, lvl)];
     suStrengthLabel.setAttribute('data-i18n', k);
-    suStrengthLabel.textContent = AxiomI18n.t(k);
+    suStrengthLabel.textContent = MexionI18n.t(k);
     updateMatch();
   });
   suConfirm.addEventListener('input', updateMatch);
@@ -691,7 +691,7 @@ document.addEventListener('keydown', (e) => {
     sendBtn.disabled = true;
     sendBtn.style.setProperty('--progress', '0');
 
-    var base = AxiomI18n.t('signup.field.resend');
+    var base = MexionI18n.t('signup.field.resend');
     sendBtn.innerHTML = base + ' <span class="code-btn__count">' + n + 's</span>';
     var countEl = sendBtn.querySelector('.code-btn__count');
 
@@ -719,7 +719,7 @@ document.addEventListener('keydown', (e) => {
           sendBtn.classList.remove('is-done');
           sendBtn.style.removeProperty('--progress');
           sendBtn.disabled = false;
-          sendBtn.textContent = AxiomI18n.t('signup.field.send');
+          sendBtn.textContent = MexionI18n.t('signup.field.send');
           sendBtn.setAttribute('data-i18n', 'signup.field.send');
         }, 800);
       } else {
@@ -732,7 +732,7 @@ document.addEventListener('keydown', (e) => {
     if (sendBtn.disabled) return;
     const email = suEmail.value.trim();
     if (!emailRx.test(email)) {
-      codeMsg.textContent = AxiomI18n.t('signup.code.invalid');
+      codeMsg.textContent = MexionI18n.t('signup.code.invalid');
       codeMsg.className   = 'field__sublabel field__sublabel--err is-shown';
       /* nudge focus to the email field + per-field shake */
       suEmail.focus({ preventScroll: true });
@@ -745,19 +745,19 @@ document.addEventListener('keydown', (e) => {
     /* clear data-i18n so the language toggle doesn't overwrite our running label */
     sendBtn.removeAttribute('data-i18n');
     sendBtn.disabled = true;
-    AxiomHttp.get('/verification?email=' + encodeURIComponent(email)).then(function(data) {
-      codeMsg.textContent = AxiomI18n.t('signup.code.sent').replace('{email}', email);
+    MexionHttp.get('/verification?email=' + encodeURIComponent(email)).then(function(data) {
+      codeMsg.textContent = MexionI18n.t('signup.code.sent').replace('{email}', email);
       codeMsg.className = 'field__sublabel field__sublabel--ok is-shown';
       startCountdown(email);
     }).catch(function(err) {
       sendBtn.disabled = false;
       var msg = (err && err.message) ? err.message : '';
       if (msg.toLowerCase().indexOf('frequent') !== -1 || msg.toLowerCase().indexOf('wait') !== -1 || msg.indexOf('429') !== -1 || msg.indexOf('频繁') !== -1) {
-        codeMsg.textContent = AxiomI18n.t('signup.code.frequent').replace('{n}', '60');
+        codeMsg.textContent = MexionI18n.t('signup.code.frequent').replace('{n}', '60');
         codeMsg.className = 'field__sublabel field__sublabel--err is-shown';
         startCountdown(email);
       } else {
-        codeMsg.textContent = msg || AxiomI18n.t('form.error.generic');
+        codeMsg.textContent = msg || MexionI18n.t('form.error.generic');
         codeMsg.className = 'field__sublabel field__sublabel--err is-shown';
       }
     });
@@ -782,7 +782,7 @@ document.addEventListener('keydown', (e) => {
     const co = document.getElementById('suCode').value.trim();
     const terms = document.getElementById('suTerms').checked;
 
-    const sl = (typeof AxiomI18n !== 'undefined') ? AxiomI18n.lang : 'zh';
+    const sl = (typeof MexionI18n !== 'undefined') ? MexionI18n.lang : 'zh';
     const suPwdMsgEl = document.getElementById('suPwdMsg');
     const suConfMsgEl = document.getElementById('suConfMsg');
     const suEmailMsgEl = document.getElementById('suEmailMsg');
@@ -800,21 +800,21 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (!usernameRx.test(u)) {
-      addErr('suUserField', suUserMsgEl, AxiomI18n.t(u.length < 3 ? 'signup.err.user.short' : 'signup.err.user.format'), '');
+      addErr('suUserField', suUserMsgEl, MexionI18n.t(u.length < 3 ? 'signup.err.user.short' : 'signup.err.user.format'), '');
     }
     if (p.length < 8) {
-      addErr(suPwdField, suPwdMsgEl, AxiomI18n.t('signup.err.pwd.short'), '');
+      addErr(suPwdField, suPwdMsgEl, MexionI18n.t('signup.err.pwd.short'), '');
     }
     if (p !== c) {
-      addErr(suConfField, suConfMsgEl, AxiomI18n.t('signup.err.pwd.mismatch'), '');
+      addErr(suConfField, suConfMsgEl, MexionI18n.t('signup.err.pwd.mismatch'), '');
     } else if (c.length < 8 && p.length >= 8) {
-      addErr(suConfField, suConfMsgEl, AxiomI18n.t('signup.err.pwd.confirm'), '');
+      addErr(suConfField, suConfMsgEl, MexionI18n.t('signup.err.pwd.confirm'), '');
     }
     if (!emailRx.test(em)) {
-      addErr(suEmailField, suEmailMsgEl, AxiomI18n.t(em ? 'signup.err.email.format' : 'signup.err.email.empty'), '');
+      addErr(suEmailField, suEmailMsgEl, MexionI18n.t(em ? 'signup.err.email.format' : 'signup.err.email.empty'), '');
     }
     if (emailVerificationRequired && !/^[a-zA-Z0-9]{6}$/i.test(co)) {
-      addErr('suCodeField', suCodeMsgEl, AxiomI18n.t(co ? 'signup.err.code.format' : 'signup.err.code.empty'), '');
+      addErr('suCodeField', suCodeMsgEl, MexionI18n.t(co ? 'signup.err.code.format' : 'signup.err.code.empty'), '');
     }
 
     if (!terms || offenders.length) {
@@ -855,12 +855,12 @@ document.addEventListener('keydown', (e) => {
     btn.classList.add('is-busy');
     btn.disabled = true;
     const orig = btn.querySelector('[data-i18n="signup.submit"]');
-    if (orig) orig.textContent = AxiomI18n.t('signup.submit.busy');
+    if (orig) orig.textContent = MexionI18n.t('signup.submit.busy');
 
     function resetSignupBtn() {
       btn.classList.remove('is-busy');
       btn.disabled = false;
-      if (orig) orig.textContent = AxiomI18n.t('signup.submit');
+      if (orig) orig.textContent = MexionI18n.t('signup.submit');
       if (fig) fig.style.transform = '';
     }
 
@@ -873,7 +873,7 @@ document.addEventListener('keydown', (e) => {
     if (emailVerificationRequired) regBody.verification_code = co;
     if (refCode) regBody.aff_code = refCode;
 
-    AxiomHttp.post('/user/register', regBody).then(function() {
+    MexionHttp.post('/user/register', regBody).then(function() {
       setTimeout(function() { window.location.href = '/login'; }, 720);
     }).catch(function(err) {
       resetSignupBtn();
@@ -884,7 +884,7 @@ document.addEventListener('keydown', (e) => {
         errEl.style.cssText = 'color:var(--verm);font-size:0.82rem;text-align:center;padding:0.5em 0;margin:-0.2em 0 0.4em;';
         document.getElementById('signupForm').insertBefore(errEl, document.getElementById('signupForm').firstChild);
       }
-      errEl.textContent = err && err.message ? err.message : AxiomI18n.t('form.error.generic');
+      errEl.textContent = err && err.message ? err.message : MexionI18n.t('form.error.generic');
       errEl.style.display = 'block';
       var signupForm = document.getElementById('signupForm');
       var clearSignupErr = function() { errEl.style.display = 'none'; };
@@ -904,18 +904,18 @@ document.addEventListener('keydown', (e) => {
 
 /* ───── SSO buttons: hide/show + bind click ───── */
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AxiomHttp === 'undefined') return;
+  if (typeof MexionHttp === 'undefined') return;
   var ssoRows = document.querySelectorAll('.sso-row');
   var dividers = document.querySelectorAll('.divider');
   if (!ssoRows.length) return;
 
-  AxiomHttp.get('/status').then(function(s) {
+  MexionHttp.get('/status').then(function(s) {
     var google = s.oidc_enabled;
     var github = s.github_oauth;
     if (typeof s.email_verification === 'boolean' &&
-        window.AxiomLoginSignupState &&
-        typeof window.AxiomLoginSignupState.setEmailVerificationRequired === 'function') {
-      window.AxiomLoginSignupState.setEmailVerificationRequired(s.email_verification);
+        window.MexionLoginSignupState &&
+        typeof window.MexionLoginSignupState.setEmailVerificationRequired === 'function') {
+      window.MexionLoginSignupState.setEmailVerificationRequired(s.email_verification);
     }
     ssoRows.forEach(function(ssoRow) {
       if (!google) { var g = ssoRow.querySelector('[aria-label*="Google"]'); if (g) g.style.display = 'none'; }
@@ -934,12 +934,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (label.indexOf('Google') !== -1) provider = 'google';
     else if (label.indexOf('GitHub') !== -1) provider = 'github';
     if (!provider) return;
-    sessionStorage.setItem('axiom_oauth_provider', provider);
+    sessionStorage.setItem('mexion_oauth_provider', provider);
     var oauthRefCode = new URLSearchParams(location.search).get('ref') || '';
     if (oauthRefCode) {
-      sessionStorage.setItem('axiom_oauth_ref', oauthRefCode);
+      sessionStorage.setItem('mexion_oauth_ref', oauthRefCode);
     } else {
-      sessionStorage.removeItem('axiom_oauth_ref');
+      sessionStorage.removeItem('mexion_oauth_ref');
     }
     btn.style.pointerEvents = 'none';
     btn.style.opacity = '0.6';

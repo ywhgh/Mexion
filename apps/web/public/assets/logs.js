@@ -1,7 +1,7 @@
 /* ───────── I18N DICTIONARY ───────── */
-AxiomI18n.register({
+MexionI18n.register({
   en: {
-    'logs.tab.title': 'Axiom — Logs',
+    'logs.tab.title': 'Mexion — Logs',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': 'Workspace',
     'nav.section.account': 'Account',
@@ -122,7 +122,7 @@ AxiomI18n.register({
     'logs.group.exp.label': 'Experimental'
   },
   zh: {
-    'logs.tab.title': 'Axiom — 调用日志',
+    'logs.tab.title': 'Mexion — 调用日志',
     'nav.brand.plan': 'Pro',
     'nav.section.workspace': '工作区',
     'nav.section.account': '账户',
@@ -245,7 +245,7 @@ AxiomI18n.register({
 });
 
 function tt(k, vars){
-  var s = AxiomI18n.t(k);
+  var s = MexionI18n.t(k);
   if (vars) for (var v in vars) s = s.replace('{' + v + '}', vars[v]);
   return s;
 }
@@ -262,10 +262,10 @@ function positiveNumber(v) {
 }
 
 function loadGroupsForLogs() {
-  if (typeof AxiomHttp === 'undefined') return Promise.resolve();
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
   return Promise.all([
-    AxiomHttp.get('/user/groups'),
-    AxiomHttp.get('/user/group-access').catch(function(){ return null; })
+    MexionHttp.get('/user/groups'),
+    MexionHttp.get('/user/group-access').catch(function(){ return null; })
   ]).then(function(res) {
     var data = res[0], accessData = res[1];
     var list = [];
@@ -339,7 +339,7 @@ var MODELS = {};
 /* Logs — fetched from API, starts empty */
 let LOGS = [];
 
-AxiomI18n.register({
+MexionI18n.register({
   en: { 'logs.empty.title': 'No logs yet', 'logs.empty.sub': 'Logs will appear here once you start making API calls.' },
   zh: { 'logs.empty.title': '暂无日志', 'logs.empty.sub': '开始调用 API 后，日志将在此显示。' },
 });
@@ -468,11 +468,11 @@ function buildLogListPath(page, pageSize){
 }
 
 function loadLogs(page, pageSize) {
-  if (typeof AxiomHttp === 'undefined') return;
+  if (typeof MexionHttp === 'undefined') return;
   page = page || 1;
   pageSize = pageSize || 20;
   var loadId = ++LOG_LIST_LOAD_ID;
-  AxiomHttp.get(buildLogListPath(page, pageSize)).then(function(data) {
+  MexionHttp.get(buildLogListPath(page, pageSize)).then(function(data) {
     if (loadId !== LOG_LIST_LOAD_ID) return;
     var items = data.items || [];
     ALL_LOGS = items.map(mapUsageLog);
@@ -497,8 +497,8 @@ function renderStream() {
     if (detail) detail.classList.remove('is-on');
     body.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--mute-2);">' +
       '<div style="font-size:40px;margin-bottom:12px;opacity:0.3;">§</div>' +
-      '<div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px;">' + AxiomI18n.t('logs.empty.title') + '</div>' +
-      '<div style="font-size:13px;">' + AxiomI18n.t('logs.empty.sub') + '</div>' +
+      '<div style="font-size:15px;font-weight:500;color:var(--ink);margin-bottom:6px;">' + MexionI18n.t('logs.empty.title') + '</div>' +
+      '<div style="font-size:13px;">' + MexionI18n.t('logs.empty.sub') + '</div>' +
     '</div>';
     return;
   }
@@ -550,7 +550,7 @@ function updatePageInfo(total, page, pageSize, pages) {
   var nav = document.getElementById('pgNav');
   if (!nav) return;
 
-  var zh = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'zh');
+  var zh = (typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'zh');
   var html = '';
 
   html += '<button class="pager__btn" data-go="prev"' + (page <= 1 ? ' disabled' : '') + '>' + (zh ? '‹ 上一页' : '‹ Prev') + '</button>';
@@ -578,7 +578,7 @@ function updatePageInfo(total, page, pageSize, pages) {
 var LAST_AGG = null;
 var DASH_LOAD_ID = 0; // 二开：快速刷新时防止多个 loadDashboard 竞态覆盖(只采纳最新一次)
 var CACHE_DATE = new Date().toISOString().slice(0, 10);
-var CACHE_KEY = 'axiom_agg_v2_' + CACHE_DATE; // v2: 分组经济改累计口径,失效旧今日缓存
+var CACHE_KEY = 'mexion_agg_v2_' + CACHE_DATE; // v2: 分组经济改累计口径,失效旧今日缓存
 
 function cacheGet() {
   try {
@@ -590,7 +590,7 @@ function cacheGet() {
 
 function cacheSet(data) {
   Object.keys(localStorage).forEach(function(k) {
-    if (k.indexOf('axiom_agg_') === 0 && k !== CACHE_KEY) localStorage.removeItem(k);
+    if (k.indexOf('mexion_agg_') === 0 && k !== CACHE_KEY) localStorage.removeItem(k);
   });
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
 }
@@ -657,7 +657,7 @@ function updateKPI(agg) {
   var ed = document.getElementById('kpiErrDelta');
   if (ed && total > 0) {
     var rate = (agg.errors / total * 100).toFixed(2);
-    ed.textContent = rate + (AxiomI18n.lang === 'en' ? '% error rate' : '% 错误率');
+    ed.textContent = rate + (MexionI18n.lang === 'en' ? '% error rate' : '% 错误率');
   }
 
   var l = document.getElementById('kpiLat');
@@ -684,7 +684,7 @@ function updateKPI(agg) {
 function updateHeroSub(agg) {
   var el = document.getElementById('heroSub');
   if (!el) return;
-  var zh = AxiomI18n.lang !== 'en';
+  var zh = MexionI18n.lang !== 'en';
   var durStr = (agg.avgTtfb > 0) ? fmtDur(agg.avgTtfb) : '—';
   var total = (agg.calls || 0) + (agg.errors || 0); // 总尝试 = 成功 + 异常
   el.innerHTML = zh
@@ -701,20 +701,20 @@ function renderStatsKPI(){
   if (typeof window.__glRender === 'function') window.__glRender();
 }
 function loadStatsKPI() {
-  if (typeof AxiomHttp === 'undefined') return;
-  AxiomHttp.get('/user/self').then(function(u) {
+  if (typeof MexionHttp === 'undefined') return;
+  MexionHttp.get('/user/self').then(function(u) {
     STATS.calls = u.request_count || 0;
     STATS.cost = (u.used_quota || 0) / 500000;
     renderStatsKPI();
   }).catch(function(){});
   // 二开(2026-06-28):异常 = 用户「真实可见失败请求数」(后端按 request_id 去重 + 排除重试已恢复),
   // 不再用 type5 错误日志条数(relay 重试循环里每个失败跳各记一条 → 把透明救回的失败也算进去,致错误率虚高到 51%)。
-  AxiomHttp.get('/log/self/error_summary').then(function(data) {
+  MexionHttp.get('/log/self/error_summary').then(function(data) {
     STATS.errors = (data && data.failed != null) ? data.failed : 0;
     renderStatsKPI();
   }).catch(function(){
     // 回退:旧后端无该端点 → 退回 type5 总数(口径偏高,但保证有值)。
-    AxiomHttp.get('/log/self?type=5&p=1&size=1').then(function(data) {
+    MexionHttp.get('/log/self?type=5&p=1&size=1').then(function(data) {
       STATS.errors = (data && data.total) || 0;
       renderStatsKPI();
     }).catch(function(){});
@@ -741,7 +741,7 @@ function loadDashboard(fresh) {
     return;
   }
 
-  AxiomHttp.get('/log/self?p=1&page_size=100').then(function(data) {
+  MexionHttp.get('/log/self?p=1&page_size=100').then(function(data) {
     var items = data.items || [];
 
     var needMore = (data.total || 0) > items.length;
@@ -753,7 +753,7 @@ function loadDashboard(fresh) {
     // 分组经济要与累计「总开销」同口径 → 按 total/100 拉全部(上限40页=4000条;更多则近似)。
     var aggPages = Math.min(Math.ceil((data.total || 0) / 100), 40);
     for (var p = 2; p <= aggPages; p++) {
-      reqs.push(AxiomHttp.get('/log/self?p=' + p + '&page_size=100'));
+      reqs.push(MexionHttp.get('/log/self?p=' + p + '&page_size=100'));
     }
     Promise.all(reqs).then(function(pages) {
       var extra = [];
@@ -808,12 +808,12 @@ function ksDataKey(k){
 }
 
 function loadKeySpend(){
-  if (typeof AxiomHttp === 'undefined') return;
+  if (typeof MexionHttp === 'undefined') return;
   KS_LOADING_KEYS = true;
   renderKeySpend();
   var acc = [];
   (function page(p){
-    return AxiomHttp.get('/token/?p=' + p + '&size=100').then(function(data){
+    return MexionHttp.get('/token/?p=' + p + '&size=100').then(function(data){
       var items = tokenItemsFromResponse(data);
       acc = acc.concat(items || []);
       if (items && items.length >= 100 && p < 20) return page(p + 1); // 分页:满页继续,上限 20 页(2000 key)
@@ -842,7 +842,7 @@ function loadKeySpend(){
 // 时间窗:对累计 top-N 的 key 各查一次 /log/self/stat(DB 精确求和,不受日志加载条数上限影响),并发。
 function loadKeyWindow(mode){
   var sec = KS_RANGE_SEC[mode];
-  if (!sec || KS_LOADING[mode] || typeof AxiomHttp === 'undefined' || !KEY_SPEND.length) return;
+  if (!sec || KS_LOADING[mode] || typeof MexionHttp === 'undefined' || !KEY_SPEND.length) return;
   KS_LOADING[mode] = true;
   var now = Math.floor(Date.now() / 1000), start = now - sec, out = {};
   var keys = KEY_SPEND.slice().sort(function(a, b){ return b.usd - a.usd; }).slice(0, KS_MAX_WINDOW_KEYS);
@@ -851,7 +851,7 @@ function loadKeyWindow(mode){
       + (k.id ? '&token_id=' + encodeURIComponent(k.id) : '')
       + '&token_name=' + encodeURIComponent(k.name)
       + '&start_timestamp=' + start + '&end_timestamp=' + now;
-    return AxiomHttp.get('/log/self/stat' + qs).then(function(d){
+    return MexionHttp.get('/log/self/stat' + qs).then(function(d){
       out[ksDataKey(k)] = (((d && d.quota) != null ? d.quota : (d && d.data && d.data.quota)) || 0) / 500000;
     }).catch(function(){ out[ksDataKey(k)] = 0; });
   })).then(function(){
@@ -861,14 +861,14 @@ function loadKeyWindow(mode){
 }
 function ksFmtLastUsed(sec){
   if (!sec || sec <= 0) return '—';
-  var en = (window.AxiomI18n && AxiomI18n.lang === 'en');
+  var en = (window.MexionI18n && MexionI18n.lang === 'en');
   var days = Math.floor((Date.now() - sec * 1000) / 86400000);
   if (days <= 0) return en ? 'today' : '今天';
   if (days < 30) return en ? (days + 'd ago') : (days + ' 天前');
   return new Date(sec * 1000).toLocaleDateString();
 }
 function ksModeLabel(mode){
-  var en = (window.AxiomI18n && AxiomI18n.lang === 'en');
+  var en = (window.MexionI18n && MexionI18n.lang === 'en');
   if (mode === 'total') return en ? 'total' : '累计';
   return (en ? 'last ' : '近 ') + mode;
 }
@@ -877,7 +877,7 @@ function renderKeySpend(){
   var rows = document.getElementById('ksRows');
   var meta = document.getElementById('ksMeta');
   if (!rows) return;
-  var en = (window.AxiomI18n && AxiomI18n.lang === 'en');
+  var en = (window.MexionI18n && MexionI18n.lang === 'en');
   var winMode = KS_MODE !== 'total';
   var winData = winMode ? (KS_WINDOW[KS_MODE] || null) : null;
   var loading = (KS_LOADING_KEYS && !KEY_SPEND.length) || (winMode && !winData);
@@ -952,7 +952,7 @@ function wireKeySpendTabs(){
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AxiomAuth !== 'undefined') AxiomAuth.guard();
+  if (typeof MexionAuth !== 'undefined') MexionAuth.guard();
   initPulseTooltip();
   wireKeySpendTabs();
   loadKeySpend();
@@ -960,7 +960,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDashboard();
   });
   document.addEventListener('user-menu:signout', function() {
-    if (typeof AxiomAuth !== 'undefined') AxiomAuth.logout();
+    if (typeof MexionAuth !== 'undefined') MexionAuth.logout();
   });
 });
 
@@ -987,7 +987,7 @@ function renderPulse(pulse) {
     ax += '<span>' + (minsAgo === 60 ? '-60m' : minsAgo === 45 ? '-45' : minsAgo === 30 ? '-30' : minsAgo === 15 ? '-15' : minsAgo === 1 ? 'now' : '') + '</span>';
   }
   var hasActivity = Object.keys(pulse).some(function(k){ return pulse[k] && pulse[k].count > 0; });
-  grid.innerHTML = bars + (hasActivity ? '' : '<div class="pulse__empty"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v3M8 10v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + AxiomI18n.t('logs.pulse.idle') + '</div>');
+  grid.innerHTML = bars + (hasActivity ? '' : '<div class="pulse__empty"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v3M8 10v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' + MexionI18n.t('logs.pulse.idle') + '</div>');
   grid.classList.toggle('is-idle', !hasActivity);
   var axis = grid.nextElementSibling;
   if (axis) axis.innerHTML = ax;
@@ -1005,10 +1005,10 @@ function initPulseTooltip() {
     var mins = parseInt(b.dataset.mins, 10);
     var cnt = parseInt(b.dataset.cnt, 10);
     var st = b.dataset.st;
-    document.getElementById('ptTime').textContent = mins === 1 ? AxiomI18n.t('logs.pulse.justnow') : tt('logs.pulse.min', { n: mins });
+    document.getElementById('ptTime').textContent = mins === 1 ? MexionI18n.t('logs.pulse.justnow') : tt('logs.pulse.min', { n: mins });
     document.getElementById('ptCount').textContent = tt('logs.pulse.calls', { n: cnt });
     var stKey = { ok: 'logs.pulse.st.ok', warn: 'logs.pulse.st.warn', err: 'logs.pulse.st.err', idle: 'logs.pulse.st.idle' }[st];
-    document.getElementById('ptDetail').textContent = AxiomI18n.t(stKey);
+    document.getElementById('ptDetail').textContent = MexionI18n.t(stKey);
     requestAnimationFrame(function() {
       var pulseEl = grid.closest('.pulse').getBoundingClientRect();
       var gridR = grid.getBoundingClientRect();
@@ -1050,9 +1050,9 @@ function fmtTok(n) {
   var mode = 'cost';
 
   function render() {
-    var lang = AxiomI18n.lang || 'zh';
+    var lang = MexionI18n.lang || 'zh';
     var legendEl = legendKey.parentElement.querySelector('span');
-    if (legendEl) legendEl.innerHTML = AxiomI18n.t('logs.gl.legend.' + mode);
+    if (legendEl) legendEl.innerHTML = MexionI18n.t('logs.gl.legend.' + mode);
 
     if (!GL_COMPUTED || Object.keys(GL_COMPUTED).length === 0) {
       var msg = lang === 'en' ? 'No group data yet — make API calls to see statistics' : '暂无分组数据，开始调用 API 后将在此显示统计';
@@ -1192,9 +1192,9 @@ function logErrCode(l){
   return m ? m[1] : '';
 }
 function logErrTitle(l){ return String((l && l.err) || '').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-// 二开:异常结束原因 → 简短标签(状态药丸 + tooltip)。中/英随 AxiomI18n.lang。
+// 二开:异常结束原因 → 简短标签(状态药丸 + tooltip)。中/英随 MexionI18n.lang。
 function endReasonLabel(r){
-  var en = (typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+  var en = (typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
   var M = {
     timeout:['超时','timeout'], client_gone:['客户端断开','client gone'], client_disconnect:['客户端断开','client gone'],
     context_canceled:['客户端断开','canceled'], scanner_error:['流中断','stream broke'], ping_fail:['连接中断','conn lost'],
@@ -1204,16 +1204,16 @@ function endReasonLabel(r){
 }
 function statusPill(l){
   if (l.st==='ok') return `<span class="pill pill--ok"><span class="pill__dot"></span>ok</span>`;
-  var en = (typeof AxiomI18n!=='undefined' && AxiomI18n.lang === 'en');
+  var en = (typeof MexionI18n!=='undefined' && MexionI18n.lang === 'en');
   var ttl = logErrTitle(l) || endReasonLabel(l.endReason);
   if (l.st==='recovered'){
     // 二开:失败跳但同请求最终重试成功——展示「已重试成功」而非红错(后端 retry_recovered)。
-    var lblR = (typeof AxiomI18n!=='undefined' && AxiomI18n.t ? AxiomI18n.t('logs.status.recovered') : '已重试成功');
+    var lblR = (typeof MexionI18n!=='undefined' && MexionI18n.t ? MexionI18n.t('logs.status.recovered') : '已重试成功');
     var ttlR = en ? 'This attempt failed but the request succeeded after an automatic retry' : '本跳失败,但该请求经自动重试后已成功';
     return `<span class="pill pill--recovered" title="${ttlR}"><span class="pill__dot"></span>${lblR}</span>`;
   }
   if (l.st==='err'){
-    var lbl = logErrCode(l) || endReasonLabel(l.endReason) || (typeof AxiomI18n!=='undefined' && AxiomI18n.t ? AxiomI18n.t('logs.status.failed') : '失败');
+    var lbl = logErrCode(l) || endReasonLabel(l.endReason) || (typeof MexionI18n!=='undefined' && MexionI18n.t ? MexionI18n.t('logs.status.failed') : '失败');
     return `<span class="pill pill--err" title="${ttl}"><span class="pill__dot"></span>${lbl}</span>`;
   }
   if (l.st==='warn'){
@@ -1229,7 +1229,7 @@ function fmtDur(ms){
   return (ms / 60000).toFixed(1) + 'min';
 }
 // 红黄绿判定 — 与 newapi 管理面板 web/default/src/features/usage-logs/lib/format.ts 精确对齐
-// (后端不定义阈值,口径在前端两处;三方对齐铁律见记忆 axiom-three-way-alignment)。
+// (后端不定义阈值,口径在前端两处;三方对齐铁律见记忆 mexion-three-way-alignment)。
 // 总耗时 getResponseTimeColor(吞吐量感知):输出≥100 token 且耗时>0 → 按 tok/s(≥30绿 / ≥15黄 / 否则红);
 // 否则按纯时间 getTimeColor(<10s绿 / <30s黄 / 否则红)。空 class = 常规(绿)。
 function durCls(ms, outTok){
@@ -1274,7 +1274,7 @@ function tokView(l){
   const cacheVol = l.tok.c ? ' · ' + fmtK(l.tok.c) : '';  // 暴露缓存读量,让成本可理解(否则只见 ↓9 却很贵)
   return `<span class="log__tok">
     <span class="log__tok-row"><span class="log__tok-arr is-in">↓</span><b>${fmtK(l.tok.i)}</b><span class="log__tok-arr is-out">↑</span><b>${fmtK(l.tok.o)}</b></span>
-    <span class="log__tok-cache">${cache?`<i></i>${tt('logs.stream.cache.hit',{n:cache})}${cacheVol}`:`<span style="color:var(--mute-3);">${AxiomI18n.t('logs.stream.cache.none')}</span>`}</span>
+    <span class="log__tok-cache">${cache?`<i></i>${tt('logs.stream.cache.hit',{n:cache})}${cacheVol}`:`<span style="color:var(--mute-3);">${MexionI18n.t('logs.stream.cache.none')}</span>`}</span>
   </span>`;
 }
 function logRow(l, isNew){
@@ -1306,7 +1306,7 @@ function logRow(l, isNew){
 var currentPayloads = { req: '', res: '', hdr: '' };
 function _plEsc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function buildPayloads(l){
-  var zh = !(typeof AxiomI18n !== 'undefined' && AxiomI18n.lang === 'en');
+  var zh = !(typeof MexionI18n !== 'undefined' && MexionI18n.lang === 'en');
   var note = zh ? '完整请求/响应正文不被中转层持久化；以下为本次调用真实元数据'
                 : "Request/response bodies are not stored by the relay; below is this call's real metadata";
   function k(s){ return '<span class="pl-k">"' + _plEsc(s) + '"</span>'; }
@@ -1320,14 +1320,14 @@ function buildPayloads(l){
             '\n  },\n  ' + k('latency_ms') + ': ' + nv(l.lat) + ',\n  ' + k('ttfb_ms') + ': ' + nv(l.ttfb) +
             ',\n  ' + k('cost_usd') + ': ' + nv((l.cost || 0).toFixed ? (l.cost).toFixed(6) : l.cost) +
             ',\n  ' + k('status') + ': ' + sv(l.st) + '\n}';
-  var hdr = '<span class="pl-c"># request</span>\n<span class="pl-k">x-axiom-group</span>: ' + _plEsc(l.g) +
-            '\n<span class="pl-k">x-axiom-request-id</span>: ' + _plEsc(l.id) + '\n<span class="pl-k">time</span>: ' + _plEsc(l.t) +
+  var hdr = '<span class="pl-c"># request</span>\n<span class="pl-k">x-mexion-group</span>: ' + _plEsc(l.g) +
+            '\n<span class="pl-k">x-mexion-request-id</span>: ' + _plEsc(l.id) + '\n<span class="pl-k">time</span>: ' + _plEsc(l.t) +
             '\n\n<span class="pl-c"># response</span>\n<span class="pl-k">status</span>: ' + _plEsc(l.st) +
             '\n<span class="pl-k">model</span>: ' + _plEsc(l.model);
   // 真实可用的 cURL 模板（按本条日志的 model 生成；正文不被持久化，故用占位 messages）。
   var curlBody = JSON.stringify({ model: l.model, messages: [{ role: 'user', content: 'Hello' }], stream: !!l.stream });
-  var curl = 'curl https://api.axiomcode.dev/v1/chat/completions \\\n' +
-             '  -H "Authorization: Bearer $AXIOM_API_KEY" \\\n' +
+  var curl = 'curl https://api.mexioncode.dev/v1/chat/completions \\\n' +
+             '  -H "Authorization: Bearer $MEXION_API_KEY" \\\n' +
              '  -H "Content-Type: application/json" \\\n' +
              "  -d '" + curlBody + "'";
   return { req: req, res: res, hdr: hdr, curl: curl };
@@ -1347,10 +1347,10 @@ let CURRENT_LOG_ID = null;
 function renderTrace(reqId){
   var el = document.getElementById('kvTrace');
   if (!el) return;
-  var zh = AxiomI18n.lang !== 'en';
+  var zh = MexionI18n.lang !== 'en';
   if (!reqId){ el.textContent = '—'; return; }
   el.textContent = zh ? '加载中…' : 'loading…';
-  AxiomHttp.get('/log/self/trace?request_id=' + encodeURIComponent(reqId)).then(function(d){
+  MexionHttp.get('/log/self/trace?request_id=' + encodeURIComponent(reqId)).then(function(d){
     var atts = (d && d.attempts) || [];
     if (!atts.length){ el.textContent = '—'; return; }
     var chain = atts.map(function(a){
@@ -1380,12 +1380,12 @@ function selectLog(id){
   var iconEl = document.getElementById('dhIcon');
   iconEl.innerHTML = pIconSrc ? '<img src="' + pIconSrc + '" width="14" height="14" alt="" style="display:block;filter:brightness(0) invert(1)" loading="lazy">' : (l.model||'?').charAt(0).toUpperCase();
   iconEl.style.background = pColor;
-  document.getElementById('dhGroup').innerHTML = `${AxiomI18n.t('logs.detail.group.label')} <b>${esc(g.name)}</b>`;
+  document.getElementById('dhGroup').innerHTML = `${MexionI18n.t('logs.detail.group.label')} <b>${esc(g.name)}</b>`;
   document.getElementById('dhTime').textContent = `${l.t} · ${l._date || ''}`;
   const pill = document.getElementById('dhPill');
   pill.className = 'pill pill--' + (l.st==='ok'?'ok':l.st==='recovered'?'recovered':l.st==='err'?'err':'warn');
-  var _en = (typeof AxiomI18n!=='undefined' && AxiomI18n.lang==='en');
-  pill.innerHTML = `<span class="pill__dot"></span>${l.st==='ok'?'200 ok': l.st==='recovered'?(typeof AxiomI18n!=='undefined'&&AxiomI18n.t?AxiomI18n.t('logs.status.recovered'):'已重试成功'): (logErrCode(l) ? 'HTTP '+logErrCode(l) : (endReasonLabel(l.endReason) || (l.st==='warn'?(_en?'degraded':'降级'):(_en?'failed':'失败'))))}`;
+  var _en = (typeof MexionI18n!=='undefined' && MexionI18n.lang==='en');
+  pill.innerHTML = `<span class="pill__dot"></span>${l.st==='ok'?'200 ok': l.st==='recovered'?(typeof MexionI18n!=='undefined'&&MexionI18n.t?MexionI18n.t('logs.status.recovered'):'已重试成功'): (logErrCode(l) ? 'HTTP '+logErrCode(l) : (endReasonLabel(l.endReason) || (l.st==='warn'?(_en?'degraded':'降级'):(_en?'failed':'失败'))))}`;
   // 二开：错误/降级调用 → 右侧详情面板展示报错或异常结束原因；状态徽章保持清爽
   const errBox = document.getElementById('dhErr');
   if (errBox){
@@ -1454,14 +1454,14 @@ function selectLog(id){
   // savings hint
   const cheapest = compareOrder.filter(function(gk){ return !!GROUPS[gk]; }).map(gk=>preGroup*GROUPS[gk].mult).reduce((a,b)=>Math.min(a,b), Infinity);
   const save = l.cost - cheapest;
-  document.getElementById('cdSavings').textContent = save > 0.000001 ? tt('logs.detail.cd.savings', { n: fmtCost(save).replace('$','') }) : AxiomI18n.t('logs.detail.cd.optimal');
+  document.getElementById('cdSavings').textContent = save > 0.000001 ? tt('logs.detail.cd.savings', { n: fmtCost(save).replace('$','') }) : MexionI18n.t('logs.detail.cd.optimal');
   document.getElementById('cdSavings').style.color = save > 0.001 ? 'var(--green)' : 'var(--mute-2)';
 
   // waterfall — real data from API
   const ttfb = l.ttfb || 0;
   const stream = ttfb > 0 ? Math.max(0, l.lat - ttfb) : 0;
   const total = l.lat || 1;
-  const zh = AxiomI18n.lang !== 'en';
+  const zh = MexionI18n.lang !== 'en';
   const segs = ttfb > 0 ? [
     { lbl: zh ? '首字延迟 (TTFB)' : 'TTFB', ms:ttfb,   cls:'is-infer', off:0 },
     { lbl: zh ? '流式输出' : 'Streaming',    ms:stream, cls:'is-stream', off:ttfb },
@@ -1482,7 +1482,7 @@ function selectLog(id){
   // meta
   document.getElementById('kvIo').textContent = `${fmt(l.tok.i)} / ${fmt(l.tok.o)} tok`;
   var cTotalIn = l.cacheInPrompt ? l.tok.i : (l.tok.c + l.tok.i);
-  document.getElementById('kvCache').textContent = l.tok.c ? `${fmt(l.tok.c)} tok · ${cTotalIn > 0 ? Math.round(l.tok.c / cTotalIn * 100) : 0}%` : AxiomI18n.t('logs.detail.meta.cache.none');
+  document.getElementById('kvCache').textContent = l.tok.c ? `${fmt(l.tok.c)} tok · ${cTotalIn > 0 ? Math.round(l.tok.c / cTotalIn * 100) : 0}%` : MexionI18n.t('logs.detail.meta.cache.none');
   document.getElementById('kvStream').textContent = l.ttfb > 0 ? `${l.stream ? 'stream' : 'sync'} · TTFB ${fmtDur(l.ttfb)}` : (l.stream ? 'stream' : 'sync');
   renderTrace(l.reqId); // 二开:请求重试链路+最终结局
 
@@ -1513,20 +1513,20 @@ document.querySelectorAll('[data-pl]').forEach(b=>{
       try { document.execCommand('copy'); } catch(e) {}
       document.body.removeChild(ta);
     }
-    if (text && String(text).trim() && window.AxiomToast && window.AxiomToast.show) {
-      window.AxiomToast.show((window.AxiomI18n && AxiomI18n.lang === 'en') ? 'Copied' : '已复制');
+    if (text && String(text).trim() && window.MexionToast && window.MexionToast.show) {
+      window.MexionToast.show((window.MexionI18n && MexionI18n.lang === 'en') ? 'Copied' : '已复制');
     }
   }
   var copyIdBtn = document.querySelector('.dh__copy');
   if (copyIdBtn) copyIdBtn.addEventListener('click', function(){
     var idEl = document.getElementById('dhId');
-    if (idEl) (window.AxiomCopy || copyText)(idEl.textContent, copyIdBtn);
+    if (idEl) (window.MexionCopy || copyText)(idEl.textContent, copyIdBtn);
   });
   var curlBtn = document.querySelector('.df__btn--primary');
   if (curlBtn) curlBtn.addEventListener('click', function(){
     // 复制本条日志的真实 cURL 模板（原先复制的是展示用 JSON、名不副实）。
     // curlBtn 是文字按钮，不换图标（会丢"复制 cURL"文字），保留 is-ok 变色 + 全局 toast。
-    if (currentPayloads.curl) { (window.AxiomCopy || copyText)(currentPayloads.curl); curlBtn.classList.add('is-ok'); setTimeout(function(){ curlBtn.classList.remove('is-ok'); }, 1200); }
+    if (currentPayloads.curl) { (window.MexionCopy || copyText)(currentPayloads.curl); curlBtn.classList.add('is-ok'); setTimeout(function(){ curlBtn.classList.remove('is-ok'); }, 1200); }
   });
 })();
 
@@ -1612,10 +1612,10 @@ function logFbOptions(fbKey){
 }
 function logFbLabel(fbKey, val){
   if (fbKey === 'range'){ for (var i=0;i<LOG_FB_RANGE.length;i++){ if (LOG_FB_RANGE[i][0]===val) return LOG_FB_RANGE[i][1]; } }
-  if (!val) return (window.AxiomI18n ? AxiomI18n.t('logs.fb.all') : '全部');
+  if (!val) return (window.MexionI18n ? MexionI18n.t('logs.fb.all') : '全部');
   return val;
 }
-// 设置下拉按钮显示：选了值则移除 data-i18n(防 AxiomI18n 切语言时覆盖)，未选则交回 i18n 显示「全部/All」
+// 设置下拉按钮显示：选了值则移除 data-i18n(防 MexionI18n 切语言时覆盖)，未选则交回 i18n 显示「全部/All」
 function setLogFbBtn(btn, k){
   var val = LOG_FILTERS[k], b = btn.querySelector('b');
   if (b){
@@ -1735,7 +1735,7 @@ document.addEventListener('keydown', e=>{
 });
 
 /* ── Re-render dynamic content on language flip ── */
-AxiomI18n.onChange(function() { AxiomI18n.preserve(function() {
+MexionI18n.onChange(function() { MexionI18n.preserve(function() {
   if (LAST_AGG) updateHeroSub(LAST_AGG);
   if (typeof window.__glRender === 'function') window.__glRender();
   if (CURRENT_LOG_ID) selectLog(CURRENT_LOG_ID);

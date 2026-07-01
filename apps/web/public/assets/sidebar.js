@@ -16,8 +16,8 @@
       { key: 'nav.profile', en: 'Profile', zh: '个人资料', href: '/profile', icon: '<circle cx="8" cy="5.7" r="2.4" stroke="currentColor" stroke-width="1.3"/><path d="M3 13.4c.7-2.3 2.7-3.7 5-3.7s4.3 1.4 5 3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
     ]},
     { section: 'nav.section.other', items: [
-      { key: 'nav.docs', en: 'Docs', zh: '文档', href: 'https://axiom-doc.pages.dev/', external: true, icon: '<path d="M3.5 2.5h5.8L12.5 5.7v7.8h-9v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.3 2.5v3.3h3.2M5.7 8.4h4.6M5.7 10.6h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
-      { key: 'nav.shop', en: 'Buy Credits', zh: '购买兑换码', href: 'https://mall.axiomcode.top/', external: true, icon: '<path d="M3 4.5h10l-1.2 5H4.2L3 4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 4.5L2.3 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/>' },
+      { key: 'nav.docs', en: 'Docs', zh: '文档', href: 'https://mexion-doc.pages.dev/', external: true, icon: '<path d="M3.5 2.5h5.8L12.5 5.7v7.8h-9v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.3 2.5v3.3h3.2M5.7 8.4h4.6M5.7 10.6h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
+      { key: 'nav.shop', en: 'Buy Credits', zh: '购买兑换码', href: 'https://mall.mexioncode.top/', external: true, icon: '<path d="M3 4.5h10l-1.2 5H4.2L3 4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 4.5L2.3 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/>' },
     ]},
   ];
 
@@ -33,7 +33,7 @@
   }
 
   function lang() {
-    return (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    return (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
   }
 
   function escapeHtml(s) {
@@ -71,7 +71,7 @@
 
   function buildUserPill() {
     var l = lang();
-    var user = (typeof AxiomAuth !== 'undefined' && AxiomAuth.getUser) ? AxiomAuth.getUser() : null;
+    var user = (typeof MexionAuth !== 'undefined' && MexionAuth.getUser) ? MexionAuth.getUser() : null;
     var rawName = user && (user.username || (user.email && user.email.split('@')[0]));
     var name = rawName || (l === 'en' ? 'Account' : '账户');
     var email = (user && user.email) || '';
@@ -115,8 +115,8 @@
     return (
       '<div class="side__head">' +
         '<a class="brand" href="/">' +
-          '<span class="brand__mark"><img src="/assets/icon-master.png" alt="Axiom"></span>' +
-          '<span class="brand__name">Axiom</span>' +
+          '<span class="brand__mark"><img src="/assets/icon-master.png" alt="Mexion"></span>' +
+          '<span class="brand__name">Mexion</span>' +
           '<span class="brand__plan">Pro</span>' +
         '</a>' +
         '<button type="button" class="side__close" aria-label="' + closeLabel + '">' +
@@ -140,7 +140,7 @@
   }
 
   function registerI18n() {
-    if (typeof AxiomI18n === 'undefined') return;
+    if (typeof MexionI18n === 'undefined') return;
     var dict = { en: {}, zh: {} };
     NAV.forEach(function (sec) {
       sec.items.forEach(function (item) {
@@ -150,7 +150,7 @@
     });
     dict.en = Object.assign(dict.en, SECTION_I18N.en);
     dict.zh = Object.assign(dict.zh, SECTION_I18N.zh);
-    AxiomI18n.register(dict);
+    MexionI18n.register(dict);
   }
 
   /* ── Mobile drawer shell ───────────────────────────────────────
@@ -165,7 +165,7 @@
     '</svg>';
 
   function openDrawer() {
-    var side = document.getElementById('axiom-sidebar');
+    var side = document.getElementById('mexion-sidebar');
     var bp = document.querySelector('.side-backdrop');
     var btn = document.querySelector('.topbar__hamburger');
     document.body.classList.add('drawer-open');
@@ -175,7 +175,7 @@
   }
 
   function closeDrawer() {
-    var side = document.getElementById('axiom-sidebar');
+    var side = document.getElementById('mexion-sidebar');
     var bp = document.querySelector('.side-backdrop');
     var btn = document.querySelector('.topbar__hamburger');
     document.body.classList.remove('drawer-open');
@@ -199,7 +199,7 @@
       btn.className = 'topbar__hamburger';
       btn.setAttribute('aria-label', '导航菜单');
       btn.setAttribute('aria-expanded', 'false');
-      btn.setAttribute('aria-controls', 'axiom-sidebar');
+      btn.setAttribute('aria-controls', 'mexion-sidebar');
       btn.innerHTML = HAMBURGER_SVG;
       btn.addEventListener('click', toggleDrawer);
       topbar.insertBefore(btn, topbar.firstChild);
@@ -215,7 +215,7 @@
     }
 
     /* 3. Auto-close drawer when nav link / brand / close-btn / user pill is tapped */
-    var side = document.getElementById('axiom-sidebar');
+    var side = document.getElementById('mexion-sidebar');
     if (side && !side.__drawerWired) {
       side.addEventListener('click', function (e) {
         var hit = e.target.closest && e.target.closest(
@@ -300,14 +300,14 @@
 
   /* ── Desktop rail-fold system ─────────────────────────────────
      • Two buttons, only one visible at a time.
-     • localStorage axiom_sidebar_rail persists user choice (or "0" for explicit expand).
+     • localStorage mexion_sidebar_rail persists user choice (or "0" for explicit expand).
      • Mac shows ⌘\, others Ctrl+\ — toggle anywhere on the page.
      • Cross-tab storage event keeps multiple tabs in sync (silent — no echo loop).
      • Right-edge mouseproximity adds a subtle border accent hint.
      • Coupled animations: nav stagger on expand, main micro-shift on toggle.
      ─────────────────────────────────────────────────────────── */
 
-  var RAIL_KEY = 'axiom_sidebar_rail';
+  var RAIL_KEY = 'mexion_sidebar_rail';
   var RAIL_MOBILE_MAX = 860;     /* below this → mobile drawer mode, rail no-op */
   var RAIL_SMALL_MAX  = 1180;    /* first-visit auto-rail if width below this */
 
@@ -382,7 +382,7 @@
     /* Dispatch event so other components can react (e.g. charts that
        resize). Same-thread; consumers can throttle internally if needed. */
     try {
-      document.dispatchEvent(new CustomEvent('axiom:rail', { detail: { rail: rail } }));
+      document.dispatchEvent(new CustomEvent('mexion:rail', { detail: { rail: rail } }));
     } catch (e) {}
   }
 
@@ -392,7 +392,7 @@
 
   /* Annotate nav items with data-label (for CSS tooltip) — runs after mount() */
   function annotateNavItems() {
-    var items = document.querySelectorAll('#axiom-sidebar .nav-item');
+    var items = document.querySelectorAll('#mexion-sidebar .nav-item');
     items.forEach(function (item) {
       var span = item.querySelector('span:not(.nav-item__badge):not(.nav-item__count)');
       if (!span) return;
@@ -406,7 +406,7 @@
      expands. CSS rotates the icon 180deg in rail so direction matches.
      (re-wired after each mount). */
   function wireCollapseButton() {
-    var btn = document.querySelector('#axiom-sidebar .side__collapse');
+    var btn = document.querySelector('#mexion-sidebar .side__collapse');
     if (!btn || btn.__railWired) return;
     btn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -417,7 +417,7 @@
 
   /* Brand also collapses-to-expand: in rail mode, clicking the logo expands. */
   function wireBrandRailExpand() {
-    var brand = document.querySelector('#axiom-sidebar .brand');
+    var brand = document.querySelector('#mexion-sidebar .brand');
     if (!brand || brand.__railWired) return;
     brand.addEventListener('click', function (e) {
       if (window.innerWidth <= RAIL_MOBILE_MAX) return;
@@ -465,7 +465,7 @@
         if (window.innerWidth <= RAIL_MOBILE_MAX) return;
         var app = appEl();
         if (!app || app.classList.contains('is-rail')) return;
-        var side = document.getElementById('axiom-sidebar');
+        var side = document.getElementById('mexion-sidebar');
         if (!side) return;
         var r = side.getBoundingClientRect();
         var distFromRight = r.right - lx;
@@ -481,27 +481,27 @@
 
   /* Transfer FOUC-guard class on <html> to the .app once JS owns the state.
      Both classes set --side-w:56px, so the swap doesn't trigger a transition.
-     We then strip the transition-disabling .axiom-rail-init in the next frame,
+     We then strip the transition-disabling .mexion-rail-init in the next frame,
      letting normal transitions kick in for subsequent toggles. */
   function transferInitClass() {
     var html = document.documentElement;
     var app = appEl();
     if (!app) return;
-    var hadInit = html.classList.contains('axiom-rail-init');
+    var hadInit = html.classList.contains('mexion-rail-init');
     if (hadInit) {
       app.classList.add('is-rail');
     } else if (shouldDefaultRail()) {
       /* No FOUC class but storage/defaults say rail — apply silently
          without animation by adding both classes before strip. */
-      html.classList.add('axiom-rail-init');
+      html.classList.add('mexion-rail-init');
       app.classList.add('is-rail');
     }
     /* Strip the init class on the next frame so .app/.side/.main re-acquire
        their normal transitions for future user-triggered toggles. */
-    if (html.classList.contains('axiom-rail-init')) {
+    if (html.classList.contains('mexion-rail-init')) {
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
-          html.classList.remove('axiom-rail-init');
+          html.classList.remove('mexion-rail-init');
         });
       });
     }
@@ -549,7 +549,7 @@
   function init() {
     registerI18n();
 
-    var target = document.getElementById('axiom-sidebar');
+    var target = document.getElementById('mexion-sidebar');
     if (target) mount(target);
 
     ensureMobileShell();
@@ -571,12 +571,12 @@
     }
 
     document.addEventListener('user-menu:signout', function () {
-      if (typeof AxiomAuth !== 'undefined') AxiomAuth.logout();
+      if (typeof MexionAuth !== 'undefined') MexionAuth.logout();
     });
 
-    if (typeof AxiomI18n !== 'undefined') {
-      AxiomI18n.onChange(function () {
-        var target = document.getElementById('axiom-sidebar');
+    if (typeof MexionI18n !== 'undefined') {
+      MexionI18n.onChange(function () {
+        var target = document.getElementById('mexion-sidebar');
         if (target) mount(target);
         /* After re-mount the collapse button & nav data-labels are fresh DOM —
            re-wire and re-annotate without re-registering global listeners. */
@@ -597,7 +597,7 @@
     init();
   }
 
-  window.AxiomSidebar = {
+  window.MexionSidebar = {
     mount: mount,
     rebuild: function () { init(); },
     openDrawer: openDrawer,

@@ -108,7 +108,7 @@ export function exportLogsCsv(c: Context<AppBindings>): Response {
     status: 200,
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": "attachment; filename=\"axion-logs.csv\"",
+      "content-disposition": "attachment; filename=\"mexion-logs.csv\"",
     },
   });
 }

@@ -1,4 +1,4 @@
-# Axion REST API
+# Mexion REST API
 
 所有 JSON 响应为 `{ ok: true, data }` 或 `{ ok: false, error: { code, message } }`。公开订阅与中转入口按客户端需要返回文本、JSON 或上游响应体。
 

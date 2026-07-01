@@ -65,7 +65,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@axion/shared':
+      '@mexion/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@hono/node-server':

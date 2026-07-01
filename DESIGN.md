@@ -1,7 +1,7 @@
 # Design
 
 ## System
-Axion uses an editorial product register: paper background, ink text, cinnabar stamp accents, zero radius, zero shadow, and 1px rule-based structure.
+Mexion uses an editorial product register: paper background, ink text, cinnabar stamp accents, zero radius, zero shadow, and 1px rule-based structure.
 
 ## Colors
 Use only these tokens in product UI:

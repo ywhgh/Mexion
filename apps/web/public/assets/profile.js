@@ -1,8 +1,8 @@
 (function () {
   /* ── API ── */
   function getProfileBalance(u) {
-    return typeof window.AxiomQuota !== 'undefined'
-      ? window.AxiomQuota.getUserBalance(u)
+    return typeof window.MexionQuota !== 'undefined'
+      ? window.MexionQuota.getUserBalance(u)
       : ((Number(u && u.quota) || 0) / 500000);
   }
 
@@ -14,8 +14,8 @@
     if (passive && ticket && ticket.classList.contains('is-revealing')) return;
     var revBal = document.getElementById('rev-balance');
     if (revBal) {
-      revBal.textContent = typeof window.AxiomQuota !== 'undefined'
-        ? window.AxiomQuota.formatUsd(userBalance, { currencyFirst: true })
+      revBal.textContent = typeof window.MexionQuota !== 'undefined'
+        ? window.MexionQuota.formatUsd(userBalance, { currencyFirst: true })
         : ('$' + userBalance.toFixed(2));
     }
   }
@@ -36,12 +36,12 @@
   }
   function loadProfile() {
     notifyBindResult();
-    if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-      AxiomAuth.refreshUser({ source: 'profile-load', force: true }).then(populatePage).catch(function(){});
+    if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+      MexionAuth.refreshUser({ source: 'profile-load', force: true }).then(populatePage).catch(function(){});
       return;
     }
-    if (typeof AxiomHttp === 'undefined') return;
-    AxiomHttp.get('/user/self').then(populatePage).catch(function(){});
+    if (typeof MexionHttp === 'undefined') return;
+    MexionHttp.get('/user/self').then(populatePage).catch(function(){});
   }
   // 二开：升级进度 = 三项门槛里"已达比例"的最短板(AND 语义)。无门槛=0(需管理员手动设级)。
   function tierProgress(u, next) {
@@ -54,16 +54,16 @@
   }
   // 二开：把真实等级接到档案页徽章 + 进度条(取代"筹备中"占位)。
   function populateTier(u) {
-    window.__axiomTierUser = u; // 供权益弹窗读取
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    window.__mexionTierUser = u; // 供权益弹窗读取
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     var lvl = u.level || 0;
     var badge = document.querySelector('[data-i18n="profile.idcard.chip.tier"]');
     if (badge) { badge.removeAttribute('data-i18n'); badge.textContent = (lang === 'zh' ? '等级 ' : 'Lv ') + lvl; }
-    if (typeof AxiomHttp === 'undefined') return;
-    AxiomHttp.get('/user/levels').then(function (levels) {
+    if (typeof MexionHttp === 'undefined') return;
+    MexionHttp.get('/user/levels').then(function (levels) {
       if (!Array.isArray(levels) || !levels.length) return;
       levels = levels.slice().sort(function (a, b) { return a.id - b.id; });
-      window.__axiomTierLevels = levels;
+      window.__mexionTierLevels = levels;
       var cur = null, next = null;
       for (var i = 0; i < levels.length; i++) {
         if (levels[i].id <= lvl) cur = levels[i];
@@ -98,7 +98,7 @@
 
   function populatePage(u) {
     if (!u) return;
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     var name = u.display_name || u.username || (u.email ? u.email.split('@')[0] : '');
     var initial = (name.charAt(0) || '?').toUpperCase();
     document.querySelectorAll('[data-field="name"], [data-field="display-name"]').forEach(function(el) { el.textContent = name; });
@@ -109,7 +109,7 @@
     var createdDate = (typeof createdTs === 'number' && createdTs > 1e9) ? new Date(createdTs * 1000) : (createdTs ? new Date(createdTs) : null);
     var joinDaysEl = document.getElementById('plaque-joined-days');
     if (createdDate) {
-      localStorage.setItem('axiom_join_ts', String(createdDate.getTime()));
+      localStorage.setItem('mexion_join_ts', String(createdDate.getTime()));
       document.querySelectorAll('[data-field="joined"]').forEach(function(el) { el.textContent = createdDate.toLocaleDateString(); });
       var days = Math.max(0, Math.floor((Date.now() - createdDate.getTime()) / 86400000));
       if (joinDaysEl) joinDaysEl.textContent = days.toLocaleString();
@@ -120,9 +120,9 @@
       var jp = joinDaysEl && joinDaysEl.closest('.plaque');
       if (jp) jp.style.display = 'none';
     }
-    document.querySelectorAll('[data-axiom-avatar]').forEach(function(el) { el.textContent = initial; });
-    document.querySelectorAll('[data-axiom-user="name"]').forEach(function(el) { el.textContent = name; });
-    document.querySelectorAll('[data-axiom-user="email"]').forEach(function(el) { el.textContent = u.email || ''; });
+    document.querySelectorAll('[data-mexion-avatar]').forEach(function(el) { el.textContent = initial; });
+    document.querySelectorAll('[data-mexion-user="name"]').forEach(function(el) { el.textContent = name; });
+    document.querySelectorAll('[data-mexion-user="email"]').forEach(function(el) { el.textContent = u.email || ''; });
     var idPlaque = document.querySelector('.plaque:first-child .plaque__val');
     // 会员编号同时展示裸 user id（#N）——管理员在 newapi 面板按 #N 数字即可反查到用户
     // （SearchUsers 仅整数命中 id；AX- 装饰串无法被搜索）。
@@ -137,8 +137,8 @@
         : '--';
     }
     // 累计调用
-    if (typeof AxiomHttp !== 'undefined') {
-      AxiomHttp.get('/log/self/stat').then(function(stats) {
+    if (typeof MexionHttp !== 'undefined') {
+      MexionHttp.get('/log/self/stat').then(function(stats) {
         var total = stats.total_requests || stats.request_count || u.request_count || 0;
         var callsEl = document.getElementById('plaque-calls');
         if (callsEl) callsEl.textContent = total.toLocaleString();
@@ -177,7 +177,7 @@
         linuxdo: { name: 'Linux DO', logoBg: '#1a1a2e', logoSvg: '<svg width="14" height="14" viewBox="0 0 16 16" fill="white"><circle cx="8" cy="8" r="5.5" stroke="white" stroke-width="1.3" fill="none"/><text x="8" y="11" text-anchor="middle" font-size="6" font-family="sans-serif" font-weight="bold">LD</text></svg>' },
         oidc:    { name: 'OIDC',     logoBg: '#2F5C8C', logoSvg: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="white" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>' },
       };
-      var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+      var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
       var boundCount = 0, totalCount = 0;
       var html = '';
       for (var provider in bindings) {
@@ -209,13 +209,13 @@
       bindGrid.innerHTML = html;
       if (bindMeta) bindMeta.textContent = boundCount + ' / ' + totalCount + (lang === 'zh' ? ' 已绑定' : ' linked');
     }
-    if (typeof AxiomAuth !== 'undefined' && AxiomAuth.hydrateUI) AxiomAuth.hydrateUI();
+    if (typeof MexionAuth !== 'undefined' && MexionAuth.hydrateUI) MexionAuth.hydrateUI();
     u.balance = getProfileBalance(u);
-    window.__axiomUser = u;
+    window.__mexionUser = u;
     syncNotificationSettings(u);
   }
   function hideUnsupported() {
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     // 手机号隐藏
     var phoneRow = document.querySelector('[data-row="phone"]');
     if (phoneRow) phoneRow.style.display = 'none';
@@ -250,7 +250,7 @@
     if (emailBtn) {
       emailBtn.addEventListener('click', function(e) {
         e.preventDefault(); e.stopPropagation();
-        toast(AxiomI18n ? AxiomI18n.t('toast.email.unsupported') : '暂不支持修改邮箱');
+        toast(MexionI18n ? MexionI18n.t('toast.email.unsupported') : '暂不支持修改邮箱');
       }, true);
     }
     // 活动会话：渲染当前浏览器真实信息
@@ -414,7 +414,7 @@
 
   function applyNotifyUi(user) {
     if (!document.getElementById('notify-methods')) return;
-    const admin = isAdminUser(user || window.__axiomUser);
+    const admin = isAdminUser(user || window.__mexionUser);
     document.querySelectorAll('[data-admin-notify]').forEach(function (el) {
       el.hidden = !admin;
     });
@@ -429,7 +429,7 @@
   }
 
   function syncNotificationSettings(user) {
-    notifyState = normalizeNotifySettings(user || window.__axiomUser);
+    notifyState = normalizeNotifySettings(user || window.__mexionUser);
     applyNotifyUi(user);
   }
 
@@ -487,15 +487,15 @@
     });
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
-        if (typeof AxiomHttp === 'undefined') return;
+        if (typeof MexionHttp === 'undefined') return;
         const payload = buildNotifyPayload();
         saveBtn.disabled = true;
         setNotifyStatus(t('profile.notify.status.saving','正在保存...'), 'saving');
-        AxiomHttp.put('/user/setting', payload).then(function () {
+        MexionHttp.put('/user/setting', payload).then(function () {
           setNotifyStatus(t('profile.notify.status.saved','通知设置已保存'), 'saved');
           toast(t('profile.notify.toast.saved','通知设置已保存'));
-          if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-            AxiomAuth.refreshUser({ source: 'profile-notify-save', force: true }).then(syncNotificationSettings).catch(function(){});
+          if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+            MexionAuth.refreshUser({ source: 'profile-notify-save', force: true }).then(syncNotificationSettings).catch(function(){});
           }
         }).catch(function (err) {
           setNotifyStatus(err && err.message ? err.message : t('profile.notify.status.failed','保存失败'), 'error');
@@ -505,7 +505,7 @@
         });
       });
     }
-    syncNotificationSettings(window.__axiomUser || (typeof AxiomAuth !== 'undefined' && AxiomAuth.getUser ? AxiomAuth.getUser() : null));
+    syncNotificationSettings(window.__mexionUser || (typeof MexionAuth !== 'undefined' && MexionAuth.getUser ? MexionAuth.getUser() : null));
   }
 
   function isMobileViewport() {
@@ -669,7 +669,7 @@
             document.body.removeChild(ta);
           }
           btn.classList.add('is-ok');
-          toast(window.AxiomI18n ? AxiomI18n.t('toast.copied') : '已复制密钥');
+          toast(window.MexionI18n ? MexionI18n.t('toast.copied') : '已复制密钥');
           setTimeout(() => btn.classList.remove('is-ok'), 1200);
         } catch (err) {
           toast('复制失败 · 请手动复制', 'error');
@@ -705,7 +705,7 @@
       });
       const meta = document.querySelector('.codes-head .meta b');
       if (meta) meta.textContent = '0';
-      toast(window.AxiomI18n ? AxiomI18n.t('toast.codes.regen') : '已重新生成 8 个备用码');
+      toast(window.MexionI18n ? MexionI18n.t('toast.codes.regen') : '已重新生成 8 个备用码');
     });
   }
   function initCheckIn() {
@@ -714,8 +714,8 @@
     if (!ticket || !claimBtn) return;
 
     /* 从 API 加载签到历史 → 填充统计 */
-    if (typeof AxiomHttp !== 'undefined') {
-      AxiomHttp.get('/user/checkin').then(function(data) {
+    if (typeof MexionHttp !== 'undefined') {
+      MexionHttp.get('/user/checkin').then(function(data) {
         var stats = data.stats || {};
         data.checked_today = stats.checked_in_today || stats.checked_today || false;
         var rawList = stats.records || data.records || [];
@@ -765,7 +765,7 @@
         el = document.getElementById('month-total'); if (el) el.textContent = '$' + monthTotal.toFixed(2);
         el = document.getElementById('month-total-2'); if (el) el.textContent = '$' + monthTotal.toFixed(2);
         el = document.getElementById('month-days'); if (el) el.textContent = monthRecords.length;
-        el = document.getElementById('month-days-total'); if (el) { var _l = (typeof AxiomI18n!=='undefined'&&AxiomI18n.lang)||'zh'; el.textContent = '/ ' + daysInMonth + (_l==='zh'?' 天':' days'); }
+        el = document.getElementById('month-days-total'); if (el) { var _l = (typeof MexionI18n!=='undefined'&&MexionI18n.lang)||'zh'; el.textContent = '/ ' + daysInMonth + (_l==='zh'?' 天':' days'); }
         el = document.getElementById('streak-num'); if (el) el.textContent = streak;
         el = document.getElementById('best-streak'); if (el) el.textContent = bestStreak;
         el = document.getElementById('rev-streak'); if (el) el.textContent = streak;
@@ -939,8 +939,8 @@
     }
 
     function fetchCurrentBalance() {
-      if (typeof AxiomHttp === 'undefined') return Promise.resolve(null);
-      return AxiomHttp.get('/user/self').then(function(user) {
+      if (typeof MexionHttp === 'undefined') return Promise.resolve(null);
+      return MexionHttp.get('/user/self').then(function(user) {
         return getProfileBalance(user);
       }).catch(function() {
         return null;
@@ -958,8 +958,8 @@
       claimBtn.disabled = true;
 
       // 调真实签到 API
-      if (typeof AxiomHttp !== 'undefined') {
-        AxiomHttp.post('/user/checkin', {}).then(function(data) {
+      if (typeof MexionHttp !== 'undefined') {
+        MexionHttp.post('/user/checkin', {}).then(function(data) {
           var amt = (data.quota_awarded || 0) / 500000;
           revealWithFreshBalance(amt);
         }).catch(function(err) {
@@ -967,7 +967,7 @@
           var msg = (err && err.message) || '';
           if (msg.indexOf('已签到') !== -1 || msg.indexOf('already') !== -1) {
             claimBtn.disabled = true;
-            AxiomHttp.get('/user/checkin').then(function(info) {
+            MexionHttp.get('/user/checkin').then(function(info) {
               var st = info.stats || {};
               var recs = st.records || [];
               var now = new Date(); var utc = now.getTime() + now.getTimezoneOffset() * 60000; var cn = new Date(utc + 8 * 3600000);
@@ -975,7 +975,7 @@
               var todayRec = recs.find(function(r){ return r.checkin_date === todayKey; });
               var amt = todayRec ? (todayRec.quota_awarded || 0) / 500000 : 0;
               if (amt > 0) { revealWithFreshBalance(amt); }
-              else { ticket.dataset.state = 'revealed'; toast(AxiomI18n ? AxiomI18n.t('toast.checkin.already') : '今日已签到'); }
+              else { ticket.dataset.state = 'revealed'; toast(MexionI18n ? MexionI18n.t('toast.checkin.already') : '今日已签到'); }
             }).catch(function(){ ticket.dataset.state = 'revealed'; });
           } else if (msg.indexOf('HTTP 404') !== -1 || msg.indexOf('Unexpected') !== -1) {
             toast(t('toast.checkin.unavailable', '签到服务暂不可用'));
@@ -992,7 +992,7 @@
 
     function doReveal(amt, newBalFromApi) {
       const lucky = amt >= 0.50;
-      const i18n = window.AxiomI18n;
+      const i18n = window.MexionI18n;
 
       if (lucky) ticket.classList.add('ticket--lucky');
 
@@ -1034,8 +1034,8 @@
       const revBal = document.getElementById('rev-balance');
       setTimeout(() => rollMoney(revBal, startBal, newBal, 720), reduceMotion ? 0 : 640);
       setTimeout(() => {
-        if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-          AxiomAuth.refreshUser({ source: 'checkin-settle', force: true }).catch(function(){});
+        if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+          MexionAuth.refreshUser({ source: 'checkin-settle', force: true }).catch(function(){});
         }
       }, reduceMotion ? 0 : 900);
 
@@ -1095,8 +1095,8 @@
      DIALOG FRAMEWORK — dynamic modal mount/close, reusing modal CSS
      ═══════════════════════════════════════════════════════════════ */
   function t(key, fallback) {
-    if (window.AxiomI18n && AxiomI18n.t) {
-      const v = AxiomI18n.t(key);
+    if (window.MexionI18n && MexionI18n.t) {
+      const v = MexionI18n.t(key);
       if (v && v !== key) return v;
     }
     return fallback;
@@ -1234,9 +1234,9 @@
   // 二开：真实注销账户。后端 DELETE /api/user/self(级联清理 + 物理删除,root 账户后端拒绝)。
   // 阅读后果 + 输入 DELETE 激活 → 调接口 → 成功即退出登录(会话失效)。与管理面板/后端注销系统对齐。
   function deleteAccountFlow() {
-    var lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
+    var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
     var zh = lang === 'zh';
-    var u = window.__axiomUser || (typeof AxiomAuth !== 'undefined' && AxiomAuth.getUser ? AxiomAuth.getUser() : null) || {};
+    var u = window.__mexionUser || (typeof MexionAuth !== 'undefined' && MexionAuth.getUser ? MexionAuth.getUser() : null) || {};
     var bal = '$' + (((u.quota || 0) / 500000)).toFixed(2);
     var idTxt = '#' + (u.id != null ? u.id : '--');
     var esc = function (s) { return String(s).replace(/[<>&]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]; }); };
@@ -1271,10 +1271,10 @@
         go.addEventListener('click', function () {
           if (go.disabled) return;
           go.disabled = true; go.textContent = zh ? '注销中…' : 'Deleting…';
-          AxiomHttp.delete('/user/self').then(function () {
+          MexionHttp.delete('/user/self').then(function () {
             toast(zh ? '账户已注销 · 即将退出' : 'Account deleted · signing out');
             setTimeout(function () {
-              if (typeof AxiomAuth !== 'undefined' && AxiomAuth.logout) AxiomAuth.logout();
+              if (typeof MexionAuth !== 'undefined' && MexionAuth.logout) MexionAuth.logout();
               else location.replace('/login');
             }, 900);
           }).catch(function (err) {
@@ -1342,15 +1342,15 @@
           const v = input.value.trim();
           if (!v || v === original) { teardown(); return; }
           teardown();
-          if (typeof AxiomHttp === 'undefined') return;
-          // 等后端确认再落值 + 回写缓存,避免"先变后弹回":成功才改 DOM、刷新 axiom_user(让顶栏/首页/其它页同步)、弹成功;
+          if (typeof MexionHttp === 'undefined') return;
+          // 等后端确认再落值 + 回写缓存,避免"先变后弹回":成功才改 DOM、刷新 mexion_user(让顶栏/首页/其它页同步)、弹成功;
           // 失败保留原值 + 如实报错(不再用空 catch 吞错 + 无条件谎报成功)。
-          AxiomHttp.put('/user/self', { display_name: v }).then(function() {
+          MexionHttp.put('/user/self', { display_name: v }).then(function() {
             valEl.textContent = v;
-            document.querySelectorAll('[data-axiom-user="name"]').forEach(function(el) { el.textContent = v; });
+            document.querySelectorAll('[data-mexion-user="name"]').forEach(function(el) { el.textContent = v; });
             document.querySelectorAll('[data-field="name"]').forEach(function(el) { el.textContent = v; });
-            if (typeof AxiomAuth !== 'undefined' && AxiomAuth.refreshUser) {
-              AxiomAuth.refreshUser({ source: 'profile-name-save', force: true }).catch(function(){});
+            if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
+              MexionAuth.refreshUser({ source: 'profile-name-save', force: true }).catch(function(){});
             }
             toast(t('toast.name.saved','显示名已更新'));
           }).catch(function(err) {
@@ -1464,9 +1464,9 @@
 
         primary.addEventListener('click', () => {
           // 真实 API 调用（仅 login 密码）
-          if (!isApi && typeof AxiomHttp !== 'undefined') {
+          if (!isApi && typeof MexionHttp !== 'undefined') {
             primary.disabled = true;
-            AxiomHttp.put('/user/self', { password: newIn.value }).then(function() {
+            MexionHttp.put('/user/self', { password: newIn.value }).then(function() {
               var changedEl = document.querySelector('[data-field="password-changed"]');
               if (changedEl) changedEl.textContent = t('pw.justnow','刚刚修改');
               toast(t('toast.pw.changed','登录密码已更新 · 其他会话已退出'));
@@ -1501,9 +1501,9 @@
      TIER BENEFITS
      ═══════════════════════════════════════════════════════════════ */
   function dlgTierBenefits() {
-    const lang = (typeof AxiomI18n !== 'undefined' && AxiomI18n.lang) ? AxiomI18n.lang : 'zh';
-    const u = window.__axiomTierUser || {};
-    const levels = window.__axiomTierLevels;
+    const lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
+    const u = window.__mexionTierUser || {};
+    const levels = window.__mexionTierLevels;
     const lvl = u.level || 0;
     const usd = (q) => (q ? (q / 500000) : 0);
     let bodyHtml, footHtml;
@@ -1666,7 +1666,7 @@
       onConfirm: () => {
         row.classList.add('is-changing');
         // 真实解绑：调用后端自助解绑端点（带「解绑后须仍有登录方式」守卫，失败把后端提示弹回）
-        AxiomHttp.delete('/user/oauth/builtin/' + encodeURIComponent(provider)).then(function () {
+        MexionHttp.delete('/user/oauth/builtin/' + encodeURIComponent(provider)).then(function () {
           const btn = row.querySelector('.bind__act');
           const sub = row.querySelector('.bind__sub');
           if (btn) {
@@ -1693,7 +1693,7 @@
       title: `${t('binding.connect.title','连接')} <em>${name}</em>`,
       sub: t('binding.connect.sub','即将跳转到第三方授权 · 仅请求基础资料与邮箱'),
       icon: 'link',
-      message: `${t('binding.connect.msg1','点击「确认连接」后将打开 <b>')} ${name} ${t('binding.connect.msg2','</b> 的授权页面。授权完成后会自动返回 Axiom 并绑定到当前账户。')}<br><br><span style="font-family:var(--f-mono);font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.08em">${t('binding.scope.req','请求范围')}</span><br><span style="font-size:12px;color:var(--ink-2)">${t('binding.scope.list','基础资料 · 邮箱 · 仅用于身份识别')}</span>`,
+      message: `${t('binding.connect.msg1','点击「确认连接」后将打开 <b>')} ${name} ${t('binding.connect.msg2','</b> 的授权页面。授权完成后会自动返回 Mexion 并绑定到当前账户。')}<br><br><span style="font-family:var(--f-mono);font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.08em">${t('binding.scope.req','请求范围')}</span><br><span style="font-size:12px;color:var(--ink-2)">${t('binding.scope.list','基础资料 · 邮箱 · 仅用于身份识别')}</span>`,
       primaryLabel: t('binding.connect.btn','确认连接'),
       onConfirm: () => {
         const provider = row.dataset.bind || '';
@@ -1705,9 +1705,9 @@
         // 真实 OAuth 绑定：复用登录的 OAuth 流，但【不登出】——保留会话，
         // newapi 的 /api/oauth/:provider 检测到已登录 → 走 handleOAuthBind 绑到当前账户。
         // mode=bind 让 oauth-callback 处理完后返回 /profile（而非 /dashboard）。
-        sessionStorage.setItem('axiom_oauth_provider', provider);
-        sessionStorage.setItem('axiom_oauth_mode', 'bind');
-        sessionStorage.removeItem('axiom_oauth_ref');
+        sessionStorage.setItem('mexion_oauth_provider', provider);
+        sessionStorage.setItem('mexion_oauth_mode', 'bind');
+        sessionStorage.removeItem('mexion_oauth_ref');
         Promise.all([
           fetch('/api/oauth/state', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
           fetch('/api/status', { credentials: 'same-origin' }).then(function (r) { return r.json(); })
@@ -1732,7 +1732,7 @@
           }
           window.location.href = url;
         }).catch(function () {
-          sessionStorage.removeItem('axiom_oauth_mode');
+          sessionStorage.removeItem('mexion_oauth_mode');
           toast(t('binding.connect.failed','发起绑定失败，请稍后重试'));
         });
       }
@@ -1771,7 +1771,7 @@
     initNotificationSettings();
     rewireActions();
     hideUnsupported();
-    window.addEventListener('axiom:user-updated', function (event) {
+    window.addEventListener('mexion:user-updated', function (event) {
       var user = event && event.detail ? event.detail.user : null;
       if (!user) return;
       applyProfileBalance(user, true);

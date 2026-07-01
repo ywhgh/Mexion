@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Axiom Design System — Shared CSS
+   Mexion Design System — Shared CSS
    Cached by browser; each page keeps only page-specific styles.
    ═══════════════════════════════════════════════════════════ */
 
@@ -211,11 +211,11 @@ a { color: inherit; text-decoration: none; }
 /* FOUC guard — head inline script flips this on <html> before CSS paints,
    so a remembered rail state never causes a frame of expanded-width flash.
    The bridge to .app.is-rail (with normal transition) happens inside sidebar.js. */
-.axiom-rail-init .app { --side-w: 56px; }
-.axiom-rail-init .app,
-.axiom-rail-init .side,
-.axiom-rail-init .main { transition: none !important; }
-.axiom-rail-init .app * { animation: none !important; }
+.mexion-rail-init .app { --side-w: 56px; }
+.mexion-rail-init .app,
+.mexion-rail-init .side,
+.mexion-rail-init .main { transition: none !important; }
+.mexion-rail-init .app * { animation: none !important; }
 /* Rail state — applied by JS after the FOUC class is transferred. */
 .app.is-rail { --side-w: 56px; }
 
