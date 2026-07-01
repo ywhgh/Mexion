@@ -3,6 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/shell";
 import { Dashboard } from "./pages/Dashboard";
 import { SignIn } from "./pages/SignIn";
+import { SubsDetail } from "./pages/subs/Detail";
+import { SubsList } from "./pages/subs/List";
+import { SubsNew } from "./pages/subs/New";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,7 +34,9 @@ export function App() {
           <Route path="/sign-in" element={<SignIn />} />
           <Route element={<AppShell />}>
             <Route index element={<Dashboard />} />
-            <Route path="subs/*" element={<Placeholder title="Subs" />} />
+            <Route path="subs" element={<SubsList />} />
+            <Route path="subs/new" element={<SubsNew />} />
+            <Route path="subs/:id" element={<SubsDetail />} />
             <Route path="tokens" element={<Placeholder title="Tokens" />} />
             <Route path="routes" element={<Placeholder title="Routes" />} />
             <Route path="logs" element={<Placeholder title="Logs" />} />
@@ -43,4 +48,5 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
 
