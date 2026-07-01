@@ -1,22 +1,24 @@
 # Axion
 
-> § 一把钥匙，通往所有数据节点的无缝路由。
+> § 一把钥匙，把订阅、凭证、中转与审计收束为一张可操作的控制台。
 
-Axion 是一个本地优先的订阅转换与 API 中转站管理系统。它把订阅配置、Token 配额、中转路由和审计日志收束在一个 Axiom 报刊学术风的高密度后台中：宣纸底、墨黑字、朱砂红点睛，零圆角、零阴影、1px 细线。
+Axion 是本地优先的订阅转换与 API 中转管理台。v2 将 Axiom 风格的后台视觉语言移植到 React/Hono 单仓：Newsreader/Geist 字体、纸面色、墨黑文本、朱砂动作、小圆角数据卡、ledger 表与 13 周 activity heatmap。
 
 ## 技术栈
 
-- pnpm workspace
-- TypeScript strict
-- React 18 + Vite 5 + React Router v6
-- Zustand + TanStack Query
-- Tailwind CSS 3
-- Hono + `@hono/node-server`
-- Drizzle ORM schema + better-sqlite3
-- Zod + bcrypt + httpOnly JWT cookie
-- Vitest + Testing Library
+| 层 | 选型 |
+|---|---|
+| 包管理 | pnpm workspace |
+| 前端 | React 18 + Vite 5 + React Router v6 |
+| 状态 | Zustand + TanStack Query v5 |
+| 样式 | Tailwind CSS 3 + CSS variables |
+| 后端 | Hono + `@hono/node-server` |
+| 数据 | Drizzle schema + SQLite/better-sqlite3 |
+| 鉴权 | 单管理员 + bcrypt + httpOnly JWT cookie |
+| 校验 | Zod |
+| 测试 | Vitest + Testing Library |
 
-## 开发启动
+## 开发
 
 ```bash
 cd D:\axion
@@ -24,11 +26,11 @@ pnpm install
 pnpm dev
 ```
 
-- API: http://127.0.0.1:8787
-- Web: http://127.0.0.1:5173
-- 首次访问 Web 会进入 `/sign-in` 初始化管理员。
+- API: `http://127.0.0.1:8787`
+- Web dev: `http://127.0.0.1:5173`
+- 首次访问 `/sign-in` 初始化管理员。没有默认账号密码。
 
-## 生产启动
+## 生产
 
 ```bash
 cd D:\axion
@@ -36,28 +38,40 @@ pnpm build
 pnpm start
 ```
 
-生产模式使用单端口 http://127.0.0.1:8787，后端托管 `apps/web/dist`。
+生产单端口：`http://127.0.0.1:8787`。Hono 会托管 `apps/web/dist`。
 
 ## 核心流程
 
-1. 初始化管理员并登录。
-2. 在「§ 订阅」新建原始节点订阅，生成 `/v1/sub?token=ax_...`。
-3. 在「§ 凭证」创建带配额、过期时间和 IP 白名单的 Token。
-4. 在「§ 中转」配置 `/api/r/:alias/*` 到上游 URL 的映射。
-5. 在「§ 附录」查看请求日志并导出 CSV。
+1. `/sign-in` 初始化管理员并登录。
+2. `/subs/new` 写入原始节点或订阅 URL，生成 `/v1/sub?token=ax_...`。
+3. `/tokens` 创建绑定订阅的凭证，可设置 GB 配额、过期时间、CIDR 白名单。明文只显示一次。
+4. `/routes` 配置 `/api/r/:alias/*` 到 upstream，并可主动 probe 延迟。
+5. `/logs` 按 token/status/limit 查询调用日志，并通过 `/api/logs/export` 导出 CSV。
+6. `/settings` 保存实例名称、主题、语言并修改管理员密钥。
 
 ## 截图占位
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ AXION · VOL. I · EST. 2026             核心中转：正常运行 12ms │
-├─────────────────────────────────────────────────────────────┤
-│ § 概览 / § 订阅 / § 凭证 / § 中转 / § 附录 / § 设置            │
-├─────────────────────────────────────────────────────────────┤
-│ § 概览                                                       │
-│ SUBSCRIPTIONS · ACTIVE TOKENS · ENABLED ROUTES · AVG LATENCY │
-│ 最近日志以学术附录式 ledger 呈现。                            │
-└─────────────────────────────────────────────────────────────┘
+[01] Sign-in Folio
+plate: § The Thesis | form-wrap: § 登录 | 01 管理员 | 02 密钥
+
+[02] Dashboard
+side 232px | topbar language/theme/user | Calls | Tokens | Latency | Activity heatmap
+
+[03] Subs Ledger
+# | 名称 | 目标 | 规则 | Token 数 | 更新时间
+
+[04] Tokens
+左列表 prefix/name/sub/quota；右详情 usage/IP/expiry；创建后 once-only reveal。
+
+[05] Routes and Logs
+alias -> upstream 映射、probe pill、附录 ledger、CSV export。
+```
+
+## 验收
+
+```bash
+pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm audit:ui
 ```
 
 ## License
