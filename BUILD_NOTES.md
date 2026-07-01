@@ -33,3 +33,10 @@
 None.
 
 
+
+## v2 Production Bundle
+
+- `pnpm build` passed after the v2 Axiom rewrite.
+- Output bundle: `apps/web/dist` and `apps/api/dist`.
+- Root `pnpm start` serves the Hono API and static web bundle on `http://127.0.0.1:8787`.
+- QA fixes included with this bundle: lint ignores for read-only research/vendor assets, Vitest timeout for bcrypt-bound integration tests, and coverage scope limited to maintained source.

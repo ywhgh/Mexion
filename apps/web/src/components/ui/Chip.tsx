@@ -7,11 +7,13 @@ export type ChipProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function Chip({ pressed = false, count, children, className, ...props }: ChipProps) {
+  const ariaLabel = props["aria-label"] ?? (typeof children === "string" && count !== undefined ? `${children} ${count}` : undefined);
   return (
     <button
       type="button"
       aria-pressed={pressed}
       {...props}
+      aria-label={ariaLabel}
       className={cx(
         "inline-flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-medium text-muted transition hover:bg-bg-2 hover:text-ink aria-pressed:bg-ink aria-pressed:text-on-ink",
         className,
@@ -22,3 +24,4 @@ export function Chip({ pressed = false, count, children, className, ...props }: 
     </button>
   );
 }
+

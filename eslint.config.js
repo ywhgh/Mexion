@@ -10,6 +10,8 @@ export default [
       "coverage/**",
       "apps/**/dist/**",
       "packages/**/dist/**",
+      "research/**",
+      "apps/web/public/vendor/**",
       "data/**",
       "*.db*"
     ]
@@ -37,3 +39,4 @@ export default [
     }
   }
 ];
+
