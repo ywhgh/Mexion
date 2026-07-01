@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/shell";
+import { Dashboard } from "./pages/Dashboard";
 import { SignIn } from "./pages/SignIn";
 
 const queryClient = new QueryClient({
@@ -29,7 +30,7 @@ export function App() {
         <Routes>
           <Route path="/sign-in" element={<SignIn />} />
           <Route element={<AppShell />}>
-            <Route index element={<Placeholder title="Overview" />} />
+            <Route index element={<Dashboard />} />
             <Route path="subs/*" element={<Placeholder title="Subs" />} />
             <Route path="tokens" element={<Placeholder title="Tokens" />} />
             <Route path="routes" element={<Placeholder title="Routes" />} />
@@ -42,3 +43,4 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
