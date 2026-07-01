@@ -1,0 +1,1793 @@
+
+/* ── CROSS-DOCUMENT VIEW TRANSITIONS ─────────── */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: fadeOut 0.2s ease both; }
+::view-transition-new(root) { animation: fadeIn  0.2s ease both; }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes fadeIn  { from { opacity: 0; } }
+
+:root {
+  --ink:       #0F0E0C;
+  --ink-soft:  #1A1612;
+  --lead:      #4A453E;
+  --lead-2:    #6B655C;
+  --mist:      #9A938A;
+  --hair:      #C9C2B6;
+  --verm:      #B5392D;
+  --verm-deep: #8E2A21;
+  --forest:    #2D5F3F;
+  --paper:     #F8F4EA;
+  --paper-2:   #EFE8D6;
+  --paper-3:   #FBF8F0;
+  --hairline:  rgba(15,14,12,0.10);
+  --hairline-2:rgba(15,14,12,0.06);
+
+  --f-sans:    'Geist', -apple-system, 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --f-cn:      'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+  --f-mono:    'Geist Mono', ui-monospace, monospace;
+  --f-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --f-serif:   'Newsreader', 'Iowan Old Style', Georgia, serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; color: var(--ink); }
+
+body {
+  min-height: 100vh;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  background: var(--paper);
+  font-family: var(--f-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga", "calt";
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ───────── LEFT: editorial plate ───────── */
+.plate {
+  position: relative;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%,
+    #FAF6EC 0%, #F8F4EA 45%, #EDE6D2 100%);
+  padding: clamp(22px, 3vh, 40px) clamp(24px, 3vw, 44px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* paper fibre */
+.plate::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n")'/></svg>");
+  opacity: 0.42; mix-blend-mode: multiply;
+  pointer-events: none;
+}
+/* subtle ink bloom */
+.plate::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 75%, rgba(181,57,45,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 78% 22%, rgba(60,40,20,0.04) 0%, transparent 45%);
+}
+
+/* binding shadow on right edge of plate */
+.plate-binding {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 24px;
+  background: linear-gradient(270deg,
+    rgba(60,40,20,0.10) 0%,
+    rgba(60,40,20,0.04) 30%,
+    transparent 80%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.plate__head {
+  display: flex; align-items: baseline; gap: 12px;
+  position: relative; z-index: 3;
+}
+.plate__brand {
+  font-family: var(--f-display);
+  font-size: 19px;
+  color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: baseline; gap: 9px;
+}
+.plate__brand-mark {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--verm);
+  transform: rotate(45deg) translateY(-1px);
+  
+}
+.plate__meta {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--mist);
+  text-transform: uppercase;
+  margin-left: auto;
+}
+.plate__rule {
+  height: 1px;
+  background: var(--verm);
+  margin-top: 14px;
+  position: relative; z-index: 3;
+  
+}
+/* small ornament centered on the rule — like a printer's diamond. */
+.plate__rule::after {
+  content: '';
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  width: 5px; height: 5px;
+  background: var(--verm);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.plate__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative; z-index: 3;
+  padding-top: clamp(12px, 2vh, 24px);
+  min-height: 0;
+}
+
+.plate__inner {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2vh, 22px);
+  align-items: stretch;
+  width: 100%;
+}
+
+/* hero text */
+.plate__sec-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em; color: var(--mist);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.plate__sec-label::before {
+  content: ''; width: 18px; height: 1px; background: var(--mist);
+}
+
+.plate__hero {
+  font-family: var(--f-cn);
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1.20;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+  color: #161310;
+}
+[data-lang="en"] .plate__hero {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 3.2vw, 48px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  font-weight: normal;
+}
+.plate__hero-mark {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  isolation: isolate;
+}
+/* main brush stroke — symmetric placement, asymmetric ink density
+   (centered as a box; ink fade preserved in gradient stops). */
+.plate__hero-mark::after {
+  content: '';
+  position: absolute;
+  left: -0.05em; right: -0.05em;
+  bottom: -0.06em;
+  height: 0.18em;
+  background:
+    linear-gradient(94deg,
+      transparent 0%,
+      rgba(181,57,45,0.95) 6%,
+      rgba(181,57,45,1) 50%,
+      rgba(142,42,33,0.92) 94%,
+      transparent 100%);
+  z-index: -1;
+  border-radius: 0.06em 0.10em 0.05em 0.09em / 50%;
+  transform: rotate(-0.6deg);
+  filter: blur(0.5px);
+  opacity: 0.86;
+}
+/* trailing ink wisp — symmetric placement; gradient handles taper */
+.plate__hero-mark::before {
+  content: '';
+  position: absolute;
+  left: 0.10em; right: 0.10em;
+  bottom: 0;
+  height: 0.05em;
+  background: linear-gradient(90deg, transparent 0%, var(--verm-deep) 35%, var(--verm-deep) 65%, transparent 100%);
+  opacity: 0.42;
+  z-index: -1;
+  transform: rotate(-0.9deg) translateY(0.04em);
+  border-radius: 50%;
+  filter: blur(0.3px);
+}
+
+.plate__sub {
+  margin-top: clamp(12px, 1.6vh, 18px);
+  font-family: var(--f-cn);
+  font-size: 13px;
+  line-height: 1.78;
+  color: var(--lead);
+  max-width: 26em;
+  text-wrap: pretty;
+}
+[data-lang="en"] .plate__sub {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 28em;
+}
+.plate__sub em { font-style: italic; color: var(--ink); font-weight: 500; }
+.plate__sub strong { font-weight: 600; color: var(--ink); }
+
+/* mascot — frontispiece, free-standing in the column (no frame) */
+.plate__fig {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  align-self: center;
+  margin-top: clamp(10px, 1.8vh, 22px);
+  padding: 0;
+  background: transparent;
+}
+.plate__fig-cap {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--mist);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.plate__fig-cap::before {
+  content: ''; flex: 1; height: 1px; background: var(--hairline);
+}
+.plate__fig-cap::after {
+  content: ''; flex: 1; height: 1px; background: var(--hairline);
+}
+.plate__fig-img {
+  width: 100%;
+  max-height: clamp(160px, 26vh, 260px);
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  opacity: 0.96;
+  display: block;
+  filter: contrast(1.02);
+  
+  will-change: clip-path, filter, opacity;
+}
+.plate__fig-img { animation: ax-ink-lift 1.05s cubic-bezier(0.22,0.61,0.36,1) 1.25s both; }
+.plate__fig-name {
+  margin-top: 10px;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--lead);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plate__fig-name span {
+  font-family: var(--f-cn);
+  font-style: normal;
+  font-weight: 500;
+  color: var(--ink);
+  margin-right: 6px;
+}
+
+/* footer */
+.plate__foot {
+  position: relative; z-index: 3;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+  display: flex; align-items: center;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  color: var(--lead);
+  gap: clamp(0.6em, 1vw, 1.2em);
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.plate__foot > span { flex-shrink: 0; }
+.plate__foot-spacer { flex: 1; }
+.s-key { color: var(--mist); text-transform: uppercase; letter-spacing: 0.14em; margin-right: 0.55em; }
+.s-val { color: var(--ink); }
+.s-dot {
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--forest);
+  margin-right: 0.55em; vertical-align: -1px;
+}
+
+/* ───────── RIGHT: login form ───────── */
+.form-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(22px, 2.8vh, 38px) clamp(40px, 6vw, 88px) clamp(16px, 2vh, 24px);
+  background: var(--paper-3);
+  overflow-y: auto;
+  min-width: 0;
+  height: 100vh;
+}
+/* subtle paper fibre — softer than the plate's, for visual continuity */
+.form-wrap::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n2")'/></svg>");
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+/* binding hairline at left edge */
+.form-wrap::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+.form-wrap > * { position: relative; z-index: 2; }
+
+.form-top {
+  display: flex; align-items: center;
+  justify-content: flex-end;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--lead);
+  text-transform: uppercase;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline-2);
+  flex-shrink: 0;
+}
+.form-top a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 1px;
+  transition: border-color 0.18s, color 0.18s;
+  font-weight: 500;
+}
+.form-top a:hover { border-color: var(--verm); color: var(--verm); }
+
+.lang-toggle {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.10em;
+  background: none; border: none; cursor: pointer;
+  padding: 0; color: var(--lead);
+  transition: color 0.15s;
+}
+.lang-toggle:hover { color: var(--ink); }
+.lang-active { color: var(--ink); font-weight: 600; }
+.lang-sep { color: var(--mist); margin: 0 0.35em; }
+
+/* Layout strategy: the form-wrap is the SCROLL container (100vh, overflow-y:auto).
+   Inside it, form-card-wrap is a flex column that grows to fill remaining height
+   AND ALSO grows further when the form-card needs more room. The form-card uses
+   `margin: auto` so it centers vertically when there's spare room (login mode,
+   short form) and naturally sits at the top with the page scrolling when it
+   doesn't fit (signup mode, 5 fields + terms). Critically, we DO NOT use
+   `align-items: center` here — that clips the top of overflowing children because
+   flex centering distributes overflow symmetrically above and below the parent,
+   and the scroll container can't recover the above-zero portion. */
+.form-card-wrap {
+  flex: 1 0 auto;          /* grow to fill; never shrink below content */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: clamp(16px, 3vh, 32px) 0;
+  position: relative; z-index: 2;
+}
+.form-card {
+  display: flex; flex-direction: column;
+  max-width: 420px;
+  width: 100%;
+  margin: auto;            /* vertical centering when there's room — overflow-safe */
+}
+/* Signup pane: 5 fields + terms + button. Tighten vertical rhythm so the
+   whole composition reads as one breath instead of a stack of slabs. */
+.form-card[data-mode="signup"] .mode-pane--signup .form__lede   { margin-bottom: 18px; }
+.form-card[data-mode="signup"] .mode-pane--signup .sso-row      { margin-bottom: 14px; }
+.form-card[data-mode="signup"] .mode-pane--signup .divider      { margin: 14px 0 16px; }
+.form-card[data-mode="signup"] .mode-pane--signup .field        { margin-bottom: 11px; }
+.form-card[data-mode="signup"] .mode-pane--signup .options-row--terms { margin-top: 14px; margin-bottom: 16px; }
+
+.form__eyebrow {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.20em;
+  color: var(--verm);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.form__eyebrow::before {
+  content: ''; width: 22px; height: 1px; background: var(--verm);
+}
+
+.form__title {
+  font-family: var(--f-display);
+  font-size: clamp(32px, 3.1vw, 44px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--ink);
+  margin-bottom: 12px;
+  font-weight: normal;
+}
+[data-lang="zh"] .form__title {
+  font-family: var(--f-cn);
+  font-weight: 500;
+  font-size: clamp(32px, 3.2vw, 42px);
+  letter-spacing: -0.008em;
+  line-height: 1.14;
+}
+.form__title em {
+  font-style: italic;
+  color: var(--verm);
+  position: relative;
+  display: inline-block;
+  transform-origin: center;
+}
+.form__title em { animation: ax-verm-stamp 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.95s both; }
+.form__title em::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0.06em;
+  bottom: -0.04em;
+  height: 0.06em;
+  background: var(--verm);
+  opacity: 0.32;
+  border-radius: 50%;
+  transform: rotate(-0.5deg);
+}
+[data-lang="zh"] .form__title em {
+  font-style: normal;
+}
+[data-lang="zh"] .form__title em::after { display: none; }
+
+.form__lede {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--lead);
+  margin-bottom: 22px;
+}
+[data-lang="zh"] .form__lede {
+  font-family: var(--f-cn);
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* SSO buttons */
+.sso-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.sso-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--paper);
+  border: 1px solid var(--hair);
+  font-family: var(--f-display);
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 1px;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
+  position: relative;
+}
+/* corner ticks */
+.sso-btn::before, .sso-btn::after {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px;
+  border: 1px solid var(--ink);
+  opacity: 0;
+  transition: opacity 0.22s;
+  pointer-events: none;
+}
+.sso-btn::before { top: 4px; left: 4px; border-right: 0; border-bottom: 0; }
+.sso-btn::after  { bottom: 4px; right: 4px; border-left: 0; border-top: 0; }
+.sso-btn:hover {
+  border-color: var(--ink);
+  background: var(--paper-2);
+}
+.sso-btn:hover::before, .sso-btn:hover::after { opacity: 0.5; }
+.sso-btn:active { background: var(--paper-3); transform: translateY(1px); }
+.sso-btn:focus-visible {
+  outline: none;
+  border-color: var(--verm);
+  box-shadow: 0 0 0 3px rgba(181,57,45,0.12);
+}
+[data-lang="zh"] .sso-btn { font-family: var(--f-cn); font-size: 15px; }
+.sso-btn svg { flex-shrink: 0; }
+
+/* divider */
+.divider {
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--mist);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--hairline);
+}
+
+/* form fields */
+.field {
+  position: relative;
+  margin-bottom: 14px;
+}
+.field__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lead);
+  margin-bottom: 6px;
+}
+.field__num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.field__num::before {
+  content: attr(data-num);
+  color: var(--verm);
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+.field__num::after {
+  content: '';
+  display: inline-block;
+  width: 16px; height: 1px;
+  background: var(--hair);
+  align-self: center;
+  margin: 0 -2px;
+}
+.field:focus-within .field__num::before { color: var(--verm-deep); }
+.field__label .field__hint {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--lead-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.field__label .field__hint a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  transition: border-color 0.18s, color 0.18s;
+}
+.field__label .field__hint a:hover { border-color: var(--verm); color: var(--verm); }
+[data-lang="zh"] .field__label .field__hint { font-family: var(--f-cn); font-style: normal; font-size: 13px; }
+
+.field__input {
+  width: 100%;
+  padding: 10px 2px 11px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid var(--hair);
+  font-family: var(--f-display);
+  font-size: 16px;
+  color: var(--ink);
+  caret-color: var(--verm);
+  caret-shape: block;
+  outline: none;
+  transition: border-color 0.18s ease, padding-left 0.22s cubic-bezier(0.65,0,0.35,1);
+  border-radius: 0;
+}
+.field__input::placeholder {
+  color: var(--mist);
+  font-style: italic;
+}
+[data-lang="zh"] .field__input { font-family: var(--f-cn); font-size: 16px; }
+[data-lang="zh"] .field__input::placeholder { font-style: normal; }
+
+.field__input:hover { border-bottom-color: var(--lead); }
+.field__input:focus { border-bottom-color: var(--verm); padding-left: 8px; }
+/* small accent dot appearing on focus */
+.field::before {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 12px;
+  width: 4px; height: 4px;
+  background: var(--verm);
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.field:focus-within::before { transform: rotate(45deg) scale(1); }
+
+/* fancy underline animation */
+.field__underline {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 0;
+  height: 1.5px;
+  background: var(--verm);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.65,0,0.35,1);
+  pointer-events: none;
+}
+.field__input:focus ~ .field__underline { transform: scaleX(1); }
+
+/* password show/hide */
+.field--pwd { position: relative; }
+.field--pwd .field__input { padding-right: 44px; }
+.field__pwd-toggle {
+  position: absolute;
+  right: 0; bottom: 6px;
+  background: none; border: 0; cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--lead);
+  padding: 4px 6px;
+  text-transform: uppercase;
+  transition: color 0.18s;
+}
+.field__pwd-toggle:hover { color: var(--ink); }
+
+/* checkbox row */
+.options-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-top: 6px; margin-bottom: 20px;
+}
+.checkbox {
+  display: inline-flex; align-items: center;
+  gap: 9px;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--lead);
+  cursor: pointer;
+  user-select: none;
+}
+[data-lang="zh"] .checkbox { font-family: var(--f-cn); font-style: normal; font-size: 14px; }
+.checkbox input { display: none; }
+.checkbox__box {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--lead);
+  display: inline-block;
+  position: relative;
+  transition: border-color 0.18s, background 0.18s;
+}
+.checkbox input:checked ~ .checkbox__box {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.checkbox input:checked ~ .checkbox__box::after {
+  content: '';
+  position: absolute;
+  left: 3px; top: 0px;
+  width: 5px; height: 9px;
+  border: solid var(--paper);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.checkbox:hover .checkbox__box { border-color: var(--ink); }
+
+/* primary submit — disciplined: ink slab with one ornament + arrow */
+.submit-btn {
+  width: 100%;
+  padding: 17px 30px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 17px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1px;
+  letter-spacing: 0.008em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transition: box-shadow 0.3s ease, transform 0.15s ease, letter-spacing 0.4s ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+[data-lang="zh"] .submit-btn { font-family: var(--f-cn); font-style: normal; font-weight: 500; font-size: 16px; letter-spacing: 0.06em; }
+/* ink wash sweep */
+.submit-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 130% 70% at 50% 50%, var(--verm) 0%, var(--verm-deep) 100%);
+  transform: translateX(-101%);
+  transition: transform 0.5s cubic-bezier(0.65,0,0.35,1);
+  z-index: -1;
+}
+.submit-btn:hover::before { transform: translateX(0); }
+.submit-btn:hover {
+  box-shadow: 0 8px 26px rgba(181,57,45,0.28), 0 1px 0 rgba(0,0,0,0.4);
+  letter-spacing: 0.02em;
+}
+[data-lang="zh"] .submit-btn:hover { letter-spacing: 0.10em; }
+.submit-btn:active { transform: translateY(1px); }
+.submit-btn svg {
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.submit-btn:hover svg { transform: translateX(6px); }
+
+/* leading ornament — vermillion seal-like diamond */
+.submit-btn__ornament {
+  display: inline-block;
+  width: 7px; height: 7px;
+  background: var(--verm);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  transition: background 0.35s ease, transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 0 0 0 rgba(248,244,234,0.0);
+}
+.submit-btn:hover .submit-btn__ornament {
+  background: var(--paper);
+  transform: rotate(225deg) scale(1.08);
+  box-shadow: 0 0 0 1.5px rgba(248,244,234,0.35);
+}
+
+/* two diagonal corner brackets — restrained, not noisy */
+.submit-btn .corner {
+  position: absolute;
+  width: 12px; height: 12px;
+  border: 1px solid var(--paper);
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+.submit-btn:hover .corner { opacity: 0.85; width: 14px; height: 14px; }
+.submit-btn .corner.tl { top: 7px; left: 7px;     border-right: 0; border-bottom: 0; }
+.submit-btn .corner.br { bottom: 7px; right: 7px; border-left: 0;  border-top: 0; }
+
+/* footnote / signup */
+.foot-note {
+  margin-top: 14px;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--lead);
+  text-align: center;
+}
+[data-lang="zh"] .foot-note { font-family: var(--f-cn); font-style: normal; font-size: 14px; }
+.foot-note a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+  transition: color 0.18s, border-color 0.18s;
+}
+.foot-note a:hover { color: var(--verm); border-color: var(--verm); }
+
+/* trust strip — colophon line between form and legal */
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 14px 0 13px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--lead-2);
+  text-transform: uppercase;
+  position: relative; z-index: 2;
+  border-top: 1px solid var(--hairline-2);
+  border-bottom: 1px solid var(--hairline-2);
+  flex-shrink: 0;
+}
+.trust-strip__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+  padding: 0 clamp(14px, 2.4vw, 28px);
+  position: relative;
+}
+.trust-strip__item + .trust-strip__item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 1px; height: 11px;
+  background: var(--hairline);
+  transform: translateY(-50%);
+}
+.trust-strip__sym {
+  font-family: var(--f-display);
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--verm);
+  letter-spacing: 0;
+  margin-top: -1px;
+  flex-shrink: 0;
+}
+.trust-strip__item:nth-child(2) .trust-strip__sym { color: var(--forest); }
+.trust-strip__item:nth-child(3) .trust-strip__sym { color: var(--lead); }
+[data-lang="zh"] .trust-strip { letter-spacing: 0.16em; font-size: 10px; }
+
+/* form bottom legal */
+.form-legal {
+  padding-top: 14px;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--mist);
+  line-height: 1.6;
+  text-align: center;
+  flex-shrink: 0;
+}
+[data-lang="zh"] .form-legal { font-family: var(--f-cn); font-style: normal; font-size: 13px; }
+.form-legal a {
+  color: var(--lead);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline-2);
+}
+.form-legal a:hover { color: var(--ink); border-color: var(--lead); }
+
+/* colophon — printer's signature at the very bottom */
+.colophon {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dotted var(--hairline);
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.colophon__seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.colophon__seal::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--verm);
+  transform: rotate(45deg);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.colophon__center {
+  flex: 1;
+  text-align: center;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--lead-2);
+  font-family: var(--f-display);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-lang="zh"] .colophon__center { font-family: var(--f-cn); font-style: normal; font-size: 10px; }
+
+/* corner registration marks */
+.cm {
+  position: fixed; z-index: 5;
+  width: 14px; height: 14px;
+  pointer-events: none;
+  opacity: 0.45;
+}
+.cm::before, .cm::after {
+  content: ''; position: absolute;
+  background: var(--mist);
+}
+.cm::before { width: 14px; height: 0.6px; top: 6.7px; left: 0; }
+.cm::after  { width: 0.6px; height: 14px; top: 0; left: 6.7px; }
+.cm-tl { top: 14px; left: 14px; }
+.cm-tr { top: 14px; right: 14px; }
+.cm-bl { bottom: 14px; left: 14px; }
+.cm-br { bottom: 14px; right: 14px; }
+
+/* responsive */
+@media (max-width: 880px) {
+  body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    height: auto;
+  }
+  .plate {
+    min-height: 320px;
+    padding: 32px 28px;
+  }
+  .plate__inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .plate__fig { max-width: 200px; margin: 0 auto; }
+  .plate-binding { display: none; }
+  .form-wrap { padding: 32px 28px 28px; height: auto; }
+  .trust-strip { padding: 14px 0 12px; gap: 18px; }
+  .colophon { font-size: 8px; letter-spacing: 0.14em; }
+  .colophon__center { display: none; }
+  .cm { display: none; }
+  /* Horizontal-scroll guard — html-level for iOS Safari, form-wrap had overflow-y:auto which silently enabled x-scroll */
+  html, body { overflow-x: hidden; }
+  .form-wrap { overflow-x: hidden; }
+  /* Allow trust-strip badges and editorial colophon to wrap on narrow screens instead of forcing horizontal overflow */
+  .trust-strip { flex-wrap: wrap; row-gap: 6px; }
+  .colophon { flex-wrap: wrap; row-gap: 4px; justify-content: center; }
+}
+@media (max-width: 480px) {
+  .sso-row { grid-template-columns: 1fr; }
+  .plate__hero { font-size: 30px !important; }
+}
+
+/* ───────── motion · entry choreography ─────────
+   These animations are unconditional. NEVER gate functional entrance /
+   feedback animation behind `prefers-reduced-motion: no-preference` — on
+   Windows 11 with "Show animations" off (which forces reduce), the page
+   appears with NO motion at all. Vestibular-risk continuous loops are
+   suppressed in a focused @media (reduce) block at the bottom of this file.
+   See memory: reduce-motion-trap.md */
+  /* Woodblock printing metaphor — paper soaks, then ink rises, then vermilion stamps. */
+  @keyframes ax-paper-soak {
+    from { background: #FFFFFF; }
+    to   { background: radial-gradient(ellipse 90% 70% at 30% 50%, #F8F4EA 0%, #F5EFE0 100%); }
+  }
+  @keyframes ax-ink-lift {
+    0%   { clip-path: inset(100% 0 0 0); filter: contrast(0.55) brightness(1.18) sepia(0.05); opacity: 0; }
+    20%  { opacity: 0.9; }
+    100% { clip-path: inset(0); filter: contrast(1.02) brightness(1) sepia(0); opacity: 0.96; }
+  }
+  @keyframes ax-verm-stamp {
+    0%   { opacity: 0; transform: scale(0.84); filter: blur(2px); }
+    55%  { opacity: 1; transform: scale(1.06); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+  @keyframes ax-form-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+  }
+  @keyframes ax-diamond-pulse {
+    0%   { transform: rotate(45deg) translateY(-1px) scale(1); }
+    40%  { transform: rotate(225deg) translateY(-1px) scale(1.35); filter: drop-shadow(0 0 8px rgba(181,57,45,0.55)); }
+    100% { transform: rotate(45deg) translateY(-1px) scale(1); }
+  }
+  body { animation: ax-paper-soak 0.55s cubic-bezier(0.4,0,0.2,1) both; }
+
+  @keyframes ax-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ax-soft {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes ax-rule-draw {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @keyframes ax-stroke-draw {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0 0 0); }
+  }
+  @keyframes ax-brand-breathe {
+    0%, 100% { transform: rotate(45deg) translateY(-1px) scale(1); opacity: 1; }
+    50%      { transform: rotate(45deg) translateY(-1px) scale(1.10); opacity: 0.82; }
+  }
+  @keyframes ax-paper-drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(12px, 8px) scale(1.02); }
+  }
+  @keyframes ax-cm-pulse {
+    0%, 100% { opacity: 0.32; }
+    50%      { opacity: 0.55; }
+  }
+  @keyframes ax-dot-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(45,95,63,0.4); }
+    70%      { box-shadow: 0 0 0 6px rgba(45,95,63,0); }
+  }
+
+  /* plate column */
+  .plate__head      { animation: ax-enter 0.7s cubic-bezier(0.2,0.7,0.3,1) 0.05s both; }
+  .plate__rule      { transform-origin: left center; animation: ax-rule-draw 0.85s cubic-bezier(0.65,0,0.35,1) 0.25s both; }
+  .plate__sec-label { animation: ax-enter 0.7s ease 0.45s both; }
+  .plate__hero      { animation: ax-enter 0.85s cubic-bezier(0.2,0.7,0.3,1) 0.55s both; }
+  .plate__hero-mark::after  { animation: ax-stroke-draw 1.05s cubic-bezier(0.55,0,0.35,1) 1.25s both; }
+  .plate__hero-mark::before { animation: ax-soft 0.7s ease 1.95s both; }
+  .plate__sub       { animation: ax-enter 0.8s ease 0.85s both; }
+  .plate__fig       { animation: ax-enter 0.9s cubic-bezier(0.2,0.7,0.3,1) 1.05s both; }
+  .plate__foot      { animation: ax-enter 0.6s ease 1.25s both; }
+
+  /* form column */
+  .form-top         { animation: ax-enter 0.7s ease 0.10s both; }
+  .form__eyebrow    { animation: ax-enter 0.7s ease 0.55s both; }
+  .form__title      { animation: ax-enter 0.8s cubic-bezier(0.2,0.7,0.3,1) 0.65s both; }
+  .form__lede       { animation: ax-enter 0.7s ease 0.80s both; }
+  .sso-row          { animation: ax-enter 0.7s ease 0.95s both; }
+  .divider          { animation: ax-enter 0.6s ease 1.10s both; }
+  #loginForm .field:nth-of-type(1) { animation: ax-enter 0.6s ease 1.20s both; }
+  #loginForm .field:nth-of-type(2) { animation: ax-enter 0.6s ease 1.32s both; }
+  .options-row      { animation: ax-enter 0.6s ease 1.45s both; }
+  .submit-btn       { animation: ax-enter 0.7s cubic-bezier(0.2,0.7,0.3,1) 1.55s both; }
+  .foot-note        { animation: ax-enter 0.6s ease 1.75s both; }
+  .trust-strip      { animation: ax-enter 0.6s ease 1.90s both; }
+  .form-legal       { animation: ax-enter 0.6s ease 2.00s both; }
+  .colophon         { animation: ax-enter 0.6s ease 2.10s both; }
+
+  /* living elements */
+  .plate__brand-mark { animation: ax-brand-breathe 4.2s ease-in-out infinite 2.4s; }
+  .plate::after      { animation: ax-paper-drift 90s ease-in-out infinite; }
+  .cm                { animation: ax-cm-pulse 5.5s ease-in-out infinite; }
+  .s-dot             { animation: ax-dot-pulse 2.6s ease-out infinite 2.6s; }
+
+  /* mascot tilt */
+  .plate__fig {
+    transition: transform 0.6s cubic-bezier(0.2,0.7,0.3,1);
+    will-change: transform;
+  }
+  .plate__fig.is-tilting {
+    transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.16s ease-out;
+  }
+
+/* ═══════════════════════════════════════════════════════════════
+   MODE STACK — login ↔ signup
+   Only ONE pane is in the DOM-as-laid-out at a time. The inactive
+   pane is `display:none` so it cannot contribute any height, any
+   focusable controls, or any visual overlap. Crossfade is performed
+   on the ACTIVE pane only — clean and predictable.
+   ═══════════════════════════════════════════════════════════════ */
+.mode-stack {
+  position: relative;
+  width: 100%;
+}
+.mode-stack > .mode-pane {
+  min-width: 0;
+  width: 100%;
+  flex-direction: column;
+}
+/* INACTIVE pane: completely removed */
+.form-card[data-mode="login"]  .mode-pane--signup,
+.form-card[data-mode="login"]  .mode-pane--forgot,
+.form-card[data-mode="signup"] .mode-pane--login,
+.form-card[data-mode="signup"] .mode-pane--forgot,
+.form-card[data-mode="forgot"] .mode-pane--login,
+.form-card[data-mode="forgot"] .mode-pane--signup { display: none; }
+
+/* ACTIVE pane: laid out as a flex column */
+.form-card[data-mode="login"]  .mode-pane--login,
+.form-card[data-mode="signup"] .mode-pane--signup,
+.form-card[data-mode="forgot"] .mode-pane--forgot { display: flex; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MODE SWITCH — Same-document View Transitions
+   ───────────────────────────────────────────────────────────────
+   Strategy: when html[data-mode-switching] is set (before
+   startViewTransition runs), the active pane and the top link
+   gain view-transition-names. Browser snapshots them, animates
+   between old and new states on the GPU compositor — no CSS
+   keyframes on real DOM elements, no jitter from many parallel
+   child animations.
+
+   Conditional naming avoids interfering with the cross-document
+   (navigation:auto) transitions that use paperFlip on root.
+   ═══════════════════════════════════════════════════════════════ */
+
+html[data-mode-switching] .form-card[data-mode="login"]  .mode-pane--login,
+html[data-mode-switching] .form-card[data-mode="signup"] .mode-pane--signup {
+  view-transition-name: active-pane;
+}
+
+/* Override root paperFlip with a quiet cross-fade during mode switch.
+   Specificity (html[attr]::pseudo) > base (::pseudo) so this wins. */
+html[data-mode-switching]::view-transition-old(root) {
+  animation: ax-mode-root-out 220ms cubic-bezier(0.4,0,0.2,1) both;
+}
+html[data-mode-switching]::view-transition-new(root) {
+  animation: ax-mode-root-in  300ms cubic-bezier(0.22,0.61,0.36,1) both;
+}
+@keyframes ax-mode-root-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ax-mode-root-in  { from { opacity: 0; } to { opacity: 1; } }
+
+/* Active pane — directional slide. Tightened to feel crisp, not soft.
+   leave 160ms (snap-out), enter 200ms (snap-in, no delay — they overlap 40ms).
+   Forward (login→signup): out-left, in-right. Backward: mirrored. */
+html[data-mode-switching="forward"]::view-transition-old(active-pane) {
+  animation: ax-pane-leave-fwd  160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+html[data-mode-switching="forward"]::view-transition-new(active-pane) {
+  animation: ax-pane-enter-fwd  200ms cubic-bezier(0.22, 0.9, 0.36, 1) both;
+}
+html[data-mode-switching="backward"]::view-transition-old(active-pane) {
+  animation: ax-pane-leave-back 160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+html[data-mode-switching="backward"]::view-transition-new(active-pane) {
+  animation: ax-pane-enter-back 200ms cubic-bezier(0.22, 0.9, 0.36, 1) both;
+}
+@keyframes ax-pane-leave-fwd  { from { opacity: 1; transform: translate3d(0,0,0); } to { opacity: 0; transform: translate3d(-22px, 0, 0); } }
+@keyframes ax-pane-enter-fwd  { from { opacity: 0; transform: translate3d(18px, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+@keyframes ax-pane-leave-back { from { opacity: 1; transform: translate3d(0, 0, 0); } to { opacity: 0; transform: translate3d(22px, 0, 0); } }
+@keyframes ax-pane-enter-back { from { opacity: 0; transform: translate3d(-18px, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+/* Top-right link — micro vertical stamp swap. Tighter to match pane. */
+html[data-mode-switching="forward"]::view-transition-old(mode-link) {
+  animation: ax-link-out-up 140ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+html[data-mode-switching="forward"]::view-transition-new(mode-link) {
+  animation: ax-link-in-down 180ms cubic-bezier(0.22, 0.9, 0.36, 1) 60ms both;
+}
+html[data-mode-switching="backward"]::view-transition-old(mode-link) {
+  animation: ax-link-out-down 140ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+html[data-mode-switching="backward"]::view-transition-new(mode-link) {
+  animation: ax-link-in-up 180ms cubic-bezier(0.22, 0.9, 0.36, 1) 60ms both;
+}
+@keyframes ax-link-out-up   { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-4px); } }
+@keyframes ax-link-in-down  { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ax-link-out-down { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(4px); } }
+@keyframes ax-link-in-up    { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Brand rule — brightness pulse during the switch. Tightened. */
+html[data-mode-switching]::view-transition-group(brand-rule) {
+  animation: ax-rule-pulse 260ms cubic-bezier(0.4, 0, 0.4, 1) both;
+}
+@keyframes ax-rule-pulse {
+  0%   { filter: brightness(1) saturate(1); }
+  45%  { filter: brightness(1.22) saturate(1.3); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* ── Title em stamp-in: triggered AFTER the view transition resolves, on the
+   real DOM. The em ("back" / "回来" / "record" / "存照") is the title's
+   vermillion focal point; instead of softly fading with the pane snapshot,
+   it now lands like a seal — quick scale overshoot + ink halo flash. */
+.form__title em.stamp-in {
+  animation: ax-title-stamp 140ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes ax-title-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.08) rotate(-0.4deg);
+    text-shadow: 0 0 6px rgba(181,57,45,0.45);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+    text-shadow: 0 0 0 rgba(181,57,45,0);
+  }
+}
+
+/* English-only follow-on: the vermillion underline strokes in alongside the
+   stamp, like a single brush pass underscoring "back" / "here". Chinese em
+   has display:none on ::after so this is a no-op there. */
+.form__title em.stamp-in::after {
+  transform-origin: 0 50%;
+  animation: ax-title-underline 100ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both;
+}
+@keyframes ax-title-underline {
+  0%   { transform: rotate(-0.5deg) scaleX(0); opacity: 0; }
+  100% { transform: rotate(-0.5deg) scaleX(1); opacity: 0.32; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ELEVATION PASS — seal stamp, height glide, per-field shake,
+   match-msg crossfade, code-btn progress arc, ink check
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── per-field error shake (softer than card shake) ── */
+.field.is-error .field__input { border-bottom-color: var(--verm); }
+.field.is-error .field__underline { transform: scaleX(1); background: var(--verm); }
+.field.is-error .field__num::before { color: var(--verm); }
+.field.is-error {
+  animation: ax-field-shake 0.36s cubic-bezier(0.36,0.07,0.19,0.97) both;
+}
+@keyframes ax-field-shake {
+  0%, 100% { transform: translateX(0); }
+  22% { transform: translateX(-4px); }
+  52% { transform: translateX(3px); }
+  78% { transform: translateX(-1.5px); }
+}
+
+/* ── match-msg: the two stacked text layers crossfade in the same grid cell.
+   The parent .match-msg already sets up the grid (see "password match
+   indicator" block further down). Both layers occupy col 2 / row 1. */
+.match-msg .match-msg__layer {
+  grid-column: 2;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.24s ease;
+  line-height: 1;
+}
+.match-msg .match-msg__layer--no { opacity: 1; }
+.match-msg .match-msg__layer--ok { opacity: 0; }
+.field--confirm.is-match .match-msg .match-msg__layer--no { opacity: 0; }
+.field--confirm.is-match .match-msg .match-msg__layer--ok { opacity: 1; }
+
+/* ── code-btn countdown (JS-driven --progress) ── */
+.code-btn { overflow: hidden; }
+.code-btn::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--verm), color-mix(in oklab, var(--verm) 65%, #E8975B));
+  transform-origin: left center;
+  transform: scaleX(var(--progress, 0));
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 1.05s linear, opacity 0.35s ease;
+  border-radius: 0 1px 1px 0;
+}
+.code-btn.is-counting::after {
+  opacity: 1;
+  animation: barGlow 2.4s ease-in-out infinite;
+}
+@keyframes barGlow {
+  0%,100% { box-shadow: 0 0 4px -1px color-mix(in oklab, var(--verm) 30%, transparent); filter: brightness(1); }
+  50%     { box-shadow: 0 0 10px -1px color-mix(in oklab, var(--verm) 55%, transparent); filter: brightness(1.12); }
+}
+.code-btn.is-done::after {
+  opacity: 1;
+  transform: scaleX(1) !important;
+  background: linear-gradient(90deg, #3D7A55, #6DB88F);
+  box-shadow: 0 0 12px -2px rgba(61,122,85,0.45);
+  transition: transform 0.3s ease, background 0.4s ease, box-shadow 0.4s ease, opacity 0.4s ease;
+  animation: none;
+}
+
+/* ── ink-stroke SVG checkbox: replaces CSS ::after check with a drawn stroke ── */
+.checkbox__check {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.checkbox__check path {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  transition: stroke-dashoffset 0.32s cubic-bezier(0.65,0,0.35,1);
+}
+.checkbox input:checked ~ .checkbox__box .checkbox__check path {
+  stroke-dashoffset: 0;
+  transition-delay: 0.04s;
+}
+/* hide the legacy CSS check once the SVG version is in place */
+.checkbox__box.has-svg-check::after { display: none !important; }
+
+/* ─── inline row: input + adjacent ghost button (verification code) ─── */
+.field--inline-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+.field--inline-row > .field__input { grid-column: 1; }
+.field--inline-row > .code-btn     { grid-column: 2; }
+
+.code-btn {
+  position: relative;
+  padding: 9px 14px 10px;
+  background: transparent;
+  border: 1px solid var(--hair);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 1px;
+  white-space: nowrap;
+  transition: border-color 0.18s, color 0.18s, background 0.18s, transform 0.12s;
+  align-self: end;
+  margin-bottom: 1px;
+  height: calc(1em + 22px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-lang="zh"] .code-btn { font-family: var(--f-cn); font-size: 12px; letter-spacing: 0.06em; }
+.code-btn::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--verm);
+  transform: rotate(45deg);
+  display: inline-block;
+  flex-shrink: 0;
+  transition: background 0.22s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.code-btn:hover {
+  border-color: var(--ink);
+  background: var(--paper);
+}
+.code-btn:hover::before { background: var(--verm-deep); transform: rotate(225deg); }
+.code-btn:active { transform: translateY(1px); }
+.code-btn:focus-visible {
+  outline: none;
+  border-color: var(--verm);
+  box-shadow: 0 0 0 3px rgba(181,57,45,0.12);
+}
+.code-btn[disabled],
+.code-btn.is-counting {
+  cursor: not-allowed;
+  color: var(--mist);
+  border-color: var(--hairline);
+  background: transparent;
+}
+.code-btn.is-counting::before {
+  background: color-mix(in oklab, var(--verm) 28%, var(--mist));
+  animation: dotPulse 2.4s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%,100% { transform: rotate(45deg) scale(0.85); opacity: 0.35; }
+  50%     { transform: rotate(45deg) scale(1.15); opacity: 0.7; }
+}
+.code-btn.is-done::before {
+  background: #3D7A55 !important;
+  animation: dotPop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
+}
+@keyframes dotPop {
+  0%   { transform: rotate(45deg) scale(0.4); opacity: 0; }
+  100% { transform: rotate(45deg) scale(1); opacity: 1; }
+}
+.code-btn__count {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  color: var(--verm);
+  min-width: 2.2ch;
+  text-align: right;
+}
+.code-btn__count.is-tick {
+  animation: numDrop 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes numDrop {
+  0%   { transform: translateY(-5px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ─── password strength: three diamonds, lives inside the label (right side) ─── */
+.pwd-strength {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(1px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  flex-shrink: 0;
+}
+.pwd-strength__label {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-right: 2px;
+  transition: color 0.22s ease;
+}
+.field--pwd.has-value .pwd-strength {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pwd-strength__mark {
+  width: 6px; height: 6px;
+  background: transparent;
+  border: 1px solid var(--hair);
+  transform: rotate(45deg);
+  transition: background 0.28s ease, border-color 0.28s ease;
+}
+.pwd-strength[data-level="1"] .pwd-strength__mark:nth-child(-n+2) { background: var(--verm); border-color: var(--verm); }
+.pwd-strength[data-level="1"] .pwd-strength__label { color: var(--verm); }
+.pwd-strength[data-level="2"] .pwd-strength__mark:nth-child(-n+3) { background: var(--verm); border-color: var(--verm); }
+.pwd-strength[data-level="2"] .pwd-strength__mark:nth-child(2) ~ .pwd-strength__mark { background: transparent; border-color: var(--hair); }
+.pwd-strength[data-level="2"] .pwd-strength__mark:nth-child(1),
+.pwd-strength[data-level="2"] .pwd-strength__mark:nth-child(2) { background: var(--verm); border-color: var(--verm); }
+.pwd-strength[data-level="2"] .pwd-strength__label { color: var(--lead); }
+.pwd-strength[data-level="3"] .pwd-strength__mark { background: var(--forest); border-color: var(--forest); }
+.pwd-strength[data-level="3"] .pwd-strength__label { color: var(--forest); }
+
+/* ─── password match indicator (lives in the label row, right side) ───
+   Layout: inline-grid with two columns (diamond + text). The two
+   text layers stack in the same grid cell and crossfade by opacity. */
+.match-msg {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--verm);
+  opacity: 0;
+  transform: translateY(-1px);
+  transition: opacity 0.22s, transform 0.22s, color 0.22s;
+  pointer-events: none;
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+[data-lang="zh"] .match-msg { font-family: var(--f-cn); font-style: normal; font-size: 11px; }
+.match-msg::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: currentColor;
+  transform: rotate(45deg);
+  display: inline-block;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+.field--confirm.is-mismatch .match-msg { opacity: 1; transform: translateY(0); color: var(--verm); }
+.field--confirm.is-match    .match-msg {
+  opacity: 1; transform: translateY(0); color: var(--forest);
+  font-style: normal;
+}
+.field--confirm.is-match    .match-msg::before {
+  transform: rotate(45deg) scale(1.05);
+}
+
+/* ─── small per-field hint shown below the input (e.g. "已发送至 …") ─── */
+.field__sublabel {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mist);
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.22s, transform 0.22s;
+}
+.field__sublabel.is-shown { opacity: 1; transform: translateY(0); min-height: 14px; }
+.field__sublabel--ok { color: var(--forest); }
+.field__sublabel--err { color: var(--verm); }
+
+/* ─── required asterisk on labels ─── */
+.field__label .req {
+  color: var(--verm);
+  font-family: var(--f-display);
+  font-size: 12px;
+  margin-left: 4px;
+  vertical-align: 2px;
+  line-height: 1;
+}
+
+/* ─── terms checkbox row (signup) ─── */
+.options-row--terms {
+  margin-top: 18px;
+  margin-bottom: 22px;
+  align-items: flex-start;
+}
+.options-row--terms .checkbox {
+  align-items: flex-start;
+  line-height: 1.55;
+  gap: 11px;
+  font-size: 14px;
+}
+[data-lang="zh"] .options-row--terms .checkbox { font-size: 14px; line-height: 1.7; }
+.options-row--terms .checkbox__box { flex-shrink: 0; margin-top: 3px; }
+.options-row--terms .checkbox a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 1px;
+  transition: color 0.18s, border-color 0.18s;
+}
+.options-row--terms .checkbox a:hover { color: var(--verm); border-color: var(--verm); }
+.form-card.terms-error .options-row--terms .checkbox__box {
+  border-color: var(--verm);
+  animation: ax-tick-pulse 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
+}
+@keyframes ax-tick-pulse {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+}
+
+/* ─── disabled / loading state for submit button ─── */
+.submit-btn[disabled],
+.submit-btn.is-busy {
+  opacity: 0.72;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* hide the kbd-hint inside the signup pane (no shortcut wired) */
+.mode-pane--signup .kbd-hint { display: none; }
+
+/* mobile tightening for signup */
+@media (max-width: 480px) {
+  .field--inline-row { grid-template-columns: 1fr; }
+  .field--inline-row > .code-btn { grid-column: 1; height: auto; padding: 11px 14px; }
+  .options-row--terms .checkbox { font-size: 14px; }
+}
+
+/* caps-lock indicator */
+.caps-warn {
+  position: absolute;
+  right: 0; top: -2px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--verm);
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 0.22s, transform 0.22s;
+  pointer-events: none;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--paper-3);
+  padding: 0 6px 0 8px;
+}
+.caps-warn::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--verm);
+  transform: rotate(45deg);
+  display: inline-block;
+}
+.field--pwd.is-caps .caps-warn { opacity: 1; transform: translateY(0); }
+.field--pwd.is-caps .field__hint { opacity: 0.25; transition: opacity 0.22s; }
+
+/* email validity mark */
+.email-mark {
+  position: absolute;
+  right: 2px; top: 4px;
+  width: 7px; height: 7px;
+  background: var(--forest);
+  transform: rotate(45deg) scale(0);
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s;
+  pointer-events: none;
+}
+.field.is-valid .email-mark { transform: rotate(45deg) scale(1); opacity: 1; }
+
+/* ⌘+Enter hint sits under the submit button */
+.kbd-hint {
+  margin-top: 9px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--mist);
+  text-transform: uppercase;
+  text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.kbd-hint kbd {
+  font-family: inherit;
+  font-size: 10px;
+  color: var(--lead);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 1px 6px;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THE DEVELOP — single-gesture woodblock print entrance (login)
+   v3: Polaroid-like progressive develop on both panels in unison
+   Unconditional — see memory: reduce-motion-trap.md
+   ═══════════════════════════════════════════════════════════════ */
+
+  /* ① Both panels develop together as ONE press */
+  .plate,
+  .form-wrap {
+    animation: ax-develop 1.15s cubic-bezier(0.62, 0.04, 0.34, 1) 0.18s both !important;
+    will-change: filter, opacity;
+  }
+  @keyframes ax-develop {
+    0%   { filter: blur(7px) saturate(0.18) contrast(0.46) brightness(1.18); opacity: 0.42; }
+    32%  { filter: blur(4.5px) saturate(0.4) contrast(0.62) brightness(1.13); opacity: 0.7; }
+    100% { filter: blur(0) saturate(1) contrast(1) brightness(1); opacity: 1; }
+  }
+
+  /* ② Suppress every staggered per-element entrance — they were already there */
+  .plate__head, .plate__rule, .plate__sec-label, .plate__hero,
+  .plate__sub, .plate__fig, .plate__foot,
+  .plate__hero-mark::after, .plate__hero-mark::before,
+  .form-top, .form__eyebrow, .form__title, .form__lede,
+  .sso-row, .divider,
+  #loginForm .field:nth-of-type(1),
+  #loginForm .field:nth-of-type(2),
+  .options-row, .submit-btn, .foot-note,
+  .trust-strip, .form-legal, .colophon {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Brush stroke keeps its rotate transform — opacity/animation only override */
+  .plate__hero-mark::after {
+    transform: rotate(-0.6deg) !important;
+    opacity: 0.86 !important;
+  }
+  .plate__hero-mark::before {
+    transform: rotate(-0.9deg) translateY(0.04em) !important;
+    opacity: 0.42 !important;
+  }
+
+  /* ③ Mascot rises within the develop window */
+  .plate__fig-img {
+    animation: ax-mascot-rise 1.0s cubic-bezier(0.22, 0.61, 0.36, 1) 0.32s both !important;
+  }
+  @keyframes ax-mascot-rise {
+    from { clip-path: inset(100% 0 0 0); filter: contrast(0.5) brightness(1.18); }
+    to   { clip-path: inset(0); filter: contrast(1) brightness(1); }
+  }
+
+  /* ④ Plate rule: small horizontal scaleX inside develop (not "drawn") */
+  .plate__rule {
+    animation: ax-rule-scale 0.7s cubic-bezier(0.65,0,0.35,1) 0.30s both !important;
+    transform-origin: left center;
+  }
+  @keyframes ax-rule-scale {
+    from { transform: scaleX(0.1); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+  }
+
+  /* ⑤ Vermilion second-pass — at the end of develop, the red accents
+     with their OWN class hooks stamp together. The § characters that
+     live as inline text in eyebrow elements develop naturally with their
+     parents (no separate stamp needed). */
+  .form__title em {
+    animation: ax-second-pass 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both !important;
+    transform-origin: center center;
+  }
+  @keyframes ax-second-pass {
+    0%   { opacity: 0; transform: scale(0.78); }
+    62%  { opacity: 1; transform: scale(1.10); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Brand mark stamp keeps its rotation transform separately */
+  .plate__brand-mark {
+    animation: ax-second-pass-diamond 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both !important;
+  }
+  @keyframes ax-second-pass-diamond {
+    0%   { opacity: 0; transform: rotate(45deg) scale(0.6); }
+    62%  { opacity: 1; transform: rotate(45deg) scale(1.16); }
+    100% { opacity: 1; transform: rotate(45deg) scale(1); }
+  }
+
+  /* Brand-rule (red hairline at top of plate) draws briefly before develop */
+  .plate__rule {
+    /* keep ax-rule-scale */
+  }
+
+  /* Body paper-soak override */
+  body {
+    animation: none !important;
+  }
+
+  /* Mascot breathing kicks in after develop finishes */
+  .plate__brand-mark {
+    animation:
+      ax-second-pass-diamond 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both,
+      ax-brand-breathe 4.2s ease-in-out infinite 1.8s !important;
+  }
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCE-MOTION POLICY — vestibular-risk continuous loops only.
+   The DEVELOP entrance, hover ceremonies, field-shake feedback,
+   diamond pulse, and view-transitions ALL run unconditionally.
+   Only true ambient infinite loops are suppressed here.
+   See memory: reduce-motion-trap.md
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .plate__brand-mark {
+    /* Keep the one-shot stamp, drop the continuous breathe */
+    animation: ax-second-pass-diamond 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both !important;
+  }
+  .plate::after,
+  .cm,
+  .s-dot { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME — 暖色调暗黑（与站点 common.css 暗黑同源）
+   login.html 只加载 login.css（不含 common.css），故此页有自己的
+   一套局部令牌（--ink/--paper/--verm…）。这里把这些局部令牌在暗色下
+   整体翻转——绝大多数 var(--xxx) 自动适配；其余少量硬编码（渐变/白
+   高光/纯色字面量）单独覆盖。浅色规则逐字节不改，未引入新令牌名。
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="dark"] {
+  --ink:       #F1EFE6;
+  --ink-soft:  #D8D5C9;
+  --lead:      #A6A291;
+  --lead-2:    #8E8A7B;
+  --mist:      #7C7869;
+  --hair:      #35322A;
+  --verm:      #E45C4F;
+  --verm-deep: #C8392D;
+  --forest:    #5CAE78;
+  --paper:     #15140E;
+  --paper-2:   #1F1D15;
+  --paper-3:   #1B1A12;
+  --hairline:  rgba(241,239,230,0.10);
+  --hairline-2:rgba(241,239,230,0.06);
+  color-scheme: dark;
+}
+
+/* editorial plate — warm dark gradient (mirrors light radial composition) */
+:root[data-theme="dark"] .plate {
+  background: radial-gradient(ellipse 90% 70% at 50% 50%,
+    #1F1D15 0%, #1B1A12 45%, #15140E 100%);
+}
+/* hero headline uses a hardcoded ink literal (#161310) — flip to light ink */
+:root[data-theme="dark"] .plate__hero { color: var(--ink); }
+
+/* ink slab → light slab in dark (bg=--ink now light, text=--paper now dark,
+   both auto-flip). Rebalance edge highlights so it reads as a raised light
+   surface rather than a dark one with a white inner glow. */
+:root[data-theme="dark"] .submit-btn {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+:root[data-theme="dark"] .submit-btn:hover {
+  box-shadow: 0 8px 26px rgba(228,92,79,0.30), 0 1px 0 rgba(0,0,0,0.45);
+}

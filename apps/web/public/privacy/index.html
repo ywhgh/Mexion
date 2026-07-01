@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("axiom_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axiom — 隐私政策</title>
+<link rel="stylesheet" href="/assets/fonts.css">
+<style>
+:root{
+  --ink:#14140F;--lead:#47443A;--mist:#8C8778;--border:#E6E2D6;
+  --bg:#F4F3EE;--surface:#FFFFFF;--verm:#C8392D;--verm-soft:#FAE7E1;
+  --f-sans:'Geist',-apple-system,'Noto Sans SC',system-ui,sans-serif;
+  --f-display:'Newsreader','Georgia',serif;
+  --f-mono:'Geist Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:15px;line-height:1.8;-webkit-font-smoothing:antialiased}
+.page{max-width:720px;margin:0 auto;padding:48px 24px 80px}
+.back{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);text-decoration:none;margin-bottom:32px;transition:color .15s}
+.back:hover{color:var(--ink)}
+.back svg{width:14px;height:14px}
+.meta{font-family:var(--f-mono);font-size:11px;color:var(--mist);letter-spacing:0.06em;margin-bottom:8px}
+h1{font-family:var(--f-display);font-size:clamp(32px,5vw,48px);font-weight:400;letter-spacing:-0.025em;line-height:1.1;margin-bottom:6px}
+h1 em{font-style:italic;color:var(--verm)}
+.version{font-family:var(--f-mono);font-size:11px;color:var(--mist);margin-bottom:32px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:36px}
+.toc-title{font-family:var(--f-mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mist);margin-bottom:10px}
+.toc a{display:block;font-size:13px;color:var(--lead);text-decoration:none;padding:4px 0;border-bottom:1px solid var(--border);transition:color .12s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{color:var(--verm)}
+article h2{font-family:var(--f-display);font-size:22px;font-weight:500;letter-spacing:-0.015em;margin:40px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--border);scroll-margin-top:24px}
+article h3{font-size:15px;font-weight:600;margin:24px 0 8px;color:var(--ink)}
+article p{margin-bottom:14px}
+article strong{font-weight:600;color:var(--ink)}
+article em{font-style:italic}
+article a{color:var(--verm);text-decoration:underline;text-underline-offset:2px}
+article a:hover{color:var(--ink)}
+article ul{margin:0 0 14px 20px}
+article li{margin-bottom:6px}
+article code{font-family:var(--f-mono);font-size:13px;background:var(--surface);padding:1px 5px;border-radius:3px;border:1px solid var(--border)}
+article blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid var(--verm);background:var(--verm-soft);border-radius:0 8px 8px 0;font-size:14px}
+article hr{border:none;height:1px;background:var(--border);margin:32px 0}
+.foot{margin-top:48px;padding-top:20px;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:10px;color:var(--mist);display:flex;justify-content:space-between;letter-spacing:0.06em}
+@media(max-width:600px){.page{padding:24px 16px 60px}h1{font-size:28px}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page{animation:fadeIn .4s ease-out}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="/login/">
+    <svg viewBox="0 0 14 14" fill="none"><path d="M9 2.5L4.5 7 9 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    返回登录
+  </a>
+  <div class="meta">§ 法律文书</div>
+  <h1>隐私<em>政策</em></h1>
+  <div class="version">版本 v1.0 · 生效日期 2026 年 5 月 22 日</div>
+  <nav class="toc">
+    <div class="toc-title">目录</div>
+    <a href="#前言">前言</a><a href="#一-关于本政策的适用范围">一、关于本政策的适用范围</a><a href="#二-我们收集的信息">二、我们收集的信息</a><a href="#三-我们如何使用您的信息">三、我们如何使用您的信息</a><a href="#四-关于服务调用数据的特别说明">四、关于服务调用数据的特别说明</a><a href="#五-关于去标识化-匿名化与衍生数据">五、关于去标识化、匿名化与衍生数据</a><a href="#六-信息共享-披露与转让">六、信息共享、披露与转让</a><a href="#七-信息存储-保留期限与跨境传输">七、信息存储、保留期限与跨境传输</a><a href="#八-信息安全保障">八、信息安全保障</a><a href="#九-您的权利">九、您的权利</a><a href="#十-未成年人保护">十、未成年人保护</a><a href="#十一-cookies-与类似技术">十一、Cookies 与类似技术</a><a href="#十二-第三方服务">十二、第三方服务</a><a href="#十三-地区性特别条款">十三、地区性特别条款</a><a href="#十四-隐私政策的更新">十四、隐私政策的更新</a><a href="#十五-联系我们">十五、联系我们</a><a href="#十六-其他">十六、其他</a>
+  </nav>
+  <article>
+    <p><strong>版本号</strong>：v1.0</p>
+<p><strong>生效日期</strong>：2026 年 5 月 22 日</p>
+<p><strong>最后更新</strong>：2026 年 5 月 22 日</p>
+<h2 id="前言">前言</h2>
+<p>Axiom Code（以下简称"<strong>我们</strong>"、"<strong>Axiom Code</strong>" 或"<strong>平台</strong>"）尊重并致力于保护用户的个人信息与隐私。本《隐私政策》旨在向您清晰、透明地说明我们在您使用 Axiom Code 服务（以下简称"<strong>服务</strong>"）过程中，如何收集、使用、存储、共享、跨境传输和保护与您相关的信息，以及您依法享有的相关权利。</p>
+<p><strong>请您在使用服务前仔细阅读本政策，特别是以加粗形式标注的条款，这些内容涉及您个人信息处理的重要事项。</strong></p>
+<p><strong>您注册账户、点击同意按钮、调用任何 API 或以其他方式使用服务，即视为您已充分阅读、理解并同意本政策全部内容</strong>。若您不同意本政策任何内容，请立即停止使用服务。</p>
+<p>本政策与《用户服务协议》共同构成您与我们之间的完整协议，相关术语定义以《用户服务协议》为准。</p>
+<h2 id="一-关于本政策的适用范围">一、关于本政策的适用范围</h2>
+<ul>
+<li>本政策适用于您通过任何方式（网站、API、SDK、控制台、移动应用、第三方集成等）访问或使用 Axiom Code 服务的全部场景。</li>
+</ul>
+<ul>
+<li>本政策不适用于：</li>
+<li>您所对接、调用的第三方 AI 模型提供商（如 OpenAI、Anthropic、Google、DeepSeek 等）及其各自的数据处理行为，该等行为受其各自隐私政策约束；</li>
+<li>您嵌入或链接到的第三方网站、产品与服务；</li>
+<li>其他用户对您信息的处理行为。</li>
+</ul>
+<ul>
+<li>我们鼓励您同时阅读您所使用的第三方服务的隐私政策，以充分了解您的信息在整个服务链路中的处理情况。</li>
+</ul>
+<h2 id="二-我们收集的信息">二、我们收集的信息</h2>
+<p>为向您提供稳定、安全、合规、可持续优化的服务，我们将基于"必要、合理、最小化"原则收集以下类别的信息：</p>
+<h3>2.1 您主动提供的信息</h3>
+<ul>
+<li><strong>账户信息</strong>：电子邮箱、用户名、密码（经加密存储，我们不可逆地知晓您的明文密码）、组织名称、联系人信息、所在地区等；</li>
+<li><strong>身份验证信息</strong>：必要时为满足合规要求（如反洗钱、防欺诈）所需的身份证明、企业资质、税务信息等；</li>
+<li><strong>支付与计费信息</strong>：账单地址、发票抬头、税号、银行账户或支付账户的部分信息（完整支付信息由第三方支付机构处理，我们仅获取交易结果与必要识别信息）；</li>
+<li><strong>客户支持信息</strong>：您通过邮件、工单、聊天等渠道与我们沟通时提供的内容；</li>
+<li><strong>您主动提交的其他信息</strong>：例如订阅推送、问卷调研、活动报名等。</li>
+</ul>
+<h3>2.2 您在使用服务过程中产生的信息</h3>
+<ul>
+<li><strong>服务调用数据</strong>：API 请求与响应、调用时间、调用模型、Token 用量、错误码、调用来源、调用频率、并发数等；</li>
+<li><strong>请求内容数据</strong>：您通过 API 提交的提示词（Prompt）、参数、附加文件，以及对应的模型返回结果。</li>
+<blockquote>
+<p><em>关于该等数据的处理方式、保留期限与控制权，请重点参见本政策第四条与第七条。</em></p>
+</blockquote>
+<li><strong>使用偏好与配置</strong>：您在控制台设置的偏好、自定义配置、密钥管理、用量提醒规则等；</li>
+<li><strong>行为日志</strong>：您在控制台的访问路径、点击行为、停留时间、操作记录等。</li>
+</ul>
+<h3>2.3 我们自动收集的技术信息</h3>
+<ul>
+<li><strong>设备与环境信息</strong>：IP 地址、设备类型、操作系统、浏览器类型与版本、屏幕分辨率、语言设置、时区等；</li>
+<li><strong>网络信息</strong>：访问来源、ISP、连接类型、网络状态、CDN 节点等；</li>
+<li><strong>诊断信息</strong>：崩溃报告、性能数据、错误堆栈、调试信息等；</li>
+<li><strong>Cookies 与类似技术</strong>：详见本政策第十一条。</li>
+</ul>
+<h3>2.4 我们从第三方获取的信息</h3>
+<p>在符合法律的前提下，我们可能从下列来源获取与您相关的信息：</p>
+<ul>
+<li>支付服务提供商提供的交易状态信息；</li>
+<li>反欺诈、风险评估、合规审查服务商提供的风险标识；</li>
+<li>您授权链接的第三方账户（如使用第三方账号登录时）；</li>
+<li>我们的关联方与合作伙伴依法共享的信息；</li>
+<li>公开数据源（如企业信用信息系统）。</li>
+</ul>
+<h2 id="三-我们如何使用您的信息">三、我们如何使用您的信息</h2>
+<p>我们将基于下列目的处理您的信息。<strong>通过使用服务，您理解并同意我们在下列范围内处理您的信息</strong>：</p>
+<h3>3.1 服务提供与基础运营（必要处理）</h3>
+<ul>
+<li>创建、维护、管理您的账户；</li>
+<li>接收、路由、转发您的 API 请求至相应的第三方模型；</li>
+<li>返回响应结果、生成调用日志、统计用量；</li>
+<li>计算费用、生成账单、处理支付与对账；</li>
+<li>发送服务相关通知、安全提醒、账单提醒；</li>
+<li>提供客户支持与售后服务。</li>
+</ul>
+<h3>3.2 安全保障与风险控制（必要处理）</h3>
+<ul>
+<li>验证身份、防范账户被盗用；</li>
+<li>检测异常调用、滥用行为、攻击行为；</li>
+<li>防范欺诈、洗钱、规避制裁等违法行为；</li>
+<li>满足审计、合规与监管要求；</li>
+<li>调查违反本政策或《用户服务协议》的行为；</li>
+<li>保护我们、关联方、其他用户和公众的合法权益。</li>
+</ul>
+<h3>3.3 服务改进与质量优化</h3>
+<ul>
+<li>分析服务使用情况、性能指标、用户体验数据；</li>
+<li>测试新功能、修复缺陷、优化系统稳定性；</li>
+<li>进行用户调研、数据洞察、产品迭代；</li>
+<li>持续改进路由策略、调用效率、成本结构。</li>
+</ul>
+<h3>3.4 研究开发与产品演进</h3>
+<ul>
+<li><strong>基于服务运行数据进行内部研究、技术分析、模型评测、特征工程、模式识别、统计建模等技术工作</strong>；</li>
+<li>开发新功能、新产品、新模型路由策略与相关衍生服务；</li>
+<li>评估和优化我们对接的各模型供应商之服务质量；</li>
+<li>在合法合理范围内<strong>形成衍生数据、统计成果或技术资产</strong>用于产品演进及商业发展。</li>
+</ul>
+<h3>3.5 沟通与运营推广</h3>
+<ul>
+<li>在您同意或法律允许的范围内，向您发送产品更新、活动信息、营销内容；</li>
+<li>您可随时通过控制台或邮件方式拒绝此类推送（不影响必要的服务类通知）。</li>
+</ul>
+<h3>3.6 法律合规与权利保护</h3>
+<ul>
+<li>履行法律法规规定的义务；</li>
+<li>配合司法机关、监管机构的合法要求；</li>
+<li>在争议、诉讼、仲裁中主张或抗辩权利。</li>
+</ul>
+<h3>3.7 处理目的的合理扩展</h3>
+<p>若我们需要将信息用于本政策未明确列示但与原始收集目的具有合理关联的其他用途，<strong>我们将在符合适用法律的前提下进行处理；若该等用途超出原始目的的合理范围，我们将另行征得您的同意</strong>。</p>
+<h2 id="四-关于服务调用数据的特别说明">四、关于服务调用数据的特别说明</h2>
+<ul>
+<li>您通过 API 调用本服务所传输的 Prompt、参数与模型返回结果（以下简称"<strong>调用数据</strong>"），其处理遵循下列原则：</li>
+</ul>
+<ul>
+<li><strong>传输与执行</strong>：我们必然需要接收、传输调用数据，以将其转发至您所选择的第三方模型供应商并将结果返回给您。该等处理是服务的核心，您注册即视为同意；</li>
+</ul>
+<ul>
+<li><strong>日志与运营</strong>：我们会留存调用元数据（如时间、模型、Token 数、错误码等）与必要的内容样本，用于计费核对、故障排查、滥用检测、合规审计与服务质量保障；</li>
+</ul>
+<ul>
+<li><strong>改进与研究</strong>：在符合适用法律的前提下，我们可对调用数据进行内部分析、统计建模、特征提取等技术处理，以改进路由策略、提升服务质量、防范风险、研发新功能。<strong>该等处理通常以去标识化、聚合化或样本化形式进行</strong>；</li>
+</ul>
+<ul>
+<li><strong>第三方约束</strong>：调用数据在传输至第三方模型供应商时，将同时受该等供应商隐私政策与数据政策的约束，我们对该等第三方的处理行为不承担责任。</li>
+</ul>
+<ul>
+<li><strong>企业用户与高敏感场景</strong>：若您有更严格的数据处理需求（例如医疗、金融、政府场景），请与我们另行签署数据处理协议（DPA）或企业服务协议。<strong>未签署专项协议的，默认适用本政策的标准规则</strong>。</li>
+</ul>
+<ul>
+<li><strong>避免提交敏感信息的责任</strong>：您应自行评估并避免通过本服务提交不应被存储或处理的高敏感信息（如未脱敏的身份证号、银行卡号、医疗记录、商业机密等）。<strong>因您主动提交此类信息所产生的任何风险与后果，由您自行承担</strong>。</li>
+</ul>
+<h2 id="五-关于去标识化-匿名化与衍生数据">五、关于去标识化、匿名化与衍生数据</h2>
+<ul>
+<li><strong>去标识化数据</strong>：指经过技术处理后，<strong>在不借助额外信息的情况下无法识别到特定个人</strong>的数据。</li>
+</ul>
+<ul>
+<li><strong>匿名化数据</strong>：指经过技术处理后<strong>无法识别特定个人且不能复原</strong>的数据。</li>
+</ul>
+<ul>
+<li><strong>聚合数据</strong>：指由多用户数据汇总形成、不指向任何特定个人的统计性数据。</li>
+</ul>
+<ul>
+<li><strong>重要授权</strong>：<strong>经匿名化、聚合化处理后的数据不再属于您的个人信息</strong>。您理解并同意：我们对该等去标识化、匿名化或聚合数据，<strong>享有完整的使用、复制、分析、修改、再许可、转让权利，可用于任何合法目的</strong>（包括但不限于内部研究、产品开发、商业分析、对外披露行业报告、形成数据资产等），且无需另行通知或征得您同意。</li>
+</ul>
+<ul>
+<li><strong>衍生数据</strong>：基于您的信息所形成的统计结果、分析报告、特征模型、技术参数等衍生成果（不指向特定个人的部分），其知识产权归我们所有。</li>
+</ul>
+<h2 id="六-信息共享-披露与转让">六、信息共享、披露与转让</h2>
+<p><strong>我们不会向第三方出售您的个人信息</strong>。但在下列情形下，我们可能依法共享、披露或转让您的信息：</p>
+<h3>6.1 基于业务必要的共享</h3>
+<ul>
+<li><strong>第三方模型供应商</strong>：在您发起 API 调用时，相关请求内容必然需要传输给您所选择的模型供应商，以完成模型推理与结果返回；</li>
+<li><strong>服务提供商</strong>：与协助我们运营服务的技术合作方共享必要信息，包括但不限于：</li>
+<li>云计算与基础设施供应商；</li>
+<li>支付与结算服务商；</li>
+<li>客户支持与工单系统；</li>
+<li>数据分析、监控与可观测性平台；</li>
+<li>反欺诈、安全与合规服务商；</li>
+<li>邮件、短信、通知推送服务商；</li>
+<li>律师、会计师、审计师等专业服务机构。</li>
+</ul>
+<p>我们将通过协议或其他方式，要求上述合作方对所获信息承担保密义务并仅在授权范围内使用。</p>
+<h3>6.2 关联方共享</h3>
+<p>我们可与关联方共享您的信息，以提供整合服务、统一管理、协同运营、风险控制及实现本政策所述其他目的。<strong>关联方对该等信息的处理应遵循不低于本政策的标准</strong>。</p>
+<h3>6.3 法律要求</h3>
+<p>在下列情形下，我们可在不另行通知您的情况下披露相关信息：</p>
+<ul>
+<li>适用法律法规明确要求；</li>
+<li>司法机关、行政机关、监管机构的合法调查、调取、协助要求；</li>
+<li>为执行本政策、《用户服务协议》或保护我们、关联方、其他用户的合法权益；</li>
+<li>为防范、调查欺诈、安全事件、违法行为或紧急情况；</li>
+<li>在国际制裁、出口管制合规审查中所需披露的范围。</li>
+</ul>
+<h3>6.4 业务变更与转让</h3>
+<p><strong>在我们发生合并、分立、收购、重组、控制权变更、资产或业务出售（无论部分或全部）、破产清算等情形时，您的信息可作为相关交易资产的一部分被转让至受让方或继受人</strong>。我们将在适用法律要求范围内，就该等转让作出相应通知（若适用），<strong>但通知不构成您同意继续接受本政策的前提</strong>。受让方或继受人应继续遵守本政策（或不低于本政策保护标准）的约束。</p>
+<h3>6.5 经您同意的其他共享</h3>
+<p>在征得您单独同意或您明确指示的情况下，我们可向特定第三方共享信息。</p>
+<h2 id="七-信息存储-保留期限与跨境传输">七、信息存储、保留期限与跨境传输</h2>
+<h3>7.1 存储位置</h3>
+<p>为支持服务的全球化运行与高可用性，<strong>我们可能将您的信息存储于我们或合作伙伴位于中国大陆、中国香港、新加坡、美国、欧盟或其他国家/地区的服务器中</strong>，并在不同司法管辖区之间进行传输与处理。</p>
+<h3>7.2 跨境传输</h3>
+<p><strong>您注册并使用本服务，即视为您明确同意我们及合作方就本政策所述目的进行的跨境数据传输</strong>。我们将依据适用法律采取合理保护措施（如签署标准合同条款、采取技术加密、合作方资质审查等）。</p>
+<h3>7.3 保留期限</h3>
+<p>我们将根据下列原则确定信息保留期限：</p>
+<p>| 信息类别 | 默认保留期限 |</p>
+<p>|---|---|</p>
+<p>| 账户信息 | 您账户存续期间及账户注销后合理期限内 |</p>
+<p>| 调用元数据（用量、计费） | 自产生之日起 <strong>不少于 3 年</strong>（用于计费、审计、合规） |</p>
+<p>| 调用内容样本 | 根据服务类型与合规需求，<strong>最短 30 天，最长可延至 3 年</strong> |</p>
+<p>| 财务、税务、合规记录 | 按适用法律要求（通常不少于 5 年或 10 年） |</p>
+<p>| 安全与风控日志 | 不少于 6 个月 |</p>
+<p>| 法律争议相关数据 | 至争议解决并超过法定时效 |</p>
+<p><strong>在下列情形下，我们有权超出上述期限继续保留相关信息</strong>：</p>
+<ul>
+<li>适用法律法规要求或允许更长保留期；</li>
+<li>处理待决或可能发生的争议、诉讼、调查、监管要求；</li>
+<li>为保护我们、关联方或其他用户的合法权益；</li>
+<li>已完成去标识化/匿名化的数据（参见第五条），不受本款保留期限限制。</li>
+</ul>
+<h3>7.4 账户注销后的处理</h3>
+<p>您注销账户后，我们将在合理期限内删除或匿名化您的可识别个人信息。<strong>但下列信息我们有权继续保留</strong>：</p>
+<ul>
+<li>涉及计费、税务、合规、审计的记录；</li>
+<li>用于法律争议、潜在调查的相关数据；</li>
+<li>已完成去标识化/匿名化的数据（不再视为个人信息）；</li>
+<li>系统备份中按正常备份循环周期存留的数据。</li>
+</ul>
+<h2 id="八-信息安全保障">八、信息安全保障</h2>
+<ul>
+<li>我们采取符合行业通行水平的技术与组织措施保护您的信息，包括但不限于：</li>
+</ul>
+<ul>
+<li>传输加密（TLS/SSL）；</li>
+<li>存储加密与密钥分级管理；</li>
+<li>访问控制、最小授权原则、多因素认证；</li>
+<li>网络隔离、入侵检测、日志审计；</li>
+<li>定期安全评估、漏洞扫描与渗透测试；</li>
+<li>员工保密协议、安全培训、权限审计。</li>
+</ul>
+<ul>
+<li><strong>请您理解</strong>：</li>
+</ul>
+<ul>
+<li><strong>互联网环境本身不可能保证绝对安全</strong>，我们无法对信息安全作出绝对保证；</li>
+<li>您应妥善保管您的账户凭证、API 密钥，因您自身原因造成的安全事件由您承担相应责任；</li>
+<li>若发生影响您合法权益的安全事件，我们将依法及时启动应急响应，并在适用法律要求范围内进行通知。</li>
+</ul>
+<h2 id="九-您的权利">九、您的权利</h2>
+<p>在适用法律允许的范围内，您就您的个人信息享有下列权利：</p>
+<h3>9.1 基本权利</h3>
+<ul>
+<li><strong>查询与访问权</strong>：您可查询、获取我们持有的关于您的个人信息；</li>
+<li><strong>更正与补充权</strong>：您可要求更正不准确或不完整的信息；</li>
+<li><strong>删除权</strong>：在特定情形下，您可要求删除您的信息；</li>
+<li><strong>限制处理权</strong>：在特定情形下，您可要求限制处理；</li>
+<li><strong>撤回同意权</strong>：对基于同意的处理，您可撤回同意（<strong>但撤回不影响撤回前已进行的处理</strong>，亦不影响基于其他合法基础的处理）；</li>
+<li><strong>可携权</strong>：以结构化、通用格式接收您的部分信息；</li>
+<li><strong>拒绝自动化决策权</strong>：您可拒绝完全依赖自动化决策对您产生重大影响的处理；</li>
+<li><strong>投诉权</strong>：您有权向有权监管机构投诉。</li>
+</ul>
+<h3>9.2 行使方式</h3>
+<p>请通过 <strong>axiomcodeai@gmail.com</strong> 联系我们行使上述权利。我们将在收到请求后于<strong>合理期限内</strong>回复（一般为 15-30 个工作日，复杂情况可适当延长并向您说明）。</p>
+<h3>9.3 身份验证</h3>
+<p><strong>为保护您的信息安全，在响应您的请求前，我们将要求您提供必要的身份验证信息</strong>。无法完成验证的请求，我们有权拒绝。</p>
+<h3>9.4 合理限制</h3>
+<p>在下列情形下，我们有权拒绝、限制或部分响应您的请求：</p>
+<ul>
+<li>与履行法定义务相关；</li>
+<li>与国家安全、国防安全直接相关；</li>
+<li>与公共安全、公共卫生、重大公共利益相关；</li>
+<li>与刑事侦查、起诉、审判和执行判决等相关；</li>
+<li>涉及商业秘密或第三方合法权益；</li>
+<li>请求明显不合理、重复或滥用权利；</li>
+<li>履行请求将对其他个人或组织的合法权益造成重大损害；</li>
+<li>已完成去标识化/匿名化处理的数据，<strong>不属于本条权利的覆盖范围</strong>。</li>
+</ul>
+<h2 id="十-未成年人保护">十、未成年人保护</h2>
+<ul>
+<li>我们的服务<strong>仅面向年满 18 周岁或所在司法管辖区成年年龄的用户</strong>。</li>
+</ul>
+<ul>
+<li>我们不会有意收集未成年人的个人信息。若我们发现已无意中收集了未成年人信息，将及时删除。</li>
+</ul>
+<ul>
+<li>若您是未成年人的监护人，发现未成年人未经您同意使用了我们的服务，请通过 <strong>axiomcodeai@gmail.com</strong> 联系我们处理。</li>
+</ul>
+<h2 id="十一-cookies-与类似技术">十一、Cookies 与类似技术</h2>
+<ul>
+<li>我们使用 Cookies、Web Beacon、LocalStorage、SDK 等技术，用于：</li>
+</ul>
+<ul>
+<li>维持您的登录状态与会话；</li>
+<li>记住您的偏好设置；</li>
+<li>分析网站性能与使用情况；</li>
+<li>改进用户体验；</li>
+<li>防范欺诈与安全威胁。</li>
+</ul>
+<ul>
+<li>您可通过浏览器或设备设置管理或禁用 Cookies，<strong>但这可能影响您正常使用部分服务功能</strong>。</li>
+</ul>
+<ul>
+<li>我们可能使用第三方分析与监控工具（如 Google Analytics、Sentry 类工具等），相关数据处理同时受该等服务商隐私政策约束。</li>
+</ul>
+<h2 id="十二-第三方服务">十二、第三方服务</h2>
+<ul>
+<li>本服务集成或链接到的第三方服务（包括第三方 AI 模型供应商、支付机构、云服务商、分析工具等）由该等第三方独立运营，<strong>我们对第三方的信息处理实践不承担责任</strong>。</li>
+</ul>
+<ul>
+<li>主要的第三方服务类别包括：</li>
+</ul>
+<ul>
+<li>AI 模型供应商：OpenAI、Anthropic、Google、DeepSeek、智谱、月之暗面、阿里通义、MiniMax 等；</li>
+<li>云基础设施与 CDN 服务商；</li>
+<li>支付与结算服务商；</li>
+<li>通信、邮件、推送服务商；</li>
+<li>安全、风控、反欺诈服务商；</li>
+<li>分析、监控、客服服务商。</li>
+</ul>
+<ul>
+<li>我们建议您仔细阅读您所使用的第三方服务的隐私政策。</li>
+</ul>
+<h2 id="十三-地区性特别条款">十三、地区性特别条款</h2>
+<h3>13.1 中国大陆地区用户</h3>
+<p>若您位于中国大陆地区或您的个人信息处理活动适用《个人信息保护法》：</p>
+<ul>
+<li>您依法享有该法规定的全部个人信息权益；</li>
+<li>我们处理您信息的合法性基础包括：取得您的同意、为订立和履行合同所必需、为履行法定义务所必需、为应对突发公共卫生事件或紧急情形所必需、其他法定情形；</li>
+<li>您可通过本政策第九条规定的方式行使权利。</li>
+</ul>
+<h3>13.2 欧盟/欧洲经济区/英国/瑞士用户（GDPR/UK GDPR）</h3>
+<p>若您位于欧盟、欧洲经济区、英国或瑞士：</p>
+<ul>
+<li><strong>数据控制者</strong>：Axiom Code 运营方；联系方式见本政策末尾；</li>
+<li><strong>处理的合法依据</strong>：合同必要性（提供服务）、合法利益（改进服务、防范风险）、法律义务、您的同意；</li>
+<li><strong>跨境传输</strong>：基于适用的标准合同条款（SCCs）或其他合法机制；</li>
+<li><strong>监管机构投诉权</strong>：您有权向您所在国监管机构投诉。</li>
+</ul>
+<h3>13.3 美国加州居民（CCPA/CPRA）</h3>
+<p>若您是加州居民：</p>
+<ul>
+<li>您享有知情权、删除权、更正权、拒绝出售/共享权、不歧视权等；</li>
+<li><strong>我们不会"出售"您的个人信息</strong>（依 CCPA 定义）；</li>
+<li>我们可能为业务目的与服务提供商"共享"您的信息，详见第六条。</li>
+</ul>
+<h3>13.4 其他司法管辖区</h3>
+<p>我们将按照您所在司法管辖区的适用法律处理您的信息。<strong>若不同司法管辖区的法律规定存在冲突，我们将按适用于本服务运营所在地的法律或与我们达成约定的法律为准</strong>。</p>
+<h2 id="十四-隐私政策的更新">十四、隐私政策的更新</h2>
+<ul>
+<li>我们可能不时更新本政策。更新后的版本将在官方网站发布并显示最后更新日期。</li>
+</ul>
+<ul>
+<li>对涉及您核心权利的重大变更，我们将通过站内通知、邮件等显著方式告知您。</li>
+</ul>
+<ul>
+<li><strong>您在变更生效后继续使用服务，即视为您同意更新后的政策</strong>。若您不同意更新，请停止使用服务并注销账户。</li>
+</ul>
+<h2 id="十五-联系我们">十五、联系我们</h2>
+<ul>
+<li>如您对本政策有任何疑问、意见、建议、投诉，或希望行使您的权利，请通过以下方式联系我们：</li>
+</ul>
+<p>📧 <strong>电子邮箱</strong>：axiomcodeai@gmail.com</p>
+<ul>
+<li>我们将在合理期限内回复您的请求。对于法定权利请求，我们将依法在适用期限内处理。</li>
+</ul>
+<h2 id="十六-其他">十六、其他</h2>
+<ul>
+<li>本政策为《用户服务协议》的组成部分，与《用户服务协议》共同生效。本政策未尽事宜，适用《用户服务协议》的相关规定。</li>
+</ul>
+<ul>
+<li>本政策以中文版本为准。若我们另行提供其他语言版本，仅供参考，与中文版冲突的以中文版为准。</li>
+</ul>
+<ul>
+<li>本政策的解释、效力、争议解决，适用《用户服务协议》相关规定。</li>
+</ul>
+<p><strong>Axiom Code 团队</strong></p>
+<p><em>本政策最后更新于：2026 年 5 月 22 日</em></p>
+<p><em>本政策为 Axiom Code 知识产权，未经授权不得用于其他平台</em></p>
+  </article>
+  <footer class="foot">
+    <span>◆ Axiom · Vol. I</span>
+    <span>© 2026</span>
+  </footer>
+</div>
+</body>
+</html>

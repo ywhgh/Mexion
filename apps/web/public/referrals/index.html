@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("axiom_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<script>/* Sidebar rail FOUC guard — adds .axiom-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("axiom_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("axiom-rail-init")}catch(e){}})();</script>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="referrals.tab.title">Axiom — 推荐计划</title>
+<script src="/assets/i18n.js"></script>
+<script src="/assets/mock.js"></script>
+<script src="/assets/core.js" defer></script>
+<script src="/assets/vendor/qrcode.min.js" defer></script>
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="preload" href="/assets/common.css" as="style">
+<link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/assets/referrals.css">
+</head>
+<body>
+<script>/* local mirror: login guard disabled */try{localStorage.setItem('axiom_user_id','10248');localStorage.setItem('axiom_auth_persist','local')}catch(e){}</script>
+
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<!-- SIDEBAR -->
+  <aside class="side" id="axiom-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+<script src="/assets/sidebar.js" defer></script>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar__spacer"></div>
+    <div class="topbar__sep" aria-hidden="true"></div>
+    <div class="lang-toggle" role="group">
+      <button data-lang="zh" aria-pressed="true">中</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="notif-bell-wrap" style="position:relative">
+      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="topbar.notify.label">通知</span>
+      </button>
+    </div>
+    <div class="user-menu">
+      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+        <span class="user__avatar" data-axiom-avatar>A</span>
+        <span class="user__name" data-axiom-user="name">—</span>
+        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+        <div class="user-menu__head">
+          <div class="user-menu__avatar-lg" data-axiom-avatar aria-hidden="true">A</div>
+          <div class="user-menu__id">
+            <div class="user-menu__name" data-axiom-user="name">—</div>
+            <div class="user-menu__email" data-axiom-user="email">—</div>
+          </div>
+        </div>
+        <div class="user-menu__list">
+          <a class="user-menu__item" href="/profile/" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>个人资料</span>
+          </a>
+          <a class="user-menu__item" href="/api-keys/" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>API 密钥</span>
+          </a>
+          <div class="user-menu__sep" role="none"></div>
+          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>退出登录</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE HEAD -->
+  <div class="page-head fade-in fade-in--1">
+    <div class="page-head__left">
+      <nav class="page-head__crumb">
+        <a href="/dashboard/" data-i18n="referrals.crumb.overview">概览</a>
+        <span class="sep">/</span>
+        <span style="color:var(--ink)" data-i18n="referrals.crumb.referrals">推荐计划</span>
+      </nav>
+      <div class="page-head__title" data-i18n-html="referrals.page.title">推荐 <span class="accent">计划</span></div>
+      <div class="page-head__sub">
+        分享你的专属邀请链接，邀请好友加入 Axiom。
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INVITE CARD ══ -->
+  <section class="invite fade-in fade-in--2">
+
+    <div class="invite__body">
+      <span class="invite__eyebrow">Affiliate</span>
+      <h1 class="invite__headline">
+        把 Axiom 推荐给一位朋友。
+      </h1>
+      <p class="invite__lede" data-i18n-html="referrals.invite.lede">
+        按 <b>实际消费</b> 结算 · 自动作为<b>可用额度</b>进入你的余额，可抵扣任意模型调用 · 无最低门槛 · 永不过期。
+      </p>
+
+      <div class="invite__link">
+        <span class="invite__link-url" id="inviteLinkUrl">loading…</span>
+        <button class="invite__copy" id="copyLinkBtn">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" stroke="currentColor" stroke-width="1.4"/><path d="M2 8.2V2.6c0-.5.45-1 1-1h5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="invite__copy-txt" data-i18n="referrals.invite.copy">复制</span>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="aff-stats" id="affStats" style="display:none">
+        <div class="aff-stat">
+          <span class="aff-stat__label" data-i18n="referrals.stat.history">历史累计返利</span>
+          <span class="aff-stat__val" id="affHistory">$0.00</span>
+        </div>
+        <button class="aff-transfer" id="affTransferBtn" style="display:none">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v9M3.5 7.5L6 10.5 8.5 7.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="affTransferLabel">转入余额</span>
+        </button>
+      </div>
+
+      <div class="invite__share">
+        <span class="invite__share-label" data-i18n="referrals.invite.shareto">分享至</span>
+        <button class="share-btn share-btn--wechat" data-share="wechat" data-i18n-title="referrals.share.wechat" data-i18n-aria="referrals.share.wechat.aria" title="微信" aria-label="分享到微信">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3C3.8 3 2 4.5 2 6.5c0 1.1.55 2.1 1.45 2.75L3 10.7l1.6-.85c.45.1.92.15 1.4.15.13 0 .26-.01.39-.02" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 6.5c2.2 0 4 1.5 4 3.5 0 1.1-.55 2.1-1.45 2.75l.45 1.45-1.6-.85c-.45.1-.92.15-1.4.15-2.2 0-4-1.5-4-3.5s1.8-3.5 4-3.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button class="share-btn share-btn--telegram" data-share="telegram" title="Telegram" aria-label="分享到 Telegram">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </button>
+        <button class="share-btn share-btn--x" data-share="x" data-i18n-title="referrals.share.x" data-i18n-aria="referrals.share.x.aria" title="X" aria-label="分享到 X">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M14.234 10.162L22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299l-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/></svg>
+        </button>
+        <button class="share-btn" data-share="email" data-i18n-title="referrals.share.email" data-i18n-aria="referrals.share.email.aria" title="邮件" aria-label="通过邮件分享">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3.5" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M2 4l6 4.5L14 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <aside class="invite__qr">
+      <div class="qr-frame">
+        <span class="qr-corner tl"></span><span class="qr-corner tr"></span>
+        <span class="qr-corner bl"></span><span class="qr-corner br"></span>
+        <svg class="qr-svg" viewBox="0 0 25 25" shape-rendering="crispEdges" data-i18n-aria="referrals.qr.aria" aria-label="二维码">
+          <rect width="25" height="25" fill="white"/>
+          <!-- corner markers -->
+          <g fill="#14140F">
+            <rect x="0" y="0" width="7" height="7"/>
+            <rect x="1" y="1" width="5" height="5" fill="white"/>
+            <rect x="2" y="2" width="3" height="3"/>
+            <rect x="18" y="0" width="7" height="7"/>
+            <rect x="19" y="1" width="5" height="5" fill="white"/>
+            <rect x="20" y="2" width="3" height="3"/>
+            <rect x="0" y="18" width="7" height="7"/>
+            <rect x="1" y="19" width="5" height="5" fill="white"/>
+            <rect x="2" y="20" width="3" height="3"/>
+          </g>
+          <!-- timing -->
+          <g fill="#14140F">
+            <rect x="8" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/>
+            <rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/>
+            <rect x="16" y="6" width="1" height="1"/>
+            <rect x="6" y="8" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/>
+            <rect x="6" y="12" width="1" height="1"/><rect x="6" y="14" width="1" height="1"/>
+            <rect x="6" y="16" width="1" height="1"/>
+          </g>
+          <!-- alignment bottom-right -->
+          <g fill="#14140F">
+            <rect x="16" y="16" width="5" height="5"/>
+            <rect x="17" y="17" width="3" height="3" fill="white"/>
+            <rect x="18" y="18" width="1" height="1"/>
+          </g>
+          <!-- pseudo-random payload (deterministic) -->
+          <g fill="#14140F">
+            <rect x="8" y="8" width="1" height="1"/><rect x="10" y="8" width="2" height="1"/><rect x="13" y="8" width="1" height="2"/><rect x="15" y="8" width="1" height="1"/>
+            <rect x="8" y="10" width="2" height="1"/><rect x="11" y="10" width="1" height="2"/><rect x="14" y="10" width="2" height="1"/>
+            <rect x="9" y="12" width="1" height="1"/><rect x="11" y="12" width="2" height="2"/><rect x="14" y="12" width="1" height="1"/><rect x="16" y="12" width="1" height="3"/>
+            <rect x="8" y="14" width="1" height="2"/><rect x="10" y="14" width="1" height="1"/><rect x="12" y="14" width="1" height="2"/><rect x="14" y="14" width="1" height="1"/>
+            <rect x="9" y="16" width="2" height="1"/><rect x="13" y="16" width="1" height="2"/><rect x="15" y="16" width="1" height="1"/>
+            <rect x="8" y="18" width="1" height="1"/><rect x="10" y="18" width="3" height="1"/><rect x="14" y="18" width="1" height="2"/>
+            <rect x="8" y="20" width="2" height="1"/><rect x="11" y="20" width="1" height="2"/><rect x="13" y="20" width="2" height="1"/>
+            <rect x="9" y="22" width="1" height="1"/><rect x="11" y="22" width="2" height="1"/><rect x="14" y="22" width="2" height="2"/>
+            <rect x="22" y="8" width="1" height="2"/><rect x="20" y="9" width="1" height="1"/><rect x="23" y="11" width="1" height="2"/>
+            <rect x="19" y="12" width="2" height="1"/><rect x="22" y="14" width="2" height="1"/>
+            <rect x="3" y="8" width="2" height="1"/><rect x="3" y="11" width="1" height="2"/>
+            <rect x="0" y="9" width="1" height="2"/><rect x="0" y="13" width="1" height="3"/>
+            <rect x="9" y="0" width="1" height="2"/><rect x="11" y="0" width="2" height="1"/><rect x="14" y="0" width="1" height="3"/>
+            <rect x="8" y="3" width="2" height="1"/><rect x="11" y="3" width="1" height="2"/><rect x="13" y="3" width="1" height="1"/><rect x="15" y="3" width="1" height="2"/>
+          </g>
+        </svg>
+        <span class="qr-frame__brand" aria-hidden="true">
+          <svg viewBox="0 0 18 18" fill="none"><path d="M2.5 15L9 3.5L15.5 15" stroke="#14140F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.2 10.5h7.6" stroke="#C8392D" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="qr-caption">
+        <strong data-i18n="referrals.qr.scan">扫码即可注册</strong>
+      </div>
+      <button class="qr-poster-btn" id="downloadPosterBtn">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v6.5M3.5 5.5l2.5 2.5 2.5-2.5M1.5 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="referrals.qr.poster">下载邀请海报</span>
+      </button>
+    </aside>
+
+  </section>
+
+  <!-- ══ HOW IT WORKS ══ -->
+  <section class="howto fade-in fade-in--3">
+    <div class="howto__rail">
+      <div class="howto__kicker">How it works</div>
+      <h2 class="howto__title" data-i18n-html="referrals.howto.title">如何<br>运&thinsp;作</h2>
+      <p class="howto__hint" data-i18n="referrals.howto.hint">四步，没有黑盒。结算实时透明。</p>
+    </div>
+
+    <div class="howto__steps">
+      <article class="howto-step">
+        <div class="howto-step__num">01<sup>·</sup></div>
+        <div class="howto-step__body">
+          <h3 class="howto-step__head" data-i18n-html="referrals.step1.head">复制你的专属链接</h3>
+          <p class="howto-step__copy" data-i18n-html="referrals.step1.copy">
+            每位用户都有一条唯一的 <code style="font-family:var(--f-mono);font-size:13px;color:var(--verm)">?ref=…</code> 链接。系统通过它识别这次注册来自你，<b>不依赖 cookie</b>，朋友清浏览器也不影响归属。
+          </p>
+        </div>
+      </article>
+
+      <article class="howto-step">
+        <div class="howto-step__num">02<sup>·</sup></div>
+        <div class="howto-step__body">
+          <h3 class="howto-step__head" data-i18n="referrals.step2.head">朋友通过链接注册并开始使用</h3>
+          <p class="howto-step__copy" data-i18n-html="referrals.step2.copy">
+            只要他通过你的链接首次注册成功，他就<b>永久绑定</b>为你的推荐人。后续他在 Axiom 上调用任意模型、消耗任意余额，<em>每一次</em>都会同步计入你的分成。
+          </p>
+        </div>
+      </article>
+
+      <article class="howto-step">
+        <div class="howto-step__num">03<sup>·</sup></div>
+        <div class="howto-step__body">
+          <h3 class="howto-step__head" id="step3Head">返利开放后，他的每一笔消费都会按比例自动返到你的余额。</h3>
+          <p class="howto-step__copy" data-i18n-html="referrals.step3.copy">
+            按朋友的<b>实际消费</b>结算（不是充值额、不是订阅价），实时累计。所有计算公开透明 —— 你随时能在<a href="/billing/" style="color:var(--verm);text-decoration:underline;text-decoration-color:color-mix(in oklab,var(--verm) 30%,transparent);text-underline-offset:3px">钱包</a>看到每一笔来源与金额。
+          </p>
+        </div>
+      </article>
+
+      <article class="howto-step">
+        <div class="howto-step__num">04<sup>·</sup></div>
+        <div class="howto-step__body">
+          <h3 class="howto-step__head" data-i18n="referrals.step4.head">额度直接进入你的可用余额</h3>
+          <p class="howto-step__copy" data-i18n-html="referrals.step4.copy">
+            分成不是"待提现"，也不是积分 —— 它就是<b>余额本身</b>，自动到账，可立即用于任意模型的调用。<span class="tag tag--verm">无最低门槛</span> <span class="tag">无审核延迟</span> <span class="tag">永不过期</span>
+          </p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══ INVITEES ══ -->
+  <section class="invitees fade-in fade-in--4">
+    <div class="invitees__head">
+      <div class="invitees__title">
+        <svg class="invitees__title-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="5.6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="11.2" cy="6.8" r="1.7" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M1.8 13c.5-1.8 1.95-2.95 3.8-2.95s3.3 1.15 3.8 2.95M9.6 13c.4-1.45 1.5-2.4 2.95-2.4s2.55.95 2.95 2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span class="invitees__title-text" data-i18n="referrals.invitees.title">受邀用户</span>
+        <span class="invitees__sep">·</span>
+        <span class="invitees__count" id="inviteesCount">0</span>
+      </div>
+      <span class="invitees__rate" data-i18n-title="referrals.invitees.rate.title" title="当前推荐分成比例">
+        <span class="invitees__rate-dot"></span>
+        <span data-i18n="referrals.invitees.rate.label">分成</span> <strong>2.0%</strong>
+      </span>
+    </div>
+
+    <div class="invitees__empty">
+      <div class="invitees__empty-rings" aria-hidden="true">
+        <span></span>
+        <div class="invitees__empty-core">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.8v6.4M8 1.8L5.4 4.4M8 1.8l2.6 2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 9.2v3.6c0 .5.4 1 1 1h9c.6 0 1-.5 1-1V9.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <h3 class="invitees__empty-title" data-i18n-html="referrals.invitees.empty.title">
+        <em>尚未</em>有受邀用户
+      </h3>
+      <p class="invitees__empty-copy" data-i18n="referrals.invitees.empty.copy">
+        分享你的推荐链接 — 第一位通过链接注册的朋友会以匿名方式出现在这里。
+      </p>
+      <div class="invitees__empty-meta">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1.5l3.5 1.5v3c0 2.4-1.5 4.2-3.5 4.8C4 10.2 2.5 8.4 2.5 6V3L6 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        <span data-i18n="referrals.invitees.empty.meta">仅显示匿名身份与加入时间 · 不展示邮箱、用量、模型偏好</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FAQ ══ -->
+  <section class="faq fade-in fade-in--4">
+    <div class="faq__head">
+      <h2 class="faq__title"><span data-i18n="referrals.faq.title">常见问题</span><span class="faq__title-tail">/ FAQ</span></h2>
+      <a class="faq__help" href="https://axiom-doc.pages.dev/" target="_blank" rel="noopener" data-i18n="referrals.faq.help">查看完整文档</a>
+    </div>
+
+    <div class="faq__list" id="faqList">
+
+      <div class="faq-item">
+        <button class="faq-item__btn" type="button">
+          <div class="faq-item__q">
+            <span class="faq-item__q-idx">01</span>
+            <span class="faq-item__q-text" data-i18n="referrals.faq.q1">这些额度可以提现成现金吗？</span>
+          </div>
+          <span class="faq-item__icon" aria-hidden="true">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-item__panel"><div class="faq-item__panel-inner">
+          <div class="faq-item__a" data-i18n-html="referrals.faq.a1">
+            不可以。推荐分成是 Axiom 平台的<b>消费额度</b>，仅用于抵扣你自己的模型调用费用，不能提现为现金，也不退还充值通道。你可以把它理解为<em style="font-family:var(--f-display);font-style:italic;color:var(--verm)">永久折扣</em> —— 推荐得越多，你自己用 Axiom 的成本越低。
+          </div>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-item__btn" type="button">
+          <div class="faq-item__q">
+            <span class="faq-item__q-idx">02</span>
+            <span class="faq-item__q-text" data-i18n="referrals.faq.q2">朋友取消、退款或长时间不用，会影响我的分成吗？</span>
+          </div>
+          <span class="faq-item__icon" aria-hidden="true">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-item__panel"><div class="faq-item__panel-inner">
+          <div class="faq-item__a" data-i18n-html="referrals.faq.a2">
+            已到账的分成额度<b>不会被收回</b>。如果朋友的某次消费发生退款，仅对应的那笔分成会同步冲销 —— 仅此而已。绑定关系是终身的，朋友停用一年后回来继续使用，分成依然会回到你的账户。
+          </div>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-item__btn" type="button">
+          <div class="faq-item__q">
+            <span class="faq-item__q-idx">03</span>
+            <span class="faq-item__q-text" data-i18n="referrals.faq.q3">能推荐的人数有上限吗？我能看到具体是谁吗？</span>
+          </div>
+          <span class="faq-item__icon" aria-hidden="true">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-item__panel"><div class="faq-item__panel-inner">
+          <div class="faq-item__a" data-i18n-html="referrals.faq.a3">
+            没有上限。出于隐私保护，你<b>看不到被推荐人的身份、邮箱或具体使用情况</b> —— 我们只在<a href="/billing/" style="color:var(--verm);text-decoration:underline;text-underline-offset:3px">钱包</a>里向你展示每一笔分成的金额和时间，不会暴露任何用户细节。这样既保护了他的隐私，也让你的收益完全可核对。
+          </div>
+        </div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-item__btn" type="button">
+          <div class="faq-item__q">
+            <span class="faq-item__q-idx">04</span>
+            <span class="faq-item__q-text" data-i18n="referrals.faq.q4">允许什么样的推广方式？什么是被禁止的？</span>
+          </div>
+          <span class="faq-item__icon" aria-hidden="true">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-item__panel"><div class="faq-item__panel-inner">
+          <div class="faq-item__a" data-i18n-html="referrals.faq.a4">
+            欢迎社群分享、博客文章、技术评测、播客口播、教程视频里嵌入。<b>禁止</b>：付费搜索广告投放品牌关键词、垃圾邮件、注册"自己邀请自己"的小号、Cookie-stuffing 类的灰色手法。一经发现取消推荐资格并撤回违规分成。
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+</div>
+
+<!-- Disabled overlay -->
+<div class="referral-disabled" id="affDisabled">
+  <div class="referral-disabled__card">
+    <div class="referral-disabled__title">推荐计划暂未开放</div>
+    <p class="referral-disabled__copy">推荐计划功能当前未启用，请稍后再来查看。</p>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7.5l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <span id="toastMsg" data-i18n="referrals.toast.copied">已复制邀请链接</span>
+</div>
+
+<script src="/assets/user-menu.js" defer></script>
+<script src="/assets/notification.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+<script src="/assets/referrals.js" defer></script>
+</body>
+</html>
+
