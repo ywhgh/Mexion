@@ -4,6 +4,7 @@ import { AppShell } from "./components/shell";
 import { Dashboard } from "./pages/Dashboard";
 import { Logs } from "./pages/Logs";
 import { Routes as RoutesPage } from "./pages/Routes";
+import { Settings } from "./pages/Settings";
 import { SignIn } from "./pages/SignIn";
 import { SubsDetail } from "./pages/subs/Detail";
 import { SubsList } from "./pages/subs/List";
@@ -16,18 +17,6 @@ const queryClient = new QueryClient({
     mutations: { retry: false },
   },
 });
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <div className="page-head fade-in fade-in--1">
-      <div>
-        <nav className="page-head__crumb"><span>AXION</span><span className="sep">/</span><span>{title}</span></nav>
-        <h1 className="page-head__title">{title} <em>folio</em></h1>
-        <p className="page-head__sub">This plate will be completed in the next milestone.</p>
-      </div>
-    </div>
-  );
-}
 
 export function App() {
   return (
@@ -43,7 +32,7 @@ export function App() {
             <Route path="tokens" element={<Tokens />} />
             <Route path="routes" element={<RoutesPage />} />
             <Route path="logs" element={<Logs />} />
-            <Route path="settings" element={<Placeholder title="Settings" />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -51,6 +40,7 @@ export function App() {
     </QueryClientProvider>
   );
 }
+
 
 
 
