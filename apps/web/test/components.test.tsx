@@ -1,119 +1,75 @@
 /** @vitest-environment jsdom */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import {
-  Button,
-  DataRow,
-  Header,
-  Modal,
-  MonoCode,
-  PaperFrame,
-  Select,
-  StatusDot,
-  TableLedger,
-  TextArea,
-  TextField,
-} from "../src/components";
-import { Demo } from "../src/pages/Demo";
+import { Button, Card, Checkbox, Chip, Field, Heatmap, IconBtn, Ledger, Modal, MonoCode, Pill, Select, Spark, StatusDot, Tab, Tabs, TextArea } from "../src/components/ui";
 
-describe("design primitives", () => {
-  it("renders a button with editorial copy", () => {
-    render(<Button variant="cinnabar">复制凭证</Button>);
-    expect(screen.getByRole("button", { name: "复制凭证" })).toBeInTheDocument();
-  });
-
-  it("binds text field labels", () => {
-    render(<TextField label="管理员" />);
-    expect(screen.getByLabelText("管理员")).toBeInTheDocument();
-  });
-
-  it("renders the paper frame and navigation", () => {
+describe("axiom ui primitives", () => {
+  it("renders card, button, pill and chip roles", () => {
     render(
-      <MemoryRouter>
-        <PaperFrame>
-          <p>案卷正文</p>
-        </PaperFrame>
-      </MemoryRouter>,
+      <Card title="控制台" actions={<Button variant="primary">新建</Button>}>
+        <Pill tone="ok">在线</Pill>
+        <Chip pressed count={2}>凭证</Chip>
+      </Card>,
     );
-    expect(screen.getByText("AXION · VOL. I · EST. 2026")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "§ 订阅" })).toHaveAttribute("href", "/subs");
+    expect(screen.getByRole("region", { name: "控制台" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "新建" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "凭证 2" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("renders header status alone", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
-    expect(screen.getByText("核心中转：正常运行")).toBeInTheDocument();
-  });
-
-  it("renders field variants and ledger rows", () => {
+  it("binds form labels", () => {
     render(
       <div>
-        <TextArea label="原始订阅" />
-        <Select label="目标客户端">
-          <option>Clash Meta</option>
-        </Select>
-        <dl>
-          <DataRow label="TOKEN" value="ax_12345678" />
-        </dl>
-        <StatusDot label="在线" variant="ok" />
+        <Field label="管理员" num="01" />
+        <TextArea label="原始订阅" num="02" />
+        <Select label="目标" num="03"><option>clash-meta</option></Select>
+        <Checkbox label="记住" />
       </div>,
     );
+    expect(screen.getByLabelText("管理员")).toBeInTheDocument();
     expect(screen.getByLabelText("原始订阅")).toBeInTheDocument();
-    expect(screen.getByLabelText("目标客户端")).toBeInTheDocument();
-    expect(screen.getByText("ax_12345678")).toBeInTheDocument();
-    expect(screen.getByText("在线")).toBeInTheDocument();
+    expect(screen.getByLabelText("目标")).toBeInTheDocument();
+    expect(screen.getByLabelText("记住")).toBeInTheDocument();
   });
 
-  it("renders table ledgers with and without rows", () => {
-    const columns = [
-      { key: "name", label: "NAME", render: (row: { name: string }) => row.name },
-    ];
-    const { rerender } = render(
-      <TableLedger columns={columns} empty="未见墨迹" getRowKey={(row) => row.name} rows={[]} />,
+  it("renders tabs, icon button, spark, heatmap and status", () => {
+    render(
+      <div>
+        <Tabs><Tab pressed>概览</Tab></Tabs>
+        <IconBtn label="通知"><svg /></IconBtn>
+        <Spark values={[1, 4, 2]} />
+        <Heatmap cells={[{ date: "2026-07-01", value: 5 }]} />
+        <StatusDot tone="ok" label="运行中" />
+      </div>,
     );
-    expect(screen.getByText("未见墨迹")).toBeInTheDocument();
-    rerender(<TableLedger columns={columns} getRowKey={(row) => row.name} rows={[{ name: "demo" }]} />);
-    expect(screen.getByText("demo")).toBeInTheDocument();
+    expect(screen.getByRole("tablist")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "概览" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "通知" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "sparkline" })).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "activity heatmap" })).toBeInTheDocument();
+    expect(screen.getByText("运行中")).toBeInTheDocument();
   });
 
-  it("renders modal content and close control", async () => {
+  it("renders ledgers and modal", async () => {
     const onClose = vi.fn();
     render(
-      <Modal footer={<Button>存档</Button>} onClose={onClose} open title="新建凭证">
-        <p>凭证正文</p>
-      </Modal>,
+      <div>
+        <Ledger columns={[{ key: "name", label: "NAME", render: (row: { name: string }) => row.name }]} rows={[{ name: "ax_123" }]} getRowKey={(row) => row.name} />
+        <Modal open title="新建凭证" onClose={onClose}><p>正文</p></Modal>
+      </div>,
     );
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "新建凭证" })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "关闭" }));
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("凭证正文")).toBeInTheDocument();
-  });
-
-  it("returns null for a closed modal", () => {
-    render(
-      <Modal onClose={() => undefined} open={false} title="隐藏">
-        <p>不可见</p>
-      </Modal>,
-    );
-    expect(screen.queryByText("不可见")).not.toBeInTheDocument();
   });
 
   it("copies mono code values", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });
-    render(<MonoCode value="https://example.local/v1/sub?token=ax_12345678" />);
-    await userEvent.click(screen.getByRole("button", { name: "复制凭证" }));
-    expect(writeText).toHaveBeenCalledWith("https://example.local/v1/sub?token=ax_12345678");
-    expect(screen.getByRole("button", { name: "已钤印" })).toBeInTheDocument();
-  });
-
-  it("renders the demo design baseline", () => {
-    render(<Demo />);
-    expect(screen.getByText("§ 一、Axion 设计样本")).toBeInTheDocument();
-    expect(screen.getByText("Noto Serif SC · § 公理化终点")).toBeInTheDocument();
+    render(<MonoCode value="/v1/sub?token=ax_123456" />);
+    await userEvent.click(screen.getByRole("button", { name: "复制" }));
+    expect(writeText).toHaveBeenCalledWith("/v1/sub?token=ax_123456");
+    expect(screen.getByRole("button", { name: "已复制" })).toBeInTheDocument();
   });
 });
