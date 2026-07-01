@@ -50,6 +50,12 @@ export const routeCreateSchema = z.object({
 
 export const routeUpdateSchema = routeCreateSchema.partial();
 
+export const settingsPatchSchema = z.object({
+  instanceName: z.string().trim().min(1).max(80).optional(),
+  theme: z.enum(["light", "dark"]).optional(),
+  lang: z.enum(["zh", "en"]).optional(),
+});
+
 export const logsQuerySchema = z.object({
   token: z.string().trim().optional(),
   status: z.coerce.number().int().min(100).max(599).optional(),
@@ -68,4 +74,6 @@ export type TokenCreateInput = z.infer<typeof tokenCreateSchema>;
 export type RouteCreateInput = z.infer<typeof routeCreateSchema>;
 export type RouteUpdateInput = z.infer<typeof routeUpdateSchema>;
 export type LogsQuery = z.infer<typeof logsQuerySchema>;
+export type SettingsPatchInput = z.infer<typeof settingsPatchSchema>;
+
 

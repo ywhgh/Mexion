@@ -7,4 +7,6 @@ export const logRoutes = new Hono<AppBindings>();
 
 logRoutes.use("*", requireAdmin);
 logRoutes.get("/", getLogs);
+logRoutes.get("/export", exportLogsCsv);
 logRoutes.get("/export.csv", exportLogsCsv);
+

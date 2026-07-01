@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppBindings } from "../app.js";
 import { requireAdmin } from "../middleware/require-admin.js";
-import { createRoute, deleteRoute, listRoutes, routeLatency, updateRoute } from "../services/routes.js";
+import { createRoute, deleteRoute, listRoutes, probeRoute, routeLatency, updateRoute } from "../services/routes.js";
 
 export const routeRoutes = new Hono<AppBindings>();
 
@@ -10,4 +10,6 @@ routeRoutes.get("/", listRoutes);
 routeRoutes.post("/", createRoute);
 routeRoutes.patch("/:id", updateRoute);
 routeRoutes.delete("/:id", deleteRoute);
+routeRoutes.post("/:id/probe", probeRoute);
 routeRoutes.get("/:id/latency", routeLatency);
+

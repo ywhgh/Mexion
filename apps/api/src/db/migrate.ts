@@ -51,6 +51,11 @@ const statements = [
     duration_ms INTEGER NOT NULL DEFAULT 0,
     status INTEGER NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
   `CREATE INDEX IF NOT EXISTS idx_tokens_prefix ON tokens(prefix)`,
   `CREATE INDEX IF NOT EXISTS idx_tokens_sub ON tokens(sub_id)`,
   `CREATE INDEX IF NOT EXISTS idx_logs_ts ON logs(ts)`,
@@ -58,10 +63,21 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS idx_routes_alias ON routes(alias)`,
 ];
 
+const settingDefaults = [
+  ["instanceName", "Axion"],
+  ["theme", "light"],
+  ["lang", "zh"],
+] as const;
+
 export function migrate(db: DbClient): void {
   const run = db.sqlite.transaction(() => {
     for (const statement of statements) {
       db.sqlite.prepare(statement).run();
+    }
+    const now = new Date().toISOString();
+    const insert = db.sqlite.prepare("INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES (?, ?, ?)");
+    for (const [key, value] of settingDefaults) {
+      insert.run(key, value, now);
     }
   });
   run();

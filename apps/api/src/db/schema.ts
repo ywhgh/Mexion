@@ -58,6 +58,12 @@ export const logs = sqliteTable("logs", {
   status: integer("status").notNull(),
 });
 
+export const settings = sqliteTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const subRelations = relations(subs, ({ many }) => ({
   tokens: many(tokens),
 }));

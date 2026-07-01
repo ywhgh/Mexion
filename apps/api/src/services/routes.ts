@@ -48,7 +48,7 @@ export function getRouteRecord(db: DbClient, id: number): RouteRecord {
   return route;
 }
 
-function getRouteByAlias(db: DbClient, alias: string): RouteRecord {
+export function getRouteByAlias(db: DbClient, alias: string): RouteRecord {
   const row = db.sqlite
     .prepare(
       `SELECT id, alias, upstream, enabled, latency_ms AS latencyMs, last_checked_at AS lastCheckedAt, created_at AS createdAt
@@ -113,6 +113,12 @@ export function deleteRoute(c: Context<AppBindings>): Response {
   return c.json({ ok: true, data: { deleted: true } });
 }
 
+export async function probeRoute(c: Context<AppBindings>): Promise<Response> {
+  const { id } = idParamSchema.parse(c.req.param());
+  const route = getRouteRecord(c.get("db"), id);
+  await probeRouteLatency(c.get("db"), route);
+  return c.json({ ok: true, data: { route: getRouteRecord(c.get("db"), id) } });
+}
 export function routeLatency(c: Context<AppBindings>): Response {
   const { id } = idParamSchema.parse(c.req.param());
   const route = getRouteRecord(c.get("db"), id);
@@ -229,6 +235,8 @@ export function startLatencyProbe(db: DbClient): NodeJS.Timeout {
   timer.unref();
   return timer;
 }
+
+
 
 
 

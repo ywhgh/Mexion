@@ -5,6 +5,8 @@ import crypto from "node:crypto";
 import { idParamSchema, tokenCreateSchema } from "../contracts.js";
 import type { TokenCreateInput } from "../contracts.js";
 import type { DbClient } from "../db/client.js";
+import { requireIpAllowed } from "../middleware/ip-allow.js";
+import { incrementTokenUsage } from "../middleware/quota.js";
 import type { AppBindings } from "../app.js";
 
 export type TokenRecord = {
@@ -163,37 +165,6 @@ export function listAllTokens(db: DbClient): TokenPublic[] {
   });
 }
 
-function ipToInt(ip: string): number | null {
-  const parts = ip.split(".").map((part) => Number(part));
-  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
-    return null;
-  }
-  return parts.reduce((acc, part) => (acc << 8) + part, 0) >>> 0;
-}
-
-function ipMatchesRule(ip: string, rule: string): boolean {
-  if (!rule.includes("/")) {
-    return ip === rule;
-  }
-  const [base, prefixText] = rule.split("/");
-  const prefix = Number(prefixText);
-  const ipNum = ipToInt(ip);
-  const baseNum = ipToInt(base ?? "");
-  if (ipNum === null || baseNum === null || !Number.isInteger(prefix) || prefix < 0 || prefix > 32) {
-    return false;
-  }
-  const mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0;
-  return (ipNum & mask) === (baseNum & mask);
-}
-
-function tokenAllowsIp(token: TokenRecord, sourceIp: string): boolean {
-  const rules = parseIpAllow(token.ipAllow);
-  if (rules.length === 0) {
-    return true;
-  }
-  return rules.some((rule) => ipMatchesRule(sourceIp, rule));
-}
-
 export async function verifyTokenSecret(db: DbClient, secret: string, sourceIp: string): Promise<TokenRecord> {
   const prefix = secret.slice(0, 8);
   const rows = db.sqlite
@@ -212,7 +183,9 @@ export async function verifyTokenSecret(db: DbClient, secret: string, sourceIp: 
     if (token.expiresAt && Date.parse(token.expiresAt) <= Date.now()) {
       continue;
     }
-    if (!tokenAllowsIp(token, sourceIp)) {
+    try {
+      requireIpAllowed(sourceIp, parseIpAllow(token.ipAllow));
+    } catch {
       continue;
     }
     if (await bcrypt.compare(secret, token.hash)) {
@@ -224,11 +197,7 @@ export async function verifyTokenSecret(db: DbClient, secret: string, sourceIp: 
 }
 
 export function consumeTokenQuota(db: DbClient, token: TokenRecord, bytes: number): TokenRecord {
-  if (token.quotaBytes !== null && token.usedBytes + bytes > token.quotaBytes) {
-    throw new HTTPException(402, { message: "Token quota exhausted" });
-  }
-  db.sqlite.prepare("UPDATE tokens SET used_bytes = used_bytes + ? WHERE id = ?").run(bytes, token.id);
-  return { ...token, usedBytes: token.usedBytes + bytes };
+  return incrementTokenUsage(db, token, bytes);
 }
 
 export function listTokens(c: Context<AppBindings>): Response {

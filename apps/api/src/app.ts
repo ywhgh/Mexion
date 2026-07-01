@@ -10,11 +10,12 @@ import { openDb } from "./db/client.js";
 import { migrate } from "./db/migrate.js";
 import { authRoutes } from "./routes/auth.js";
 import { logRoutes } from "./routes/logs.js";
+import { publicRoutes } from "./routes/public.js";
+import { settingsRoutes } from "./routes/settings.js";
+import { statsRoutes } from "./routes/stats.js";
 import { routeRoutes } from "./routes/routes.js";
 import { subRoutes } from "./routes/subs.js";
 import { tokenRoutes } from "./routes/tokens.js";
-import { relayRoute } from "./services/routes.js";
-import { renderPublicSubscription } from "./services/subscriptions.js";
 import type { PublicAdmin } from "./services/auth.js";
 
 
@@ -58,8 +59,9 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   app.route("/api/tokens", tokenRoutes);
   app.route("/api/routes", routeRoutes);
   app.route("/api/logs", logRoutes);
-  app.all("/api/r/:alias/*", relayRoute);
-  app.get("/v1/sub", renderPublicSubscription);
+  app.route("/api/stats", statsRoutes);
+  app.route("/api/settings", settingsRoutes);
+  app.route("/", publicRoutes);
 
   app.get("/api/health", (c) =>
     c.json({
@@ -115,5 +117,6 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
 

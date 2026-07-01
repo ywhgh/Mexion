@@ -52,10 +52,11 @@ describe("audit logs", () => {
       status: 200,
     });
 
-    const csv = await app.request(`/api/logs/export.csv?token=${payload.data.token.prefix}`, { headers: { cookie } });
+    const csv = await app.request(`/api/logs/export?token=${payload.data.token.prefix}`, { headers: { cookie } });
     expect(csv.headers.get("content-type")).toContain("text/csv");
     const text = await csv.text();
     expect(text).toContain("token_prefix");
     expect(text).toContain(payload.data.token.prefix);
   });
 });
+
