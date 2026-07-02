@@ -87,6 +87,30 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
       model: resolved.model,
       path: new URL(c.req.url).pathname,
     });
+    if (body.stream === true && upstream.ok && upstream.body) {
+      const durationMs = Math.max(0, Math.round(performance.now() - started));
+      settleBilling(c.get("db"), requestId, {
+        actualCost: estimatedCost,
+        inputTokens: roughInputTokens(rawBody.byteLength),
+        outputTokens: 0,
+        durationMs,
+        model: resolved.model,
+        provider: channel.provider,
+        channelId: channel.id,
+        bodyHash,
+        bodyLength: rawBody.byteLength,
+        keyPrefix: key?.prefix ?? null,
+        status: "stream",
+      });
+      markChannelSuccess(c.get("db"), channel.id, durationMs);
+      c.get("db")
+        .sqlite.prepare(
+          `INSERT INTO request_logs (ts, request_id, user_id, key_prefix, method, path, model, provider, group_id, channel_id, status, input_tokens, output_tokens, duration_ms, cost, error_code, body_hash, body_length)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(new Date().toISOString(), requestId, user.id, key?.prefix ?? null, c.req.method, c.req.path, resolved.model, channel.provider, key?.groupId ?? channel.groupId, channel.id, upstream.status, roughInputTokens(rawBody.byteLength), 0, durationMs, estimatedCost, null, bodyHash, rawBody.byteLength);
+      return new Response(upstream.body, { status: upstream.status, headers: responseHeaders(upstream.headers) });
+    }
     const responseText = await upstream.text();
     const parsed = maybeJson(responseText);
     const usage = parseUsageFromResponse(channel.provider, parsed);
@@ -130,3 +154,4 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
     throw error;
   }
 }
+

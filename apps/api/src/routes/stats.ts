@@ -7,3 +7,5 @@ export const statsRoutes = new Hono<AppBindings>();
 
 statsRoutes.use("*", requireAdmin);
 statsRoutes.get("/", getStats);
+statsRoutes.get("/overview", getStats);
+
