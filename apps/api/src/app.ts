@@ -17,6 +17,7 @@ import { routeRoutes } from "./routes/routes.js";
 import { subRoutes } from "./routes/subs.js";
 import { tokenRoutes } from "./routes/tokens.js";
 import { userRoutes } from "./routes/user.js";
+import { userKeyRoutes } from "./routes/user-keys.js";
 import type { PublicAdmin } from "./services/auth.js";
 import type { UserPublic } from "./services/users.js";
 import { HTTPTimeoutError, SsrfBlockedError } from "./lib/safe-http.js";
@@ -39,6 +40,7 @@ export type AppBindings = {
     db: DbClient;
     admin: PublicAdmin;
     user: UserPublic;
+    gatewayUser: UserPublic;
   };
 };
 
@@ -59,6 +61,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   });
 
   app.route("/api/auth", authRoutes);
+  app.route("/api/user/keys", userKeyRoutes);
   app.route("/api/user", userRoutes);
   app.route("/api/subs", subRoutes);
   app.route("/api/tokens", tokenRoutes);
@@ -128,6 +131,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
 
 
