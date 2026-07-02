@@ -11,7 +11,8 @@ export default [
       "apps/**/dist/**",
       "packages/**/dist/**",
       "research/**",
-      "apps/web/public/vendor/**",
+      "apps/web/public/**",
+      "apps/web/dist/**",
       "data/**",
       "*.db*"
     ]
@@ -39,4 +40,5 @@ export default [
     }
   }
 ];
+
 

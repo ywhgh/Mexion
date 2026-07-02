@@ -17,6 +17,7 @@ import { routeRoutes } from "./routes/routes.js";
 import { subRoutes } from "./routes/subs.js";
 import { tokenRoutes } from "./routes/tokens.js";
 import type { PublicAdmin } from "./services/auth.js";
+import { HTTPTimeoutError, SsrfBlockedError } from "./lib/safe-http.js";
 
 
 function webDistAbsolute(): string {
@@ -94,6 +95,12 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   }
 
   app.onError((error, c) => {
+    if (error instanceof SsrfBlockedError) {
+      return c.json({ ok: false, error: { code: "SSRF_BLOCKED", message: "SSRF Blocked" } }, 400);
+    }
+    if (error instanceof HTTPTimeoutError) {
+      return c.json({ ok: false, error: { code: "UPSTREAM_TIMEOUT", message: "Upstream request timed out" } }, 504);
+    }
     if (error instanceof ZodError) {
       return c.json(
         { ok: false, error: { code: "VALIDATION_ERROR", message: error.issues[0]?.message ?? "Invalid input" } },
@@ -117,6 +124,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
 
 

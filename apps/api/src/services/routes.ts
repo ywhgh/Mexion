@@ -4,6 +4,7 @@ import { idParamSchema, routeCreateSchema, routeUpdateSchema } from "../contract
 import type { DbClient } from "../db/client.js";
 import type { AppBindings } from "../app.js";
 import { recordLog } from "./logs.js";
+import { safeFetch } from "../lib/safe-http.js";
 
 export type RouteRecord = {
   id: number;
@@ -173,7 +174,7 @@ export async function relayRoute(c: Context<AppBindings>): Promise<Response> {
   if (method !== "GET" && method !== "HEAD") {
     init.body = await c.req.raw.arrayBuffer();
   }
-  const upstreamResponse = await fetch(target, init);
+  const upstreamResponse = await safeFetch(target, init);
   const buffer = await upstreamResponse.arrayBuffer();
   const bytes = buffer.byteLength;
   const durationMs = Math.max(0, Math.round(performance.now() - started));
@@ -199,7 +200,7 @@ export async function probeRouteLatency(db: DbClient, route: RouteRecord): Promi
   const timeout = setTimeout(() => controller.abort(), 5000);
   const started = performance.now();
   try {
-    await fetch(route.upstream, { method: "HEAD", signal: controller.signal });
+    await safeFetch(route.upstream, { method: "HEAD", signal: controller.signal, timeoutMs: 5000, firstByteTimeoutMs: 5000 });
     const latencyMs = Math.max(0, Math.round(performance.now() - started));
     db.sqlite
       .prepare("UPDATE routes SET latency_ms = ?, last_checked_at = ? WHERE id = ?")
@@ -235,6 +236,8 @@ export function startLatencyProbe(db: DbClient): NodeJS.Timeout {
   timer.unref();
   return timer;
 }
+
+
 
 
 
