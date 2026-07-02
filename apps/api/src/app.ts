@@ -9,10 +9,12 @@ import type { DbClient } from "./db/client.js";
 import { openDb } from "./db/client.js";
 import { migrate } from "./db/migrate.js";
 import { authRoutes } from "./routes/auth.js";
+import { adminRoutes } from "./routes/admin.js";
 import { logRoutes } from "./routes/logs.js";
 import { publicRoutes } from "./routes/public.js";
 import { settingsRoutes } from "./routes/settings.js";
 import { statsRoutes } from "./routes/stats.js";
+import { statusRoutes } from "./routes/status.js";
 import { routeRoutes } from "./routes/routes.js";
 import { subRoutes } from "./routes/subs.js";
 import { tokenRoutes } from "./routes/tokens.js";
@@ -61,6 +63,8 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   });
 
   app.route("/api/auth", authRoutes);
+  app.route("/api/admin", adminRoutes);
+  app.route("/api/status", statusRoutes);
   app.route("/api/user/keys", userKeyRoutes);
   app.route("/api/user", userRoutes);
   app.route("/api/subs", subRoutes);
@@ -131,6 +135,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
 
 
