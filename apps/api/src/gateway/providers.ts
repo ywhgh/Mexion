@@ -42,7 +42,9 @@ function withGeminiKey(url: string, secret: string): string {
 export async function relayToProvider(input: RelayProviderInput): Promise<Response> {
   const secret = getChannelSecret(input.db, input.channel.id);
   const headers = new Headers({ "content-type": "application/json" });
-  let url = `${trimSlash(input.channel.baseUrl)}${providerPath(input.protocol, input.model, input.path)}`;
+  let url = input.channel.provider === "custom"
+    ? `${trimSlash(input.channel.baseUrl)}${input.path}`
+    : `${trimSlash(input.channel.baseUrl)}${providerPath(input.protocol, input.model, input.path)}`;
   if (input.channel.provider === "anthropic") {
     headers.set("x-api-key", secret);
     headers.set("anthropic-version", "2023-06-01");
@@ -58,5 +60,6 @@ export async function relayToProvider(input: RelayProviderInput): Promise<Respon
   }
   return safeFetch(url, { method: "POST", headers, body: bodyBuffer(input.rawBody) });
 }
+
 
 
