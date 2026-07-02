@@ -23,7 +23,7 @@ describe("relay routes", () => {
     const create = await app.request("/api/routes", {
       method: "POST",
       headers: { "content-type": "application/json", cookie },
-      body: JSON.stringify({ alias: "demo", upstream: "https://upstream.example/anything", enabled: true }),
+      body: JSON.stringify({ alias: "demo", upstream: "https://1.1.1.1/anything", enabled: true }),
     });
     expect(create.status).toBe(201);
     const created = (await create.json()) as { ok: true; data: { route: { id: number; alias: string } } };
@@ -35,7 +35,7 @@ describe("relay routes", () => {
     );
     const relayed = await app.request("/api/r/demo/node?q=1", { headers: { "x-forwarded-for": "198.51.100.2" } });
     expect(relayed.status).toBe(202);
-    expect(await relayed.text()).toContain("https://upstream.example/anything/node?q=1");
+    expect(await relayed.text()).toContain("https://1.1.1.1/anything/node?q=1");
     const log = db.sqlite.prepare("SELECT source, target, status FROM logs ORDER BY id DESC LIMIT 1").get() as {
       source: string;
       target: string;
@@ -61,3 +61,4 @@ describe("relay routes", () => {
     expect(remove.status).toBe(200);
   });
 });
+
