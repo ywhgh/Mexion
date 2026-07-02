@@ -25,7 +25,7 @@ var GROUP_PROVIDER_MAP = {
 };
 
 /* 分组补充元数据：只写需要明确指定的字段，其余取默认值
-   id     — 内部 token 绑定用（前端专用，与 new-api slug 无关）
+   id     — 内部 token 绑定用（前端专用，与 legacy-api slug 无关）
    sub    — true = 订阅制（默认 false = 余额制）
    img    — true = 支持图像生成（默认 false）
    scopes — 能力范围，决定卡片 cap 标签：

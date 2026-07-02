@@ -857,7 +857,7 @@ function loadGroups() {
   }
   stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">加载中…</div>';
   MexionHttp.get('/user/groups').then(function(data) {
-    /* new-api returns {"slug": {desc, ratio}, ...} — convert to old format array */
+    /* legacy-api returns {"slug": {desc, ratio}, ...} — convert to old format array */
     var items = [];
     if (data && typeof data === 'object' && !Array.isArray(data)) {
       Object.keys(data).forEach(function(slug) {

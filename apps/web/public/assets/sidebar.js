@@ -17,7 +17,7 @@
     ]},
     { section: 'nav.section.other', items: [
       { key: 'nav.docs', en: 'Docs', zh: '文档', href: 'https://mexion-doc.pages.dev/', external: true, icon: '<path d="M3.5 2.5h5.8L12.5 5.7v7.8h-9v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.3 2.5v3.3h3.2M5.7 8.4h4.6M5.7 10.6h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
-      { key: 'nav.shop', en: 'Buy Credits', zh: '购买兑换码', href: 'https://mall.mexioncode.top/', external: true, icon: '<path d="M3 4.5h10l-1.2 5H4.2L3 4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 4.5L2.3 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/>' },
+      { key: 'nav.shop', en: 'Buy Credits', zh: '购买兑换码', href: '/billing', icon: '<path d="M3 4.5h10l-1.2 5H4.2L3 4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 4.5L2.3 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/>' },
     ]},
   ];
 
@@ -608,8 +608,3 @@
     isRail: isRailNow,
   };
 })();
-
-
-
-
-

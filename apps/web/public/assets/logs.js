@@ -350,7 +350,7 @@ function mapUsageLog(u) {
   var t = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
   var inputTok = u.prompt_tokens || u.input_tokens || 0;
   var outputTok = u.completion_tokens || u.output_tokens || 0;
-  // new-api 把缓存命中数放在 other(JSON 字符串)的 cache_tokens 里，顶层没有 cache_* 字段，
+  // legacy-api 把缓存命中数放在 other(JSON 字符串)的 cache_tokens 里，顶层没有 cache_* 字段，
   // 原来只读顶层 → 永远 0 → 全显示"无缓存"。这里解析 other 取真实缓存 token。
   var other = u.other;
   if (typeof other === 'string') { try { other = JSON.parse(other); } catch (e) { other = null; } }
@@ -1326,7 +1326,7 @@ function buildPayloads(l){
             '\n<span class="pl-k">model</span>: ' + _plEsc(l.model);
   // 真实可用的 cURL 模板（按本条日志的 model 生成；正文不被持久化，故用占位 messages）。
   var curlBody = JSON.stringify({ model: l.model, messages: [{ role: 'user', content: 'Hello' }], stream: !!l.stream });
-  var curl = 'curl https://api.mexioncode.dev/v1/chat/completions \\\n' +
+  var curl = 'curl http://127.0.0.1:8787/v1/chat/completions \\\n' +
              '  -H "Authorization: Bearer $MEXION_API_KEY" \\\n' +
              '  -H "Content-Type: application/json" \\\n' +
              "  -d '" + curlBody + "'";

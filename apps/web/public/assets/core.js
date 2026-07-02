@@ -285,7 +285,7 @@
   function headers(extra) {
     var h = { 'Content-Type': 'application/json' };
     var uid = window.MexionAuthStorage.getItem('mexion_user_id');
-    if (uid) h['New-Api-User'] = uid;
+    if (uid) h['X-Mexion-User'] = uid;
     if (window.MEXION_FE_VERSION) h['X-Mexion-Fe-Version'] = window.MEXION_FE_VERSION;
     if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
     return h;
@@ -478,12 +478,20 @@
     return Promise.reject(new Error('Session expired'));
   }
 
+  function clearAuthCookie(name) {
+    var host = window.location.hostname || '';
+    var base = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    document.cookie = base;
+    if (host && host !== 'localhost' && /^\d+\.\d+\.\d+\.\d+$/.test(host) === false && host.indexOf('.') >= 0) {
+      document.cookie = base + ';domain=.' + host.replace(/^www\./, '');
+    }
+  }
+
   function forceLogout() {
     window.MexionAuthStorage.clearAuth();
-    // 注:SSO_DOMAIN 定义在另一个 IIFE,此处不可见 → 用字面量(消除既有潜在 ReferenceError),并一并清持久 uid cookie。
-    document.cookie = 'mexion_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.mexioncode.dev';
-    document.cookie = 'mexion_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.mexioncode.dev';
-    document.cookie = 'session=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    clearAuthCookie('mexion_sso');
+    clearAuthCookie('mexion_uid');
+    clearAuthCookie('session');
     window.location.href = MexionConfig.LOGIN_URL;
   }
 
@@ -614,18 +622,32 @@
     catch (e) { return null; }
   }
 
-  var SSO_DOMAIN = '.mexioncode.dev';
+  function currentCookieDomain() {
+    var host = window.location.hostname || '';
+    if (!host || host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return '';
+    return host.indexOf('.') >= 0 ? ';domain=.' + host.replace(/^www\./, '') : '';
+  }
+
+  function cookieSuffix() {
+    var secure = window.location.protocol === 'https:' ? ';Secure' : '';
+    return ';path=/' + currentCookieDomain() + ';SameSite=Lax' + secure;
+  }
+
+  function clearCookie(name) {
+    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT' + cookieSuffix();
+    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+  }
 
   function setSsoCookie() {
     var d = new Date();
     d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
     document.cookie = 'mexion_sso=1' +
       ';expires=' + d.toUTCString() +
-      ';path=/;domain=' + SSO_DOMAIN + ';SameSite=Lax;Secure';
+      cookieSuffix();
   }
 
   function clearSsoCookie() {
-    document.cookie = 'mexion_sso=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
+    clearCookie('mexion_sso');
   }
 
   // 二开:user_id 的持久真相源 = 前端可读的 mexion_uid cookie(与 session cookie 同寿命/30天)。
@@ -639,11 +661,11 @@
     d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
     document.cookie = 'mexion_uid=' + encodeURIComponent(String(id)) +
       ';expires=' + d.toUTCString() +
-      ';path=/;domain=' + SSO_DOMAIN + ';SameSite=Lax;Secure';
+      cookieSuffix();
   }
 
   function clearUidCookie() {
-    document.cookie = 'mexion_uid=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + SSO_DOMAIN;
+    clearCookie('mexion_uid');
   }
 
   function setSession(token, user, refreshToken, rememberMe) {

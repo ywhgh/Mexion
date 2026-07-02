@@ -31,7 +31,7 @@ MexionI18n.register({
     'legal.body': '登录即表示你同意',
     'legal.terms': '用户协议', 'legal.and': '与', 'legal.privacy': '隐私政策',
     'colophon.seal': 'MEXION · MMXXVI',
-    'colophon.set': 'MEXION CODE',
+    'colophon.set': 'MEXION',
     'colophon.edition': '第 0001 号 / 卷 I',
     /* ── SIGNUP ── */
     'top.have': '已有账号？', 'top.signin': '登录',
@@ -122,7 +122,7 @@ MexionI18n.register({
     'legal.body': 'By signing in you agree to our',
     'legal.terms': 'User Agreement', 'legal.and': 'and', 'legal.privacy': 'Privacy Policy',
     'colophon.seal': 'MEXION · MMXXVI',
-    'colophon.set': 'MEXION CODE',
+    'colophon.set': 'MEXION',
     'colophon.edition': 'No. 0001 / Vol. I',
     /* ── SIGNUP ── */
     'top.have': 'Already an Mexion user?', 'top.signin': 'Sign in',
@@ -943,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     btn.style.pointerEvents = 'none';
     btn.style.opacity = '0.6';
-    // Clear any existing session so new-api treats OAuth as LOGIN not BIND
+    // Clear any existing session so legacy-api treats OAuth as LOGIN not BIND
     fetch('/api/user/logout', { credentials: 'same-origin' }).catch(function(){}).then(function() {
     return Promise.all([
       fetch('/api/oauth/state' + (oauthRefCode ? ('?aff=' + encodeURIComponent(oauthRefCode)) : ''), { credentials: 'same-origin' }).then(function(r) { return r.json(); }),

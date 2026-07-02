@@ -30,7 +30,7 @@ pnpm install: passed, lockfile up to date
 pnpm typecheck: passed across apps/web, apps/api, packages/shared
 pnpm lint: passed with --max-warnings=0
 pnpm test: passed, 17 files / 50 tests
-coverage: Statements 70.66%, Lines 76.82%, Functions 65.57%, Branches 56.11%
+coverage: Statements 70.49%, Lines 76.61%, Functions 65.57%, Branches 55.79%
 pnpm build: passed, produced apps/web/dist and apps/api/dist
 pnpm audit --json: 0 critical, 0 high, 0 moderate, 0 low
 ```

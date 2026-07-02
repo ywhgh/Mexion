@@ -11,6 +11,14 @@ export default defineConfig({
   test: {
     globals: true,
     testTimeout: 15000,
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "apps/**/dist/**",
+      "packages/**/dist/**",
+      "coverage/**",
+      "research/**",
+    ],
     setupFiles: ["./vitest.setup.ts"],
     coverage: {
       provider: "v8",
