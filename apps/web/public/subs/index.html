@@ -15,14 +15,13 @@
 <link rel="preload" href="/assets/common.css" as="style">
 <link rel="stylesheet" href="/assets/common.css">
 <script src="/assets/i18n.js"></script>
-<script src="/assets/mock.js"></script>
 <script src="/assets/core.js" defer></script>
 <link rel="preload" href="/assets/notification.js" as="script">
 <link rel="preload" href="/assets/sidebar.js" as="script">
 <link rel="stylesheet" href="/assets/subscription.css">
 </head>
 <body>
-<script>/* local mirror: login guard disabled */try{localStorage.setItem('mexion_user_id','10248');localStorage.setItem('mexion_auth_persist','local')}catch(e){}</script>
+<script>(function(){try{if(localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id'))return;}catch(e){}location.replace('/sign-in/')})()</script>
 
 <div class="app">
 
