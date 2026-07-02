@@ -11,6 +11,7 @@ import { migrate } from "./db/migrate.js";
 import { authRoutes } from "./routes/auth.js";
 import { adminRoutes } from "./routes/admin.js";
 import { billingRoutes } from "./routes/billing.js";
+import { gatewayRoutes } from "./routes/gateway.js";
 import { logRoutes } from "./routes/logs.js";
 import { publicRoutes } from "./routes/public.js";
 import { settingsRoutes } from "./routes/settings.js";
@@ -23,6 +24,7 @@ import { userRoutes } from "./routes/user.js";
 import { userKeyRoutes } from "./routes/user-keys.js";
 import type { PublicAdmin } from "./services/auth.js";
 import type { UserPublic } from "./services/users.js";
+import type { UserKeyRecord } from "./services/user-keys.js";
 import { HTTPTimeoutError, SsrfBlockedError } from "./lib/safe-http.js";
 
 
@@ -44,6 +46,7 @@ export type AppBindings = {
     admin: PublicAdmin;
     user: UserPublic;
     gatewayUser: UserPublic;
+    gatewayKey: UserKeyRecord | null;
   };
 };
 
@@ -76,6 +79,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
   app.route("/api/stats", statsRoutes);
   app.route("/api/settings", settingsRoutes);
   app.route("/", publicRoutes);
+  app.route("/", gatewayRoutes);
 
   app.get("/api/health", (c) =>
     c.json({
@@ -137,6 +141,7 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
 
   return app;
 }
+
 
 
 
