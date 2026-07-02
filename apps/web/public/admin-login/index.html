@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#FAF8F5">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<title>Mexion 管理员入口</title>
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="stylesheet" href="/assets/admin.css">
+<script src="/assets/admin.js" defer></script>
+</head>
+<body data-admin-page="login">
+  <div class="admin-login-shell">
+    <aside class="admin-login-plate" aria-label="Mexion administrator note">
+      <div class="admin-plate-head">
+        <a class="admin-brand" href="/" aria-label="Mexion home">
+          <span class="admin-brand-mark" aria-hidden="true">M</span>
+          <span class="admin-brand-name">Mexion</span>
+        </a>
+        <span class="admin-plate-vol">PL. ADMIN · Vol. I</span>
+      </div>
+
+      <div class="admin-plate-body">
+        <p class="admin-kicker">§ Operator Console</p>
+        <h1>管理入口与用户登录分离。</h1>
+        <p>这里连接 <code>/api/auth/sign-in</code>，用于渠道、分组、模型别名和系统统计管理。普通用户仍从 <a href="/sign-in/">/sign-in/</a> 登录。</p>
+      </div>
+
+      <dl class="admin-proof-list">
+        <div>
+          <dt>Session</dt>
+          <dd>httpOnly cookie</dd>
+        </div>
+        <div>
+          <dt>Scope</dt>
+          <dd>admin routes only</dd>
+        </div>
+        <div>
+          <dt>Secrets</dt>
+          <dd>never displayed</dd>
+        </div>
+      </dl>
+    </aside>
+
+    <main class="admin-login-main">
+      <section class="admin-login-card" aria-labelledby="adminLoginTitle">
+        <p class="admin-kicker" id="loginModeLabel">§ Sign-in</p>
+        <h2 id="adminLoginTitle">管理员登录</h2>
+        <p class="admin-login-lede" id="adminLoginLead">输入管理员凭证，进入 Mexion 管理台。</p>
+
+        <div class="admin-inline-note" id="adminLoginState" role="status" aria-live="polite">正在检查实例状态。</div>
+
+        <form id="adminLoginForm" class="admin-form" novalidate>
+          <label class="admin-field" for="adminUsername">
+            <span>01 · 管理员账号</span>
+            <input class="admin-input" id="adminUsername" name="username" type="text" autocomplete="username" placeholder="admin" required minlength="3" maxlength="64">
+          </label>
+
+          <label class="admin-field" for="adminPassword">
+            <span>02 · 管理员密码</span>
+            <span class="admin-password-wrap">
+              <input class="admin-input" id="adminPassword" name="password" type="password" autocomplete="current-password" placeholder="至少 8 位" required minlength="8">
+              <button class="admin-mini-button" type="button" id="adminPasswordToggle">显示</button>
+            </span>
+          </label>
+
+          <p class="admin-error" id="adminLoginError" role="alert" hidden></p>
+
+          <button class="admin-primary" id="adminLoginSubmit" type="submit">
+            <span id="adminLoginSubmitText">进入管理台</span>
+            <span aria-hidden="true">↗</span>
+          </button>
+        </form>
+
+        <div class="admin-login-links" aria-label="alternate links">
+          <a href="/sign-in/">用户登录</a>
+          <a href="/">初始页面</a>
+          <a href="/status/">状态页</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
