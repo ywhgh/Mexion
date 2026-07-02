@@ -1,24 +1,44 @@
 # Mexion
 
-> § 一把钥匙，把订阅、凭证、中转与审计收束为一张可操作的控制台。
+Mexion 是本地优先的 AI API 中转站与管理控制台。当前版本包含：
 
-Mexion 是本地优先的订阅转换与 API 中转管理台。v2 将 Mexion 风格的后台视觉语言移植到 React/Hono 单仓：Newsreader/Geist 字体、纸面色、墨黑文本、朱砂动作、小圆角数据卡、ledger 表与 13 周 activity heatmap。
+- Vanilla HTML/CSS/JS MPA 前端，由 Hono 在生产模式单端口托管。
+- Hono + SQLite/better-sqlite3 后端主程序。
+- 多用户注册/登录、用户 API Key、渠道/分组/模型别名、计费/订阅配额、请求日志。
+- OpenAI Chat/Responses/Embeddings、Anthropic Messages、Gemini、Codex CLI 兼容路由。
+- SSRF 防护、敏感日志脱敏、请求 body 限制、渠道密钥 AES-256-GCM 加密存储。
 
 ## 技术栈
 
 | 层 | 选型 |
 |---|---|
 | 包管理 | pnpm workspace |
-| 前端 | React 18 + Vite 5 + React Router v6 |
-| 状态 | Zustand + TanStack Query v5 |
-| 样式 | Tailwind CSS 3 + CSS variables |
+| 前端 | Vanilla HTML/CSS/JS MPA + Vite |
 | 后端 | Hono + `@hono/node-server` |
-| 数据 | Drizzle schema + SQLite/better-sqlite3 |
-| 鉴权 | 单管理员 + bcrypt + httpOnly JWT cookie |
-| 校验 | Zod |
-| 测试 | Vitest + Testing Library |
+| 数据 | SQLite + better-sqlite3 + Drizzle schema |
+| 鉴权 | 管理员 JWT cookie + 用户 session cookie + 用户 API key |
+| 安全 | SafeHTTPClient、AES-256-GCM、body limit、redaction |
+| 测试 | Vitest + v8 coverage |
 
-## 开发
+## 环境变量
+
+```bash
+# 必需：32 字节 hex。生成方式：
+# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+MEXION_SECRET_KEY=<32-byte-hex>
+
+# 推荐：管理员 JWT 签名密钥
+MEXION_JWT_SECRET=<long-random-string>
+
+# 可选
+PORT=8787
+HOST=127.0.0.1
+MEXION_DB_PATH=./data/mexion.db
+```
+
+开发模式未设置 `MEXION_SECRET_KEY` 时会使用固定 dev key 并打印警告；生产环境应显式设置。
+
+## 启动
 
 ```bash
 cd D:\Mexion
@@ -28,9 +48,8 @@ pnpm dev
 
 - API: `http://127.0.0.1:8787`
 - Web dev: `http://127.0.0.1:5173`
-- 首次访问 `/sign-in` 初始化管理员。没有默认账号密码。
 
-## 生产
+生产单命令：
 
 ```bash
 cd D:\Mexion
@@ -38,41 +57,60 @@ pnpm build
 pnpm start
 ```
 
-生产单端口：`http://127.0.0.1:8787`。Hono 会托管 `apps/web/dist`。
+生产单端口：`http://127.0.0.1:8787`。
 
-## 核心流程
+## 核心 API
 
-1. `/sign-in` 初始化管理员并登录。
-2. `/subs/new` 写入原始节点或订阅 URL，生成 `/v1/sub?token=ax_...`。
-3. `/tokens` 创建绑定订阅的凭证，可设置 GB 配额、过期时间、CIDR 白名单。明文只显示一次。
-4. `/routes` 配置 `/api/r/:alias/*` 到 upstream，并可主动 probe 延迟。
-5. `/logs` 按 token/status/limit 查询调用日志，并通过 `/api/logs/export` 导出 CSV。
-6. `/settings` 保存实例名称、主题、语言并修改管理员密钥。
+### 用户
 
-## 截图占位
+- `POST /api/user/register`
+- `POST /api/user/login`
+- `POST /api/user/logout`
+- `GET /api/user/self`
+- `POST /api/user/checkin`
+- `GET/PATCH /api/user/setting`
+- `GET/POST/PATCH/DELETE /api/user/keys`
+- `GET /api/user/billing`
+- `GET /api/user/usage`
+- `GET/POST /api/user/subscriptions`
 
-```text
-[01] Sign-in Folio
-plate: § The Thesis | form-wrap: § 登录 | 01 管理员 | 02 密钥
+### 管理
 
-[02] Dashboard
-side 232px | topbar language/theme/user | Calls | Tokens | Latency | Activity heatmap
+- `GET/POST/PATCH/DELETE /api/admin/channels`
+- `GET/POST/PATCH/DELETE /api/admin/groups`
+- `GET/POST/DELETE /api/admin/model-aliases`
+- `GET /api/stats`
+- `GET /api/stats/overview`
 
-[03] Subs Ledger
-# | 名称 | 目标 | 规则 | Token 数 | 更新时间
+### AI 网关
 
-[04] Tokens
-左列表 prefix/name/sub/quota；右详情 usage/IP/expiry；创建后 once-only reveal。
+- `POST /v1/chat/completions`
+- `POST /v1/responses`
+- `POST /v1/messages`
+- `POST /v1/embeddings`
+- `GET /v1/models`
+- `POST /v1beta/models/:model/:action`
+- `POST /backend-api/codex/responses`
+- `GET /healthz`
+- `GET /version`
 
-[05] Routes and Logs
-alias -> upstream 映射、probe pill、附录 ledger、CSV export。
-```
-
-## 验收
+## 验收命令
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm audit:ui
+pnpm install
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
 ```
+
+当前覆盖率：Statements 70.66%，Lines 76.82%，Functions 65.57%，Branches 56.11%。
+
+## 已知限制
+
+- 订阅购买是演示版即时激活，未接入真实支付网关。
+- Gateway 流式响应当前以非流式聚合转发为主；接口形态兼容主流 SDK/CLI，后续可增强 token 级流式统计。
+- 未内置真实 provider 凭据；需要管理员创建渠道并配置 API key。
 
 ## License
 

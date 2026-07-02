@@ -1,97 +1,49 @@
 # Build Notes
 
-## Milestones
+## Relay Implementation Status
 
-- M1 `chore(web): reset UI scaffold for mexion rewrite`: completed.
-- M2 `feat(web): install mexion design tokens and runtime`: completed.
-- M3 `feat(web): mexion ui primitives (card/button/pill/field/...)`: completed.
-- M4 `feat(web): app shell with sidebar/topbar/corner marks`: completed.
-- M5 `feat(web): sign-in page 1:1 mexion folio`: completed.
-- M6 `feat(api): stats/settings endpoints and public gateway`: completed.
-- M7 `feat(web): dashboard page`: completed.
-- M8 `feat(web): subs list/new/detail pages`: completed.
-- M9 `feat(web): tokens page with once-only reveal`: completed.
-- M10 `feat(web): routes page with probe`: completed.
-- M11 `feat(web): logs ledger with filter and export`: completed.
-- M12 `feat: settings and first-run migrate`: completed.
-- M13 `chore: production bundle`: completed.
-- M14 `docs: v2 build notes`: completed.
+Completed on 2026-07-02 for `D:\Mexion`.
 
-## Dependency Changes
+### Milestones
 
-- Added `ipaddr.js` for CIDR matching.
-- Locked web Zustand to `^4.5.7`.
-- No dependency fallback was required.
+- M1 `feat(security): ssrf protection, log redaction, body limits, secret encryption`: completed.
+- M2 `feat(db): extend schema for users channels groups billing relay`: completed.
+- M3 `feat(auth): multi-user registration login session checkin`: completed.
+- M4 `feat(auth): user api key management`: completed.
+- M5 `feat(channels): groups channels model aliases status api`: completed.
+- M6 `feat(billing): precharge settle rollback billing with subscription quota`: completed.
+- M7 `feat(gateway): ai relay with precharge settle multi-provider`: completed.
+- M8 `feat(web): connect frontend to real api remove mock runtime`: completed.
 
-## Verification
+### Environment Variables
 
-Final verification run on 2026-07-01:
+- `MEXION_SECRET_KEY`: 32-byte hex key for AES-256-GCM channel secret encryption.
+- `MEXION_JWT_SECRET`: JWT signing secret for administrator sessions.
+- `MEXION_DB_PATH`: optional SQLite path, default `data/mexion.db`.
+- `PORT`: optional server port, default `8787`.
+- `HOST`: optional bind host, default `127.0.0.1`.
+
+### Verification 2026-07-02
 
 ```text
-pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm audit:ui: passed
-```
-
-Detailed output summary:
-
-```text
-pnpm typecheck: passed across packages/shared, apps/api, apps/web
+pnpm install: passed, lockfile up to date
+pnpm typecheck: passed across apps/web, apps/api, packages/shared
 pnpm lint: passed with --max-warnings=0
-pnpm test: passed, 10 files / 19 tests, coverage thresholds passed; total line coverage 89.08%
+pnpm test: passed, 17 files / 50 tests
+coverage: Statements 70.66%, Lines 76.82%, Functions 65.57%, Branches 56.11%
 pnpm build: passed, produced apps/web/dist and apps/api/dist
-pnpm audit:ui: passed; emoji, shortcut, debug residue, hex color, and forbidden dependency scans returned ok
+pnpm audit --json: 0 critical, 0 high, 0 moderate, 0 low
 ```
 
-`pnpm audit:ui` is provided by `scripts/audit.sh`. The initial rounded-class listing is informational because the v2 Mexion backend screens intentionally allow small component radii.
+### Security Notes
 
-## Production Smoke
+- All generic relay egress uses `safeFetch` with scheme validation, DNS/IP checks and redirect revalidation.
+- Loopback, RFC1918, link-local and metadata IP ranges are blocked.
+- Channel secrets are stored in `channel_secrets.encrypted_value` via AES-256-GCM.
+- Request logs store metadata only; Authorization, API keys and request/response bodies are not persisted.
+- Query-string API keys are rejected by the gateway.
 
-```bash
-pnpm build
-pnpm start
-# open http://127.0.0.1:8787
-```
+### Known Limits
 
-Expected smoke route set:
-
-- `GET /api/health`
-- `GET /`
-- `POST /api/auth/bootstrap` on first run
-- `GET /api/stats`
-- `GET /api/settings`
-- `GET /v1/sub?token=ax_...`
-- `ALL /api/r/:alias/*`
-
-## Known Issues
-
-None.
-
-## git log --oneline
-
-```text
-3ce8b94 chore: production bundle
-f5a63d3 feat: settings and first-run migrate
-53898c1 feat(web): logs ledger with filter and export
-9dad97d feat(web): routes page with probe
-8e36faf feat(web): tokens page with once-only reveal
-6602e4c feat(web): subs list/new/detail pages
-c89b44b feat(web): dashboard page
-c61192b feat(api): stats/settings endpoints and public gateway
-0cbed0b feat(web): sign-in page 1:1 mexion folio
-c214ab9 feat(web): app shell with sidebar/topbar/corner marks
-007acbd feat(web): mexion ui primitives (card/button/pill/field/...)
-ff6b661 feat(web): install mexion design tokens and runtime
-1dbd82d chore(web): reset UI scaffold for mexion rewrite
-ddd7f57 chore: v2 codex prompt + ignore local refs
-64bdd98 chore: final pass
-133040b chore: production bundle
-f99c015 docs: readme + polish
-f854bad feat: audit logs
-b387fca feat: relay routes
-63da67f feat: tokens & quota
-40fb506 feat: subscription converter
-59a91e9 feat: admin auth
-aad5359 feat(web): vite + tailwind theme tokens
-2be260b feat(api): hono skeleton + sqlite
-9b94a11 feat(shared): zod schemas
-f190e26 chore: scaffold workspace
-```
+- Demo subscription activation does not integrate a payment provider.
+- Gateway currently aggregates upstream responses before returning; protocol routes are compatible, but token-level streaming metrics can be enhanced later.
