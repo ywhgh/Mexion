@@ -93,6 +93,11 @@ export function createApp(options: CreateAppOptions = {}): Hono<AppBindings> {
     }),
   );
 
+  app.get("/admin-login/*", (c) => c.json({ ok: false, error: { code: "NOT_FOUND", message: "No such plate" } }, 404));
+  app.get("/admin-login", (c) => c.json({ ok: false, error: { code: "NOT_FOUND", message: "No such plate" } }, 404));
+  app.get("/admin/*", (c) => c.json({ ok: false, error: { code: "NOT_FOUND", message: "No such plate" } }, 404));
+  app.get("/admin", (c) => c.json({ ok: false, error: { code: "NOT_FOUND", message: "No such plate" } }, 404));
+
   if (fs.existsSync(webDistAbsolute())) {
     const root = webDistRoot();
     const staticAssets = serveStatic<AppBindings>({ root });
