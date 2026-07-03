@@ -589,10 +589,10 @@
     user.username = source.display_name || source.username || '';
     user.display_name = source.display_name || source.username || user.username;
     user.balance = window.MexionQuota.getUserBalance(source);
-    user.auth_role = source.role === 100 ? 'admin' : 'user';
-    user.auth_status = source.status === 1
+    user.auth_role = source.role === 100 || source.role === 'admin' ? 'admin' : 'user';
+    user.auth_status = source.status === 1 || source.status === 'active'
       ? 'active'
-      : (source.status === 'active' ? 'active' : 'disabled');
+      : 'disabled';
     user.group = source.group || 'gpt-codex';
     user.aff_code = source.aff_code || '';
     user.quota = source.quota || 0;

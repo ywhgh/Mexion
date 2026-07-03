@@ -298,7 +298,11 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
     }
     return window.MexionAuth.login(accountValue, pwdV.value, !!(rememberInput && rememberInput.checked));
   }).then(function(user) {
-    try { localStorage.setItem('mexion_user_role', user && user.role === 'admin' ? 'admin' : 'user'); } catch (e) {}
+    try {
+      var store = rememberInput && rememberInput.checked ? localStorage : sessionStorage;
+      if (user && user.id) store.setItem('mexion_user_id', String(user.id));
+      if (user && user.role) localStorage.setItem('mexion_user_role', user.role === 'admin' ? 'admin' : 'user');
+    } catch (e) {}
     setTimeout(function() { window.location.href = '/dashboard/'; }, 720);
   }).catch(function(err) {
     resetBtn();
