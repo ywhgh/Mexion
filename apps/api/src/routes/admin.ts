@@ -10,6 +10,7 @@ import {
   deleteChannel,
   deleteGroup,
   deleteModelAlias,
+  fetchUpstreamModels,
   listChannels,
   listGroups,
   listModelAliases,
@@ -39,7 +40,14 @@ const channelCreateSchema = z.object({
   groupId: z.number().int().positive().nullable().optional(),
   priority: z.number().int().optional(),
 });
+
 const channelUpdateSchema = channelCreateSchema.partial().extend({ status: channelStatusSchema.optional() });
+const fetchModelsSchema = z.object({
+  baseUrl: z.string().trim().min(1),
+  apiKey: z.string().min(1),
+  provider: providerSchema.optional(),
+});
+
 
 const aliasCreateSchema = z.object({
   sourceModel: z.string().trim().min(1),
@@ -55,6 +63,11 @@ const userUpdateSchema = z.object({
 adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/channels", (c) => c.json({ ok: true, data: { channels: listChannels(c.get("db")) } }));
+adminRoutes.post("/channels/fetch-models", async (c) => {
+  const input = fetchModelsSchema.parse(await c.req.json());
+  const result = await fetchUpstreamModels(c.get("db"), { baseUrl: input.baseUrl, apiKey: input.apiKey, provider: input.provider });
+  return c.json({ ok: true, data: result });
+});
 adminRoutes.post("/channels", async (c) => c.json({ ok: true, data: { channel: createChannel(c.get("db"), channelCreateSchema.parse(await c.req.json())) } }, 201));
 adminRoutes.patch("/channels/:id", async (c) => {
   const { id } = idParamSchema.parse(c.req.param());
@@ -79,7 +92,9 @@ adminRoutes.delete("/groups/:id", (c) => {
 });
 
 adminRoutes.get("/model-aliases", (c) => c.json({ ok: true, data: { aliases: listModelAliases(c.get("db")) } }));
+
 adminRoutes.post("/model-aliases", async (c) => c.json({ ok: true, data: { alias: createModelAlias(c.get("db"), aliasCreateSchema.parse(await c.req.json())) } }, 201));
+
 adminRoutes.delete("/model-aliases/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
   deleteModelAlias(c.get("db"), id);

@@ -252,6 +252,110 @@ export function listChannels(db: DbClient): ChannelRecord[] {
   });
 }
 
+
+
+export type FetchModelsInput = {
+  baseUrl: string;
+  apiKey: string;
+  provider?: 'openai' | 'anthropic' | 'gemini' | 'azure' | 'custom' | undefined;
+};
+
+export type FetchModelsResult = {
+  provider: string;
+  baseUrl: string;
+  endpoint: string;
+  models: string[];
+  rawCount: number;
+};
+
+function joinUrl(base: string, path: string): string {
+  const trimmedBase = base.replace(/\/$/, '');
+  const trimmedPath = path.replace(/^\//, '');
+  return trimmedBase + '/' + trimmedPath;
+}
+
+function trimModelId(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+}
+
+function uniqSorted(list: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of list) {
+    if (!item || seen.has(item)) continue;
+    seen.add(item);
+    out.push(item);
+  }
+  out.sort();
+  return out;
+}
+
+export async function fetchUpstreamModels(_db: DbClient, input: FetchModelsInput): Promise<FetchModelsResult> {
+  const provider = input.provider ?? 'openai';
+  const endpoint = provider === 'anthropic'
+    ? joinUrl(input.baseUrl, 'v1/models')
+    : provider === 'gemini'
+      ? joinUrl(input.baseUrl, 'v1beta/models')
+      : provider === 'azure'
+        ? joinUrl(input.baseUrl, 'openai/deployments')
+        : joinUrl(input.baseUrl, 'v1/models');
+  const { safeFetch } = await import('../lib/safe-http.js');
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  const apiKey = input.apiKey ?? '';
+  if (provider === 'anthropic') {
+    if (apiKey) headers['x-api-key'] = apiKey;
+    headers['anthropic-version'] = '2023-06-01';
+  } else if (provider === 'gemini') {
+    if (apiKey) headers['x-goog-api-key'] = apiKey;
+  } else {
+    if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+  }
+  const response = await safeFetch(endpoint, {
+    method: 'GET',
+    headers,
+    timeoutMs: 15_000,
+    firstByteTimeoutMs: 10_000,
+  });
+  const text = await response.text();
+  let rawList: string[] = [];
+  try {
+    const json = JSON.parse(text);
+    if (provider === 'gemini') {
+      if (Array.isArray(json?.models)) {
+        rawList = json.models.map(function (m: { name?: string; id?: string }) { return trimModelId(m.name || m.id); }).filter(Boolean);
+        rawList = rawList.map(function (name) { return name.replace(/^models\//, ''); });
+      }
+    } else if (provider === 'azure') {
+      if (Array.isArray(json?.value)) rawList = json.value.map(function (m: { id?: string; name?: string }) { return trimModelId(m.id || m.name); });
+      else if (Array.isArray(json?.data)) rawList = json.data.map(function (m: { id?: string; name?: string }) { return trimModelId(m.id || m.name); });
+    } else if (Array.isArray(json?.data)) {
+      rawList = json.data.map(function (m: { id?: string; name?: string; model?: string }) { return trimModelId(m.id || m.name || m.model); });
+    } else if (Array.isArray(json?.models)) {
+      rawList = json.models.map(function (m: { id?: string; name?: string }) { return trimModelId(m.id || m.name); });
+    } else if (Array.isArray(json)) {
+      rawList = json.map(function (m: unknown) {
+        if (typeof m === 'string') return trimModelId(m);
+        if (m && typeof m === 'object') {
+          const model = m as { id?: unknown; name?: unknown };
+          return trimModelId(model.id || model.name);
+        }
+        return '';
+      });
+    }
+  } catch {
+    rawList = [];
+  }
+  rawList = rawList.filter(Boolean);
+  return {
+    provider,
+    baseUrl: input.baseUrl,
+    endpoint,
+    models: uniqSorted(rawList),
+    rawCount: rawList.length,
+  };
+}
+
 export function updateChannel(db: DbClient, id: number, input: UpdateChannelInput): ChannelRecord {
   const current = getChannel(db, id);
   const next = {
