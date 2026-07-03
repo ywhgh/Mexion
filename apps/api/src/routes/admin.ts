@@ -16,6 +16,7 @@ import {
   updateChannel,
   updateGroup,
 } from "../services/channels.js";
+import { adminUpdateUser, listAllUsers } from "../services/users.js";
 
 export const adminRoutes = new Hono<AppBindings>();
 
@@ -44,6 +45,11 @@ const aliasCreateSchema = z.object({
   sourceModel: z.string().trim().min(1),
   targetModel: z.string().trim().min(1),
   channelId: z.number().int().positive().nullable().optional(),
+});
+const userUpdateSchema = z.object({
+  status: z.enum(["active", "banned"]).optional(),
+  balance: z.number().optional(),
+  role: z.enum(["user", "admin"]).optional(),
 });
 
 adminRoutes.use("*", requireAdmin);
@@ -78,4 +84,11 @@ adminRoutes.delete("/model-aliases/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
   deleteModelAlias(c.get("db"), id);
   return c.json({ ok: true, data: { deleted: true } });
+});
+
+adminRoutes.get("/users", (c) => c.json({ ok: true, data: { users: listAllUsers(c.get("db")) } }));
+adminRoutes.patch("/users/:id", async (c) => {
+  const { id } = idParamSchema.parse(c.req.param());
+  const user = adminUpdateUser(c.get("db"), id, userUpdateSchema.parse(await c.req.json()), c.get("admin").id);
+  return c.json({ ok: true, data: { user } });
 });

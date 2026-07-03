@@ -256,4 +256,42 @@ export function updateUserSetting(
   return getUserSetting(db, userId);
 }
 
+export function listAllUsers(db: DbClient): UserPublic[] {
+  const rows = db.sqlite
+    .prepare(
+      `SELECT id, username, email, display_name AS displayName, balance, quota_limit AS quotaLimit,
+        quota_used AS quotaUsed, role, status, checkin_streak AS checkinStreak,
+        last_checkin_at AS lastCheckinAt, created_at AS createdAt, updated_at AS updatedAt
+       FROM users ORDER BY created_at DESC`,
+    )
+    .all();
+  return rows.flatMap((row) => {
+    const user = rowToUserPublic(row);
+    return user ? [user] : [];
+  });
+}
+
+export type AdminUpdateUserInput = {
+  status?: "active" | "banned" | undefined;
+  balance?: number | undefined;
+  role?: "user" | "admin" | undefined;
+};
+
+export function adminUpdateUser(db: DbClient, id: number, input: AdminUpdateUserInput, currentAdminId?: number): UserPublic {
+  const current = getUserById(db, id);
+  if (!current) throw new HTTPException(404, { message: "User not found" });
+  if (input.role !== undefined && currentAdminId === id) throw new HTTPException(400, { message: "Cannot change your own role" });
+  const next = {
+    status: input.status ?? current.status,
+    balance: input.balance ?? current.balance,
+    role: input.role ?? current.role,
+  };
+  db.sqlite
+    .prepare("UPDATE users SET status = ?, balance = ?, role = ?, updated_at = ? WHERE id = ?")
+    .run(next.status, next.balance, next.role, new Date().toISOString(), id);
+  const updated = getUserById(db, id);
+  if (!updated) throw new HTTPException(500, { message: "User update failed" });
+  return updated;
+}
+
 
