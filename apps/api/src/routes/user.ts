@@ -105,26 +105,27 @@ userRoutes.post("/logout", (c) => {
 userRoutes.get("/self", async (c, next) => {
   const admin = await adminFromCookie(c);
   if (admin) {
-    return c.json({
-      ok: true,
-      data: {
-        id: admin.id,
-        username: admin.username,
-        email: "",
-        displayName: admin.username,
-        display_name: admin.username,
-        balance: 0,
-        quota: 0,
-        used_quota: 0,
-        role: "admin",
-        status: "active",
-        createdAt: admin.createdAt,
-        updatedAt: admin.createdAt,
-      },
-    });
+    const user = {
+      id: admin.id,
+      username: admin.username,
+      email: "",
+      displayName: admin.username,
+      display_name: admin.username,
+      balance: 0,
+      quota: 0,
+      used_quota: 0,
+      role: "admin",
+      status: "active",
+      createdAt: admin.createdAt,
+      updatedAt: admin.createdAt,
+    };
+    return c.json({ ok: true, data: { ...user, user } });
   }
   await next();
-}, requireUser, (c) => c.json({ ok: true, data: c.get("user") }));
+}, requireUser, (c) => {
+  const user = c.get("user");
+  return c.json({ ok: true, data: { ...user, user } });
+});
 userRoutes.post("/checkin", requireUser, (c) => c.json({ ok: true, data: dailyCheckin(c.get("db"), c.get("user").id) }));
 userRoutes.get("/setting", requireUser, (c) => c.json({ ok: true, data: getUserSetting(c.get("db"), c.get("user").id) }));
 userRoutes.patch("/setting", requireUser, async (c) => {
