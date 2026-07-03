@@ -297,8 +297,9 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
       throw new Error(MexionI18n.t('form.error.generic'));
     }
     return window.MexionAuth.login(accountValue, pwdV.value, !!(rememberInput && rememberInput.checked));
-  }).then(function() {
-    setTimeout(function() { window.location.href = '/dashboard'; }, 720);
+  }).then(function(user) {
+    try { localStorage.setItem('mexion_user_role', user && user.role === 'admin' ? 'admin' : 'user'); } catch (e) {}
+    setTimeout(function() { window.location.href = '/dashboard/'; }, 720);
   }).catch(function(err) {
     resetBtn();
     // Show error as a temporary banner above the form

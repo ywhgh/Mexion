@@ -708,7 +708,7 @@
         id: loginData.id,
         email: email,
         username: loginData.display_name || loginData.username || email.split('@')[0],
-        role: loginData.role === 100 ? 'admin' : 'user',
+        role: loginData.role === 100 || loginData.role === 'admin' ? 'admin' : 'user',
         balance: 0,
         status: loginData.status === 1 ? 'active' : 'disabled'
       };
@@ -1018,4 +1018,42 @@
   else init();
 
   window.MexionTheme = { get: effective, set: commit, toggle: toggle };
+})();
+
+/* Role persistence bridge for unified user/admin login. Appended without
+   changing the auth storage contract: role is non-sensitive UI state used
+   only for nav visibility and admin page guards. */
+(function () {
+  'use strict';
+  function clearRole() {
+    try { localStorage.removeItem('mexion_user_role'); } catch (e) {}
+    try { sessionStorage.removeItem('mexion_user_role'); } catch (e) {}
+  }
+  function storeRoleFromUser(user) {
+    if (!user || !user.role) return;
+    try { localStorage.setItem('mexion_user_role', user.role === 'admin' ? 'admin' : 'user'); } catch (e) {}
+  }
+  function patch() {
+    if (!window.MexionAuth || window.MexionAuth.__roleBridgePatched) return;
+    var auth = window.MexionAuth;
+    var originalSetSession = auth.setSession;
+    var originalClearSession = auth.clearSession;
+    var originalLogout = auth.logout;
+    auth.setSession = function (token, user, refreshToken, rememberMe) {
+      var result = originalSetSession.apply(this, arguments);
+      storeRoleFromUser(user);
+      return result;
+    };
+    auth.clearSession = function () {
+      clearRole();
+      return originalClearSession.apply(this, arguments);
+    };
+    auth.logout = function () {
+      clearRole();
+      return originalLogout.apply(this, arguments);
+    };
+    window.MexionAuth.__roleBridgePatched = true;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patch);
+  else patch();
 })();

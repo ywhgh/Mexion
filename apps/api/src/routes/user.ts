@@ -3,7 +3,9 @@ import { getCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { requireUser } from "../middleware/require-user.js";
+import { adminFromCookie, findAdminByUsername, issueSession, publicAdmin } from "../services/auth.js";
 import { dailyCheckin, getUserSetting, loginUser, logoutUser, registerUser, updateUserSetting } from "../services/users.js";
+import bcrypt from "bcryptjs";
 
 export const userRoutes = new Hono<AppBindings>();
 
@@ -66,9 +68,31 @@ userRoutes.post("/register", async (c) => {
 userRoutes.post("/login", async (c) => {
   const input = loginSchema.parse(await c.req.json());
   const emailOrUsername = input.emailOrUsername || input.email || input.username || "";
-  const { user, sessionToken } = await loginUser(c.get("db"), { emailOrUsername, password: input.password });
-  setUserCookie(c, sessionToken);
-  return c.json({ ok: true, data: { ...user, user, sessionToken } });
+  try {
+    const { user, sessionToken } = await loginUser(c.get("db"), { emailOrUsername, password: input.password });
+    setUserCookie(c, sessionToken);
+    return c.json({ ok: true, data: { ...user, user, sessionToken } });
+  } catch (error) {
+    const admin = findAdminByUsername(c.get("db"), emailOrUsername);
+    if (!admin || !(await bcrypt.compare(input.password, admin.passwordHash))) throw error;
+    const safeAdmin = publicAdmin(admin);
+    await issueSession(c, safeAdmin);
+    const user = {
+      id: safeAdmin.id,
+      username: safeAdmin.username,
+      email: "",
+      displayName: safeAdmin.username,
+      display_name: safeAdmin.username,
+      balance: 0,
+      quota: 0,
+      used_quota: 0,
+      role: "admin",
+      status: "active",
+      createdAt: safeAdmin.createdAt,
+      updatedAt: safeAdmin.createdAt,
+    };
+    return c.json({ ok: true, data: { ...user, user, sessionToken: "" } });
+  }
 });
 
 userRoutes.post("/logout", (c) => {
@@ -78,7 +102,29 @@ userRoutes.post("/logout", (c) => {
   return c.json({ ok: true, data: { signedOut: true } });
 });
 
-userRoutes.get("/self", requireUser, (c) => c.json({ ok: true, data: c.get("user") }));
+userRoutes.get("/self", async (c, next) => {
+  const admin = await adminFromCookie(c);
+  if (admin) {
+    return c.json({
+      ok: true,
+      data: {
+        id: admin.id,
+        username: admin.username,
+        email: "",
+        displayName: admin.username,
+        display_name: admin.username,
+        balance: 0,
+        quota: 0,
+        used_quota: 0,
+        role: "admin",
+        status: "active",
+        createdAt: admin.createdAt,
+        updatedAt: admin.createdAt,
+      },
+    });
+  }
+  await next();
+}, requireUser, (c) => c.json({ ok: true, data: c.get("user") }));
 userRoutes.post("/checkin", requireUser, (c) => c.json({ ok: true, data: dailyCheckin(c.get("db"), c.get("user").id) }));
 userRoutes.get("/setting", requireUser, (c) => c.json({ ok: true, data: getUserSetting(c.get("db"), c.get("user").id) }));
 userRoutes.patch("/setting", requireUser, async (c) => {
