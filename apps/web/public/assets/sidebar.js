@@ -19,11 +19,17 @@
       { key: 'nav.docs', en: 'Docs', zh: '文档', href: 'https://mexion-doc.pages.dev/', external: true, icon: '<path d="M3.5 2.5h5.8L12.5 5.7v7.8h-9v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9.3 2.5v3.3h3.2M5.7 8.4h4.6M5.7 10.6h3.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
       { key: 'nav.shop', en: 'Buy Credits', zh: '购买兑换码', href: '/billing', icon: '<path d="M3 4.5h10l-1.2 5H4.2L3 4.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M3 4.5L2.3 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="5.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="12" r="1" stroke="currentColor" stroke-width="1.2"/>' },
     ]},
+    { section: 'side.admin', adminOnly: true, items: [
+      { key: 'nav.channels', en: 'Channels', zh: '渠道管理', href: '/channels/', adminOnly: true, icon: '<path d="M2 5h12M2 8h12M2 11h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
+      { key: 'nav.groups', en: 'Groups', zh: '分组管理', href: '/groups/', adminOnly: true, icon: '<rect x="2" y="3" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="3" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/>' },
+      { key: 'nav.aliases', en: 'Model Aliases', zh: '模型别名', href: '/model-aliases/', adminOnly: true, icon: '<path d="M2 5h4M8 5h6M2 11h6M10 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
+      { key: 'nav.admin-users', en: 'Users', zh: '用户管理', href: '/admin-users/', adminOnly: true, icon: '<circle cx="6" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c.5-2 2-3 4-3h4c2 0 3.5 1 4 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>' },
+    ]},
   ];
 
   var SECTION_I18N = {
-    en: { 'side.workspace': 'Workspace', 'side.account': 'Account', 'nav.section.other': 'Other', 'side.foot.title': 'All systems normal', 'side.foot.sub': '17/17 · 142 ms avg', 'side.badge.low': 'low' },
-    zh: { 'side.workspace': '工作区', 'side.account': '账户', 'nav.section.other': '其他', 'side.foot.title': '全部正常', 'side.foot.sub': '17/17 · 142 ms 均值', 'side.badge.low': '偏低' },
+    en: { 'side.workspace': 'Workspace', 'side.account': 'Account', 'nav.section.other': 'Other', 'side.admin': 'Admin', 'side.foot.title': 'All systems normal', 'side.foot.sub': '17/17 · 142 ms avg', 'side.badge.low': 'low' },
+    zh: { 'side.workspace': '工作区', 'side.account': '账户', 'nav.section.other': '其他', 'side.admin': '管理', 'side.foot.title': '全部正常', 'side.foot.sub': '17/17 · 142 ms 均值', 'side.badge.low': '偏低' },
   };
 
   function currentPage() {
@@ -43,15 +49,20 @@
   }
 
   function buildNav() {
+    function isAdmin() {
+      try { return localStorage.getItem('mexion_user_role') === 'admin'; } catch(e) { return false; }
+    }
     var l = lang();
     var page = currentPage();
     var html = '';
     var staggerIdx = 0;
     NAV.forEach(function (sec) {
+      if (sec.adminOnly && !isAdmin()) return;
       var secLabel = (SECTION_I18N[l] || SECTION_I18N.en)[sec.section] || sec.section;
       html += '<div class="nav-section">' + secLabel + '</div>';
       html += '<ul class="nav-list">';
       sec.items.forEach(function (item) {
+        if (item.adminOnly && !isAdmin()) return;
         var normPage = page.replace(/\/+$/, '') || '/';
         var normHref = item.href.replace(/\/+$/, '') || '/';
         var active = (normHref === normPage) ? ' aria-current="page"' : '';
@@ -588,6 +599,13 @@
         var cb = document.querySelector('.side__collapse');
         if (cb) cb.setAttribute('aria-expanded', rail ? 'false' : 'true');
       });
+    }
+
+    if (window.MexionAuth && typeof window.MexionAuth.onChange === 'function' && !window.__mexionSidebarRoleWired) {
+      window.MexionAuth.onChange(function () {
+        if (window.MexionSidebar && typeof window.MexionSidebar.rebuild === 'function') window.MexionSidebar.rebuild();
+      });
+      window.__mexionSidebarRoleWired = true;
     }
   }
 
