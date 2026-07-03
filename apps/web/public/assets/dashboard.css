@@ -1300,3 +1300,24 @@
 }
 
 :root[data-theme="dark"] .chart-tip__date { color: rgba(0,0,0,0.55); }
+
+.admin-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--border);
+}
+.admin-quick-item {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 16px 18px;
+  background: var(--surface); text-decoration: none; color: inherit;
+  transition: background .12s;
+}
+.admin-quick-item:hover { background: var(--bg-2); }
+.admin-quick-label {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; font-family: var(--f-mono);
+}
+.admin-quick-count {
+  font-size: 28px; font-family: var(--f-display); color: var(--ink);
+}

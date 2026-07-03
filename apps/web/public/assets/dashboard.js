@@ -1686,3 +1686,35 @@ if (document.readyState === 'loading') {
 } else {
   initDashboardData();
 }
+
+(function () {
+  try {
+    var role = localStorage.getItem('mexion_user_role');
+    if (role !== 'admin') return;
+    var sec = document.getElementById('adminQuickSection');
+    if (sec) sec.hidden = false;
+    var grid = document.getElementById('adminQuickGrid');
+    var links = [
+      { href: '/channels/', label: '渠道管理', api: '/api/admin/channels', arrKey: 'channels' },
+      { href: '/groups/', label: '分组管理', api: '/api/admin/groups', arrKey: 'groups' },
+      { href: '/model-aliases/', label: '模型别名', api: '/api/admin/model-aliases', arrKey: 'aliases' },
+      { href: '/admin-users/', label: '用户管理', api: '/api/admin/users', arrKey: 'users' },
+    ];
+    links.forEach(function(item, i) {
+      var a = document.createElement('a');
+      a.className = 'admin-quick-item';
+      a.href = item.href;
+      var countId = 'aqc-' + i;
+      a.innerHTML = '<span class="admin-quick-label">' + item.label + '</span>'
+                  + '<span class="admin-quick-count" id="' + countId + '">—</span>';
+      if (grid) grid.appendChild(a);
+      fetch(item.api, { credentials: 'same-origin' }).then(function(res) { return res.json(); }).then(function(r) {
+        var el = document.getElementById(countId);
+        if (el && r && r.ok && r.data) {
+          var arr = r.data[item.arrKey] || [];
+          el.textContent = arr.length;
+        }
+      }).catch(function () {});
+    });
+  } catch (e) {}
+})();
