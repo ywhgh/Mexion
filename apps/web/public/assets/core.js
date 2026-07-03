@@ -589,7 +589,8 @@
     user.username = source.display_name || source.username || '';
     user.display_name = source.display_name || source.username || user.username;
     user.balance = window.MexionQuota.getUserBalance(source);
-    user.auth_role = source.role === 100 || source.role === 'admin' ? 'admin' : 'user';
+    user.role = source.role === 100 || source.role === 'admin' ? 'admin' : 'user';
+    user.auth_role = user.role;
     user.auth_status = source.status === 1 || source.status === 'active'
       ? 'active'
       : 'disabled';
