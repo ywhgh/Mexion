@@ -55,4 +55,39 @@ describe("admin channel probe", () => {
     expect(channel?.errorCount).toBe(0);
     expect(typeof channel?.latencyMs).toBe("number");
   });
+
+  it("runs an upstream connectivity test for a channel", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: "chatcmpl_test" }), { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const app = createApp({ dbPath: ":memory:" });
+    const cookie = await adminCookie(app);
+    const create = await app.request("/api/admin/channels", {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie },
+      body: JSON.stringify({
+        name: "OpenAI test",
+        provider: "openai",
+        baseUrl: "https://api.openai.com/v1",
+        secretValue: "sk-test",
+        modelList: ["gpt-4o-mini"],
+      }),
+    });
+    const created = (await create.json()) as { data: { channel: { id: number } } };
+
+    const test = await app.request(`/api/admin/channels/${created.data.channel.id}/test`, {
+      method: "POST",
+      headers: { cookie },
+    });
+
+    expect(test.status).toBe(200);
+    await expect(test.json()).resolves.toMatchObject({
+      ok: true,
+      data: { ok: true, status: 200 },
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.openai.com/v1/chat/completions",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
 });

@@ -14,6 +14,7 @@ import {
   deleteModelAlias,
   fetchUpstreamModels,
   getChannelById,
+  getChannelSecret,
   listChannels,
   listGroups,
   listModelAliases,
@@ -91,6 +92,37 @@ function channelModelsEndpoint(channel: { provider: string; baseUrl: string }): 
   return base.endsWith("/v1") ? appendPath(base, "models") : appendPath(base, "v1/models");
 }
 
+function channelChatEndpoint(channel: { provider: string; baseUrl: string }): string {
+  const base = stripTrailingSlashes(channel.baseUrl);
+  if (channel.provider === "anthropic") return base.endsWith("/v1") ? appendPath(base, "messages") : appendPath(base, "v1/messages");
+  if (channel.provider === "azure") {
+    if (base.includes("/chat/completions")) return base;
+    if (base.includes("/openai/deployments")) return appendPath(base, "chat/completions?api-version=2024-06-01");
+    return appendPath(base, "openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-06-01");
+  }
+  return base.endsWith("/v1") ? appendPath(base, "chat/completions") : appendPath(base, "v1/chat/completions");
+}
+
+function channelAuthHeaders(provider: string, secret: string): Record<string, string> {
+  const headers: Record<string, string> = { Accept: "application/json", "Content-Type": "application/json" };
+  if (provider === "anthropic") {
+    headers["x-api-key"] = secret;
+    headers["anthropic-version"] = "2023-06-01";
+  } else if (provider === "gemini") {
+    headers["x-goog-api-key"] = secret;
+  } else if (provider === "azure") {
+    headers["api-key"] = secret;
+  } else {
+    headers.Authorization = `Bearer ${secret}`;
+  }
+  return headers;
+}
+
+function channelTestBody(provider: string): unknown {
+  if (provider === "anthropic") return { model: "claude-3-haiku-20240307", messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }], max_tokens: 5 };
+  return { model: "gpt-4o-mini", messages: [{ role: "user", content: "hi" }], max_tokens: 5 };
+}
+
 adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/channels", (c) => c.json({ ok: true, data: { channels: listChannels(c.get("db")) } }));
@@ -122,6 +154,43 @@ adminRoutes.post("/channels/:id/probe", async (c) => {
       .prepare("UPDATE channels SET latency_ms = NULL, last_checked_at = ?, error_count = error_count + 1, status = 'error' WHERE id = ?")
       .run(now, id);
     return c.json({ ok: true, data: { latencyMs: null, status: "error" } });
+  }
+});
+adminRoutes.post("/channels/:id/test", async (c) => {
+  const { id } = idParamSchema.parse(c.req.param());
+  const db = c.get("db");
+  const channel = getChannelById(db, id);
+  const secret = getChannelSecret(db, channel.id);
+  const started = performance.now();
+  const readBody = async (response: Response): Promise<string> => {
+    try {
+      return (await response.text()).slice(0, 500);
+    } catch {
+      return "";
+    }
+  };
+  try {
+    const isModelProbe = channel.provider === "gemini" || channel.provider === "custom";
+    const init: { method: string; headers: Record<string, string>; timeoutMs: number; firstByteTimeoutMs: number; body?: string } = {
+      method: isModelProbe ? "GET" : "POST",
+      headers: channelAuthHeaders(channel.provider, secret),
+      timeoutMs: 15_000,
+      firstByteTimeoutMs: 15_000,
+    };
+    if (!isModelProbe) init.body = JSON.stringify(channelTestBody(channel.provider));
+    const response = await safeFetch(isModelProbe ? channelModelsEndpoint(channel) : channelChatEndpoint(channel), init);
+    const durationMs = Math.round(performance.now() - started);
+    const body = await readBody(response);
+    if (response.ok) {
+      db.sqlite.prepare("UPDATE channels SET latency_ms = ?, last_checked_at = ?, error_count = 0, status = 'active' WHERE id = ?").run(durationMs, new Date().toISOString(), id);
+    } else {
+      db.sqlite.prepare("UPDATE channels SET last_checked_at = ?, error_count = error_count + 1, status = 'error' WHERE id = ?").run(new Date().toISOString(), id);
+    }
+    return c.json({ ok: true, data: { status: response.status, ok: response.ok, durationMs, body } });
+  } catch (error) {
+    const durationMs = Math.round(performance.now() - started);
+    db.sqlite.prepare("UPDATE channels SET last_checked_at = ?, error_count = error_count + 1, status = 'error' WHERE id = ?").run(new Date().toISOString(), id);
+    return c.json({ ok: true, data: { status: 0, ok: false, durationMs, body: "", message: error instanceof Error ? error.message : "Connection failed" } });
   }
 });
 adminRoutes.patch("/channels/:id", async (c) => {

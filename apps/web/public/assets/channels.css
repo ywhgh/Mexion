@@ -128,3 +128,26 @@
   .channels-row{grid-template-columns:28px 10px minmax(0,1fr) 28px}
   .channels-row>.channels-mono,.channels-row>.channels-muted,.channels-row>.channels-status{display:none}
 }
+
+/* M7 — inline connectivity test result */
+.channel-test-result {
+  margin: 0 18px 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--muted);
+  font: 600 12px/1.3 var(--f-mono);
+}
+.channel-test-result.is-ok {
+  border-color: var(--green-soft);
+  background: var(--green-soft);
+  color: var(--green);
+}
+.channel-test-result.is-err {
+  border-color: var(--verm-soft);
+  background: var(--verm-soft);
+  color: var(--verm);
+}
+.channel-test-result.is-idle {
+  color: var(--mute-2);
+}

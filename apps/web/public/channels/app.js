@@ -6,6 +6,7 @@
   var selected = null;
   var filter = 'all';
   var checkedIds = new Set();
+  var testResults = Object.create(null);
 
   function $(id) { return document.getElementById(id); }
   function esc(value) {
@@ -88,6 +89,14 @@
     var n = Number(value || 0);
     if (!n) return '<span class="channels-muted">—</span>';
     return '<span class="channels-mono" style="color:var(--verm)">' + n + ' 次错误</span>';
+  }
+  function testResultHtml(channel) {
+    if (!channel) return '';
+    var result = testResults[channel.id];
+    if (!result) return '<div class="channel-test-result is-idle">连通测试尚未执行</div>';
+    if (result.loading) return '<div class="channel-test-result">测试中…</div>';
+    if (result.ok) return '<div class="channel-test-result is-ok">✓ HTTP ' + esc(result.status) + ' · ' + esc(result.durationMs) + 'ms</div>';
+    return '<div class="channel-test-result is-err">✗ 连接失败: ' + esc(result.message || ('HTTP ' + (result.status || 0))) + '</div>';
   }
   function visibleChannels() {
     var search = (($('channelSearch') && $('channelSearch').value) || '').toLowerCase();
@@ -180,9 +189,11 @@
         '<div><span>近 24h 调用</span><b>' + Number(selected.requestsLast24h || 0).toLocaleString() + '</b></div>' +
       '</div>' +
       '<div class="kd-models"><div class="kd-models-label">支持模型</div><div class="kd-models-list">' + modelHtml + '</div></div>' +
+      testResultHtml(selected) +
       '<div class="channel-actions">' +
         '<button class="btn-secondary" data-act="edit" type="button">编辑</button>' +
         '<button class="btn-secondary" data-act="probe" type="button">测速</button>' +
+        '<button class="btn-secondary" data-act="test" type="button">连通测试</button>' +
         '<button class="btn-secondary" data-act="toggle" type="button">' + (selected.status === 'active' ? '停用' : '启用') + '</button>' +
         '<button class="btn-secondary channels-btn-danger" data-act="delete" type="button">删除</button>' +
       '</div>';
@@ -429,6 +440,23 @@
           return load();
         }).catch(function(error) { toast(error.message || '测速失败', 'error'); })
           .finally(function() { button.disabled = false; button.textContent = '测速'; });
+        return;
+      }
+      if (act === 'test') {
+        testResults[selected.id] = { loading: true };
+        renderDetail();
+        api('/admin/channels/' + selected.id + '/test', { method: 'POST' }).then(function(result) {
+          testResults[selected.id] = {
+            ok: !!(result && result.ok),
+            status: result && result.status,
+            durationMs: result && result.durationMs,
+            message: result && (result.message || result.body)
+          };
+          renderDetail();
+        }).catch(function(error) {
+          testResults[selected.id] = { ok: false, status: 0, durationMs: 0, message: error.message || '连接失败' };
+          renderDetail();
+        });
       }
     });
   });
