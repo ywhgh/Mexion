@@ -62,6 +62,7 @@ export type UpdateChannelInput = {
   status?: ChannelStatus | undefined;
 };
 export type CreateModelAliasInput = { sourceModel: string; targetModel: string; channelId?: number | null | undefined };
+export type UpdateModelAliasInput = { enabled?: boolean | undefined; targetModel?: string | undefined };
 
 function parseProvider(value: unknown): Provider {
   if (value === "anthropic" || value === "gemini" || value === "azure" || value === "custom") return value;
@@ -507,6 +508,28 @@ export function listModelAliases(db: DbClient): ModelAliasRecord[] {
     const alias = rowToModelAlias(row);
     return alias ? [alias] : [];
   });
+}
+
+function getModelAlias(db: DbClient, id: number): ModelAliasRecord {
+  const alias = rowToModelAlias(
+    db.sqlite
+      .prepare("SELECT id, source_model AS sourceModel, target_model AS targetModel, channel_id AS channelId, enabled, created_at AS createdAt FROM model_aliases WHERE id = ?")
+      .get(id),
+  );
+  if (!alias) throw new HTTPException(404, { message: "Model alias not found" });
+  return alias;
+}
+
+export function updateModelAlias(db: DbClient, id: number, input: UpdateModelAliasInput): ModelAliasRecord {
+  const current = getModelAlias(db, id);
+  const targetModel = input.targetModel === undefined ? current.targetModel : input.targetModel.trim();
+  if (!targetModel) throw new HTTPException(400, { message: "Model alias target required" });
+  if (current.sourceModel === targetModel) throw new HTTPException(400, { message: "Model alias cannot target itself" });
+  if (input.targetModel !== undefined) assertAliasNoCycle(db, current.sourceModel, targetModel);
+  db.sqlite
+    .prepare("UPDATE model_aliases SET target_model = ?, enabled = ? WHERE id = ?")
+    .run(targetModel, input.enabled === undefined ? (current.enabled ? 1 : 0) : (input.enabled ? 1 : 0), id);
+  return getModelAlias(db, id);
 }
 
 export function deleteModelAlias(db: DbClient, id: number): void {

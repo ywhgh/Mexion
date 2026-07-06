@@ -4,7 +4,8 @@ import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { requireUser } from "../middleware/require-user.js";
 import { adminFromCookie, findAdminByUsername, issueSession, publicAdmin } from "../services/auth.js";
-import { dailyCheckin, getUserSetting, loginUser, logoutUser, registerUser, updateUserSetting } from "../services/users.js";
+import { listGroups } from "../services/channels.js";
+import { dailyCheckin, getSessionUser, getUserSetting, loginUser, logoutUser, registerUser, updateUserSetting } from "../services/users.js";
 import bcrypt from "bcryptjs";
 
 export const userRoutes = new Hono<AppBindings>();
@@ -131,4 +132,30 @@ userRoutes.get("/setting", requireUser, (c) => c.json({ ok: true, data: getUserS
 userRoutes.patch("/setting", requireUser, async (c) => {
   const input = settingsSchema.parse(await c.req.json());
   return c.json({ ok: true, data: updateUserSetting(c.get("db"), c.get("user").id, input) });
+});
+
+
+const LEVELS = [
+  { id: 1, name: "探索者", minQuota: 0 },
+  { id: 2, name: "建造者", minQuota: 100000 },
+  { id: 3, name: "先锋", minQuota: 1000000 },
+  { id: 4, name: "精英", minQuota: 10000000 },
+];
+
+userRoutes.get("/levels", (c) => {
+  const token = getCookie(c, "mexion_user_session") || "";
+  const user = token ? getSessionUser(c.get("db"), token) : null;
+  const quotaUsed = user?.quotaUsed ?? 0;
+  const currentLevel = LEVELS.reduce((current, level) => (quotaUsed >= level.minQuota ? level : current), LEVELS[0]);
+  return c.json({ ok: true, data: { levels: LEVELS, currentLevel, quotaUsed } });
+});
+
+userRoutes.get("/groups", requireUser, (c) => {
+  const groups = listGroups(c.get("db")).map((group) => ({
+    id: group.id,
+    name: group.name,
+    rateMultiplier: group.rateMultiplier,
+    isDefault: group.isDefault,
+  }));
+  return c.json({ ok: true, data: { groups } });
 });

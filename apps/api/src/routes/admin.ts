@@ -16,6 +16,7 @@ import {
   listModelAliases,
   updateChannel,
   updateGroup,
+  updateModelAlias,
 } from "../services/channels.js";
 import { adminUpdateUser, listAllUsers } from "../services/users.js";
 
@@ -53,6 +54,10 @@ const aliasCreateSchema = z.object({
   sourceModel: z.string().trim().min(1),
   targetModel: z.string().trim().min(1),
   channelId: z.number().int().positive().nullable().optional(),
+});
+const aliasUpdateSchema = z.object({
+  enabled: z.boolean().optional(),
+  targetModel: z.string().trim().min(1).optional(),
 });
 const userUpdateSchema = z.object({
   status: z.enum(["active", "banned"]).optional(),
@@ -94,6 +99,12 @@ adminRoutes.delete("/groups/:id", (c) => {
 adminRoutes.get("/model-aliases", (c) => c.json({ ok: true, data: { aliases: listModelAliases(c.get("db")) } }));
 
 adminRoutes.post("/model-aliases", async (c) => c.json({ ok: true, data: { alias: createModelAlias(c.get("db"), aliasCreateSchema.parse(await c.req.json())) } }, 201));
+
+adminRoutes.patch("/model-aliases/:id", async (c) => {
+  const { id } = idParamSchema.parse(c.req.param());
+  const alias = updateModelAlias(c.get("db"), id, aliasUpdateSchema.parse(await c.req.json()));
+  return c.json({ ok: true, data: { alias } });
+});
 
 adminRoutes.delete("/model-aliases/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
