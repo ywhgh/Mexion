@@ -603,9 +603,9 @@ function mapGroup(ag) {
   // 避免「订阅」单独出现被误解为"仅订阅可用"（GPT-Pro 等组实为余额 + 订阅二选一）。
   badges.push('bal');
   if (ag.subscription_type === 'subscription') badges.push('sub');
-  var ratio = Number(ag.rate_multiplier);
+  var ratio = Number(ag.rateMultiplier != null ? ag.rateMultiplier / 100 : ag.rate_multiplier);
   if (!Number.isFinite(ratio) || ratio <= 0) ratio = 1.0;
-  var displayProvider = ag.prov || platformToProv(ag.platform) || 'others';
+  var displayProvider = ag.prov || platformToProv(ag.provider || ag.platform) || 'others';
   var concreteProviders = uniqueProviders(ag.providers).filter(isConcreteProvider);
   if (!concreteProviders.length && isConcreteProvider(displayProvider) && displayProvider !== 'others') {
     concreteProviders = [displayProvider];
@@ -622,14 +622,14 @@ function mapGroup(ag) {
     inviteRatio: null,
     badges: badges,
     caps: scopeToCaps(ag.supported_model_scopes, ag.allow_image_generation),
-    accountCount: ag.account_count || 0
+    accountCount: ag.accountCount || ag.account_count || 0
   };
 }
 
 function updateHero() {}
 
 // 真实起价：$/1M = min(该组可用模型的 model_ratio × 2) × 分组倍率。
-// 数据源 /api/pricing（每模型 model_ratio + enable_groups），倍率用 /user/groups 已有的 g.ratio。
+// 数据源 /api/status/models（公开模型 + 渠道快照），倍率用 /user/groups 已有的 g.ratio。
 // 按次计费模型（model_price>0 / quota_type=1）不计入 $/1M 起价。
 function fmtPrice(v){
   if (v == null || !isFinite(v)) return '';
@@ -637,49 +637,41 @@ function fmtPrice(v){
   if (v < 1)    return '$' + v.toFixed(3);
   return '$' + v.toFixed(2);
 }
-// 全站模型定价数据（/api/pricing 一次拉全）：供「模型价格」视图展示每个模型在各分组的价格。
+// 全站模型快照数据（/api/status/models 一次拉全）：供「模型价格」视图展示每个模型在各分组的价格。
 var MODEL_PRICING = [];   // [{name, ratio, completion, cache, quotaType, modelPrice, groups:[slug...]}]
-var PRICING_ROWS = [];     // /api/pricing 原始行，便于用户邀请倍率加载后重算派生价格
+var PRICING_ROWS = [];     // /api/status/models 派生行，便于重算派生价格
 var PRICING_GROUP_RATIOS = {};
 var GROUP_RATIOS = {};    // {group: ratio}  权威分组倍率
-var USABLE_GROUPS = {};   // 当前用户可用分组（/api/pricing.usable_group）
+var USABLE_GROUPS = {};   // 当前用户可用分组（由 /user/groups 派生）
 // 二开：手动分区（管理端配置）。{sections:[{id,name,icon,order}], assign:{分组名:sectionId}}。手动优先于自动 provider。
 var SECTION_CONFIG = { sections: [], assign: {} };
 function loadSectionConfig(){
-  if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/section_config').then(function(d){
-    if (d && (Array.isArray(d.sections) || d.assign)) {
-      SECTION_CONFIG = { sections: d.sections || [], assign: d.assign || {} };
-    }
-  }).catch(function(){});
+  SECTION_CONFIG = { sections: [], assign: {} };
+  return Promise.resolve();
 }
 
 function attachGroupPrices(){
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/pricing').then(function(p){
-    // MexionHttp 解包到 json.data，故 p 是模型数组，group_ratio 被剥离。
-    // 分组倍率改从已加载的 GROUPS（/user/groups + /user/group-access，有效 .ratio）构建，键用分组名（= enable_groups 项）。
-    PRICING_ROWS = Array.isArray(p) ? p : ((p && (p.data || p.models)) || []);
-    PRICING_GROUP_RATIOS = {};
-    // 未来后端若直接下发 group_ratio（不解包），补充合并。
-    if (p && p.group_ratio) Object.keys(p.group_ratio).forEach(function(k){
-      PRICING_GROUP_RATIOS[k] = Number(p.group_ratio[k]);
+  return MexionHttp.get('/status/models').then(function(data){
+    var models = Array.isArray(data && data.models) ? data.models : [];
+    var channels = Array.isArray(data && data.channels) ? data.channels : [];
+    PRICING_ROWS = models.map(function(name){
+      var groupIds = [];
+      channels.forEach(function(ch){
+        if (Array.isArray(ch.modelList) && ch.modelList.indexOf(name) >= 0 && ch.groupId != null) {
+          var g = GROUPS.find(function(x){ return String(x.id) === String(ch.groupId); });
+          groupIds.push(g ? (g.slug || g.name) : String(ch.groupId));
+        }
+      });
+      if (!groupIds.length) groupIds = GROUPS.map(function(g){ return g.slug || g.name; });
+      return { model_name: name, model_ratio: 1, completion_ratio: 1, enable_groups: Array.from(new Set(groupIds)) };
     });
+    PRICING_GROUP_RATIOS = {};
     MODEL_PRICING = PRICING_ROWS.map(function(m){
-      return {
-        name: m.model_name || m.model || '',
-        ratio: Number(m.model_ratio),
-        completion: Number(m.completion_ratio) || 1,
-        cache: Number(m.cache_ratio) || 0,
-        quotaType: m.quota_type,
-        modelPrice: Number(m.model_price) || 0,
-        imgResPrice: (m.image_resolution_price && typeof m.image_resolution_price === 'object') ? m.image_resolution_price : null, // 二开：图片分辨率档价 {1k,2k,4k}
-        videoSecondPrice: (m.video_second_price != null && isFinite(Number(m.video_second_price))) ? Number(m.video_second_price) : null, // 二开：视频每秒价
-        groups: (m.enable_groups || m.enableGroups || []).slice()
-      };
+      return { name: m.model_name || m.model || '', ratio: Number(m.model_ratio) || 1, completion: Number(m.completion_ratio) || 1, cache: 0, quotaType: 0, modelPrice: 0, imgResPrice: null, videoSecondPrice: null, groups: (m.enable_groups || m.enableGroups || []).slice() };
     }).filter(function(m){ return m.name; });
     recomputeGroupPrices();
-  }).catch(function(){ /* 价格拉取失败不阻塞分组展示 */ });
+  }).catch(function(){ MODEL_PRICING = []; PRICING_ROWS = []; });
 }
 
 function recomputeGroupPrices(){
@@ -716,11 +708,8 @@ function recomputeGroupPrices(){
 // 二开：分组邀请解锁状态(分组名 -> {rule,invitees,topup_usd,unlocked,ratio,matched_tier,next_tier})
 var GROUP_ACCESS = {};
 function loadGroupAccess() {
-  if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/user/group-access').then(function(d){
-    GROUP_ACCESS = {};
-    ((d && d.groups) || []).forEach(function(x){ if (x && x.group) GROUP_ACCESS[x.group] = x; });
-  }).catch(function(){ GROUP_ACCESS = {}; });
+  GROUP_ACCESS = {};
+  return Promise.resolve();
 }
 function groupLock(g) {
   var acc = groupAccess(g);
@@ -857,31 +846,25 @@ function loadGroups() {
   }
   stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">加载中…</div>';
   MexionHttp.get('/user/groups').then(function(data) {
-    /* legacy-api returns {"slug": {desc, ratio}, ...} — convert to old format array */
     var items = [];
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-      Object.keys(data).forEach(function(slug) {
-        var g = data[slug];
-        var meta = GROUP_META[slug] || {};
-        var displayProvider = groupProvFromApi(slug, g);
-        items.push({
-          slug: slug,
-          id: meta.id || slug,
-          name: slug,
-          description: g.desc || '',
-          prov: displayProvider,
-          providers: groupProvidersFromApi(slug, g, displayProvider),
-          rate_multiplier: g.ratio != null ? g.ratio : 1,
-          // 优先用后端 /user/groups 下发的 sub/img/scopes（随渠道/模型自动推导，改分组名不失配）；
-          // 后端未下发时降级到 GROUP_META 硬编码，保证兼容。
-          subscription_type: (g.sub != null ? g.sub : meta.sub) ? 'subscription' : 'standard',
-          allow_image_generation: (g.img != null ? g.img : meta.img) || false,
-          supported_model_scopes: (Array.isArray(g.scopes) && g.scopes.length) ? g.scopes : (meta.scopes || [])
-        });
+    if (data && Array.isArray(data.groups)) {
+      items = data.groups.map(function(g){
+        return {
+          id: g.id,
+          slug: g.name,
+          name: g.name,
+          description: g.description || '',
+          rateMultiplier: g.rateMultiplier,
+          rate_multiplier: g.rateMultiplier != null ? g.rateMultiplier / 100 : 1,
+          subscription_type: 'standard',
+          allow_image_generation: false,
+          supported_model_scopes: []
+        };
       });
-    } else {
-      /* fallback: old format array */
-      items = Array.isArray(data) ? data : (data && data.items ? data.items : []);
+    } else if (Array.isArray(data)) {
+      items = data;
+    } else if (data && data.items) {
+      items = data.items;
     }
     if (!items.length && isPreviewRuntime()) {
       useSampleGroups();
@@ -889,7 +872,7 @@ function loadGroups() {
     }
     usingSampleGroups = false;
     GROUPS = items.map(mapGroup);
-    // 并行拉 /api/pricing 算每组真实起价、/user/group-access 算当前用户有效倍率，再统一重算派生价格。
+    // 并行拉公开模型快照、分区配置与本地可用状态，再统一重算派生价格。
     Promise.all([attachGroupPrices(), loadSectionConfig(), loadGroupAccess()]).then(function(){
       applyGroupAccessRatios();
       recomputeGroupPrices();
@@ -1166,7 +1149,7 @@ function sectionIconHTML(icon){
 }
 function secEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-/* ─── MODEL PRICE VIEW（每个模型的价格 + 同一模型在不同分组的价格，对标 /pricing）─── */
+/* ─── MODEL PRICE VIEW（每个模型的价格 + 同一模型在不同分组的可用关系）─── */
 var currentView = 'groups';   // 'groups' | 'models'
 
 function mpEsc(s){
@@ -1179,7 +1162,7 @@ function mpTypeLabel(m){
   return mpIsPerReq(m) ? (MexionI18n.lang==='zh'?'按次':'Per-call')
                        : (MexionI18n.lang==='zh'?'按量':'Per-token');
 }
-// 二开：图片分辨率档价 / 视频每秒价 的展示文案（仅在 /api/pricing 下发对应字段时注册生效）。
+// 二开：图片分辨率档价 / 视频每秒价 的展示文案（仅在模型快照下发对应字段时注册生效）。
 MexionI18n.register({
   en: { 'models.price.image': 'Image $/img', 'models.price.video': 'Video', 'models.price.persec': 'per sec' },
   zh: { 'models.price.image': '图片 $/张', 'models.price.video': '视频', 'models.price.persec': '/秒' }
@@ -1551,10 +1534,22 @@ $('#mcSubmit').addEventListener('click', ()=>{
     }, 360);
     return;
   }
-  MexionHttp.post('/token/', payload).then(()=>{
+  var expiresAt = null;
+  if (mcState.days > 0) {
+    var exp = new Date(Date.now() + mcState.days * 86400000);
+    expiresAt = exp.toISOString();
+  }
+  var createPayload = {
+    name: name,
+    groupId: currentGroup && Number.isFinite(Number(currentGroup.id)) ? Number(currentGroup.id) : null,
+    quotaLimit: mcState.quota > 0 ? Math.round(mcState.quota * 500000) : null,
+    expiresAt: expiresAt
+  };
+  MexionHttp.post('/user/keys', createPayload).then(function(resp){
     btn.innerHTML = orig; btn.disabled = false;
     closeCreate();
-    window.location.href = 'api-keys.html';
+    if (resp && resp.secret && window.MexionToast && MexionToast.show) MexionToast.show((MexionI18n.lang === 'zh' ? '密钥已创建，只显示一次：' : 'Key created, shown once: ') + resp.secret);
+    window.location.href = '/api-keys/';
   }).catch((err)=>{
     btn.innerHTML = orig; btn.disabled = false;
     var errEl = document.getElementById('mcError');
@@ -1650,7 +1645,7 @@ function updateProvCounts(){
 
 /* Set dynamic Base URL in modal + 点击复制（集成时常需复制） */
 (function(){
-  const el = document.getElementById('mcBaseUrl');
+  const el = document.getElementById('createTokenBaseUrl') || document.getElementById('mcBaseUrl');
   if (!el) return;
   el.textContent = window.location.origin + '/v1';
   el.style.cursor = 'pointer';
