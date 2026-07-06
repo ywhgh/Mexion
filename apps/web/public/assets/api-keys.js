@@ -2143,14 +2143,11 @@ document.addEventListener('DOMContentLoaded', function() {
   function pingOnce(url){
     return new Promise(function(resolve){
       var start = performance.now();
-      var baseUrl = url.replace('/v1','');
-      fetch(baseUrl + '/health', {method:'GET',mode:'cors',cache:'no-store'})
+      void url;
+      if (typeof MexionHttp === 'undefined') { resolve(-1); return; }
+      MexionHttp.get('/health')
         .then(function(){ resolve(Math.round(performance.now() - start)); })
-        .catch(function(){
-          fetch(baseUrl + '/health', {method:'GET',mode:'no-cors',cache:'no-store'})
-            .then(function(){ resolve(Math.round(performance.now() - start)); })
-            .catch(function(){ resolve(-1); });
-        });
+        .catch(function(){ resolve(-1); });
     });
   }
 

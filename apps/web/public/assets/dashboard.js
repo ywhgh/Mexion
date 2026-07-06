@@ -1131,7 +1131,7 @@ function initDashboardData() {
 
   (function initEndpointUrl(){
     var epUrl = document.querySelector('.creds__endpoint-url');
-    var base = window.location.origin.replace(//+$/, '');
+    var base = window.location.origin.replace(/\/+$/, '');
     window.__mexionApiBase = base;
     function urlFor(fmt){ return fmt === 'claude' ? base : base + '/v1'; }
     function applyFmt(fmt){
@@ -1237,7 +1237,7 @@ function initDashboardData() {
       var prefix = current.prefix || current.keyPrefix;
       if (prefix) window.MexionCopy(prefix, copyBtn); else unavailable();
     };
-    function apiBase(){ return (window.__mexionApiBase || window.location.origin).replace(//+$/, ''); }
+    function apiBase(){ return (window.__mexionApiBase || window.location.origin).replace(/\/+$/, ''); }
     function curFmt(){ try { return localStorage.getItem('mexion_api_fmt') === 'claude' ? 'claude' : 'openai'; } catch(e){ return 'openai'; } }
     function copySnippet(){ unavailable(); }
     var copyConnBtn = document.getElementById('copyConnBtn');
@@ -1625,10 +1625,11 @@ if (document.readyState === 'loading') {
       a.innerHTML = '<span class="admin-quick-label">' + item.label + '</span>'
                   + '<span class="admin-quick-count" id="' + countId + '">—</span>';
       if (grid) grid.appendChild(a);
-      fetch(item.api, { credentials: 'same-origin' }).then(function(res) { return res.json(); }).then(function(r) {
+      var apiPath = item.api.replace(/^\/api/, '');
+      MexionHttp.get(apiPath).then(function(data) {
         var el = document.getElementById(countId);
-        if (el && r && r.ok && r.data) {
-          var arr = r.data[item.arrKey] || [];
+        if (el && data) {
+          var arr = data[item.arrKey] || [];
           el.textContent = arr.length;
         }
       }).catch(function () {});
