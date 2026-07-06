@@ -1,5 +1,6 @@
 import { HTTPException } from "hono/http-exception";
 import type { DbClient } from "../db/client.js";
+import { cleanupSessionAffinityMap } from "./channels.js";
 
 export type BillingSessionRecord = {
   id: number;
@@ -296,6 +297,7 @@ export function startSubscriptionExpiryTask(db: DbClient): NodeJS.Timeout {
       cycles += 1;
       if (cycles >= 24) {
         cleanupOldExpiredSubscriptions(db);
+        cleanupSessionAffinityMap(db);
         cycles = 0;
       }
     } catch (error) {

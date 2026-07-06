@@ -459,6 +459,93 @@ export function selectChannelCandidates(db: DbClient, model: string, groupId?: n
   return candidates;
 }
 
+type SessionAffinityEntry = {
+  channelId: number;
+  updatedAt: string;
+};
+type SessionAffinityMap = Record<string, SessionAffinityEntry>;
+
+const SESSION_AFFINITY_KEY = "session_channel_map";
+const SESSION_AFFINITY_TTL_MS = 3_600_000;
+const SESSION_AFFINITY_CLEANUP_MS = 24 * 3_600_000;
+
+function normalizeSessionId(sessionId: string | null | undefined): string | null {
+  const value = String(sessionId ?? "").trim();
+  if (!value) return null;
+  return value.slice(0, 160);
+}
+
+function loadSessionAffinityMap(db: DbClient): SessionAffinityMap {
+  const row = db.sqlite.prepare("SELECT value FROM settings WHERE key = ?").get(SESSION_AFFINITY_KEY) as { value?: string } | undefined;
+  if (!row?.value) return {};
+  try {
+    const parsed = JSON.parse(row.value) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: SessionAffinityMap = {};
+    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!value || typeof value !== "object") continue;
+      const entry = value as Record<string, unknown>;
+      const channelId = Number(entry.channelId);
+      const updatedAt = typeof entry.updatedAt === "string" ? entry.updatedAt : "";
+      if (Number.isInteger(channelId) && channelId > 0 && updatedAt) out[key] = { channelId, updatedAt };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function saveSessionAffinityMap(db: DbClient, map: SessionAffinityMap): void {
+  const now = new Date().toISOString();
+  db.sqlite
+    .prepare("INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at")
+    .run(SESSION_AFFINITY_KEY, JSON.stringify(map), now);
+}
+
+function pruneSessionAffinityMap(map: SessionAffinityMap, nowMs: number, maxAgeMs: number): boolean {
+  let changed = false;
+  for (const [key, entry] of Object.entries(map)) {
+    const updated = Date.parse(entry.updatedAt);
+    if (!Number.isFinite(updated) || nowMs - updated > maxAgeMs) {
+      delete map[key];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+export function cleanupSessionAffinityMap(db: DbClient, now = new Date()): number {
+  const map = loadSessionAffinityMap(db);
+  const before = Object.keys(map).length;
+  const changed = pruneSessionAffinityMap(map, now.getTime(), SESSION_AFFINITY_CLEANUP_MS);
+  if (changed) saveSessionAffinityMap(db, map);
+  return before - Object.keys(map).length;
+}
+
+export function selectChannelWithAffinity(db: DbClient, model: string, groupId: number | null | undefined, sessionId: string | null): ChannelRecord[] {
+  const candidates = selectChannelCandidates(db, model, groupId);
+  const normalized = normalizeSessionId(sessionId);
+  if (!normalized) return candidates;
+  const now = new Date();
+  const nowMs = now.getTime();
+  const map = loadSessionAffinityMap(db);
+  pruneSessionAffinityMap(map, nowMs, SESSION_AFFINITY_CLEANUP_MS);
+  const entry = map[normalized];
+  if (entry && nowMs - Date.parse(entry.updatedAt) <= SESSION_AFFINITY_TTL_MS) {
+    const index = candidates.findIndex((channel) => channel.id === entry.channelId && channel.status === "active" && channel.errorCount < 5);
+    if (index >= 0) {
+      map[normalized] = { channelId: candidates[index]?.id ?? entry.channelId, updatedAt: now.toISOString() };
+      saveSessionAffinityMap(db, map);
+      return [candidates[index] as ChannelRecord, ...candidates.slice(0, index), ...candidates.slice(index + 1)];
+    }
+  }
+  const selected = candidates[0];
+  if (!selected) return candidates;
+  map[normalized] = { channelId: selected.id, updatedAt: now.toISOString() };
+  saveSessionAffinityMap(db, map);
+  return candidates;
+}
+
 export function selectChannel(db: DbClient, model: string, groupId?: number | null): ChannelRecord {
   const channel = selectChannelCandidates(db, model, groupId)[0];
   if (!channel) throw new HTTPException(503, { message: "No available channel" });

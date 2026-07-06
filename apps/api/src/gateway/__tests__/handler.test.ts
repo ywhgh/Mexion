@@ -157,6 +157,33 @@ describe("gateway handler", () => {
     });
   });
 
+  it("routes a session to its sticky channel when x-session-id is present", async () => {
+    const { app, db, secret } = await fixture({ channel: false });
+    createChannel(db, { name: "primary", provider: "openai", baseUrl: "https://api.openai.com", secretValue: "sk-one", modelList: ["gpt-4o"], priority: 10 });
+    const sticky = createChannel(db, { name: "sticky", provider: "openai", baseUrl: "https://example.com", secretValue: "sk-two", modelList: ["gpt-4o"], priority: 1 });
+    const now = new Date().toISOString();
+    db.sqlite
+      .prepare("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)")
+      .run("session_channel_map", JSON.stringify({ "thread-1": { channelId: sticky.id, updatedAt: now } }), now);
+    let upstreamUrl = "";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string | URL | Request) => {
+        upstreamUrl = String(url);
+        return new Response(JSON.stringify({ id: "cmpl", usage: { prompt_tokens: 1, completion_tokens: 1 } }), { status: 200, headers: { "content-type": "application/json" } });
+      }),
+    );
+
+    const res = await app.request("/v1/chat/completions", {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json", "x-session-id": "thread-1" },
+      body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "user", content: "hi" }] }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(upstreamUrl).toBe("https://example.com/v1/chat/completions");
+  });
+
   it("captures streaming usage when settling", async () => {
     const { app, db, secret, user } = await fixture();
     const encoder = new TextEncoder();

@@ -5,7 +5,7 @@ import type { AppBindings } from "../app.js";
 import { DEFAULT_BODY_LIMIT_BYTES, readLimitedBody } from "../middleware/body-limit.js";
 import { estimateCost, parseUsageFromResponse } from "../lib/pricing.js";
 import { prechargeBilling, rollbackBilling, settleBilling } from "../services/billing.js";
-import { markChannelFailure, markChannelSuccess, resolveModelAlias, selectChannelCandidates, type ChannelRecord } from "../services/channels.js";
+import { markChannelFailure, markChannelSuccess, resolveModelAlias, selectChannelWithAffinity, type ChannelRecord } from "../services/channels.js";
 import { broadcastLiveEvent } from "../services/live-feed.js";
 import { injectPromptCacheControl } from "./codex-cache.js";
 import { relayToProvider, type GatewayProtocol } from "./providers.js";
@@ -31,6 +31,23 @@ function roughInputTokens(rawLength: number): number {
 function roughOutputTokens(body: JsonObject): number {
   const maxTokens = body.max_tokens ?? body.max_completion_tokens ?? body.max_output_tokens;
   return typeof maxTokens === "number" && Number.isFinite(maxTokens) ? Math.max(1, Math.ceil(maxTokens)) : 1024;
+}
+
+function stringField(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function extractSessionId(c: Context<AppBindings>, body: JsonObject, keyPrefix?: string | null): string | null {
+  const header = stringField(c.req.header("x-session-id"));
+  if (header) return header;
+  const bodyUser = stringField(body.user);
+  if (bodyUser) return bodyUser;
+  const metadata = asObject(body.metadata);
+  const metadataUser = stringField(metadata.user_id) ?? stringField(metadata.userId);
+  if (metadataUser) return metadataUser;
+  return keyPrefix ?? null;
 }
 
 async function readJsonBody(c: Context<AppBindings>): Promise<{ rawBody: Uint8Array; body: JsonObject; bodyHash: string }> {
@@ -198,7 +215,8 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
   }
   const resolved = resolveModelAlias(c.get("db"), originalModel);
   const providerBody = { ...body, model: resolved.model };
-  const candidates = selectChannelCandidates(c.get("db"), originalModel, key?.groupId ?? null).slice(0, 3);
+  const sessionId = extractSessionId(c, body, key?.prefix ?? null);
+  const candidates = selectChannelWithAffinity(c.get("db"), originalModel, key?.groupId ?? null, sessionId).slice(0, 3);
   const firstChannel = candidates[0];
   if (!firstChannel) throw new HTTPException(503, { message: "No available channel" });
   const estimatedCost = estimateCost(firstChannel.provider, resolved.model, roughInputTokens(rawBody.byteLength), roughOutputTokens(body));
