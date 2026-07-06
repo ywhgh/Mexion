@@ -311,14 +311,43 @@ export function startSubscriptionExpiryTask(db: DbClient): NodeJS.Timeout {
 }
 
 export function getUsageSummary(db: DbClient, userId: number): Record<string, unknown> {
+  const hasRequestLogs = numberValue(db.sqlite.prepare("SELECT COUNT(*) AS value FROM request_logs WHERE user_id = ?").get(userId), "value") > 0;
+  const table = hasRequestLogs ? "request_logs" : "usage_events";
   const totals = db.sqlite
-    .prepare("SELECT COUNT(*) AS totalCalls, COALESCE(SUM(input_tokens + output_tokens),0) AS totalTokens, COALESCE(SUM(cost),0) AS totalCost, COALESCE(AVG(NULLIF(duration_ms,0)),0) AS avgLatency FROM usage_events WHERE user_id = ?")
+    .prepare(
+      `SELECT COUNT(*) AS totalCalls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS totalTokens,
+        COALESCE(SUM(COALESCE(cost, 0)), 0) AS totalCost,
+        COALESCE(AVG(NULLIF(duration_ms, 0)), 0) AS avgLatency
+       FROM ${table}
+       WHERE user_id = ?`,
+    )
     .get(userId) as { totalCalls: number; totalTokens: number; totalCost: number; avgLatency: number };
   const dailyStats = db.sqlite
-    .prepare("SELECT substr(ts,1,10) AS day, COUNT(*) AS calls, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COALESCE(SUM(cost),0) AS cost, COALESCE(AVG(NULLIF(duration_ms,0)),0) AS avgLatency FROM usage_events WHERE user_id = ? AND ts >= datetime('now','-91 days') GROUP BY day ORDER BY day")
-    .all(userId);
+    .prepare(
+      `SELECT substr(ts, 1, 10) AS date, substr(ts, 1, 10) AS day,
+        COUNT(*) AS calls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS tokens,
+        COALESCE(SUM(COALESCE(cost, 0)), 0) AS cost,
+        COALESCE(AVG(NULLIF(duration_ms, 0)), 0) AS avgLatency
+       FROM ${table}
+       WHERE user_id = ? AND ts >= ?
+       GROUP BY substr(ts, 1, 10)
+       ORDER BY substr(ts, 1, 10) ASC`,
+    )
+    .all(userId, new Date(Date.now() - 91 * 86400000).toISOString());
   const modelStats = db.sqlite
-    .prepare("SELECT model, COUNT(*) AS calls, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COALESCE(SUM(cost),0) AS cost FROM usage_events WHERE user_id = ? GROUP BY model ORDER BY calls DESC LIMIT 20")
+    .prepare(
+      `SELECT COALESCE(model, 'unknown') AS model,
+        COUNT(*) AS calls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS tokens,
+        COALESCE(SUM(COALESCE(cost, 0)), 0) AS cost
+       FROM ${table}
+       WHERE user_id = ?
+       GROUP BY COALESCE(model, 'unknown')
+       ORDER BY calls DESC
+       LIMIT 20`,
+    )
     .all(userId);
   return { ...totals, dailyStats, modelStats };
 }
