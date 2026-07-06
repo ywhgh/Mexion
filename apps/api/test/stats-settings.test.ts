@@ -56,10 +56,20 @@ describe("stats and settings", () => {
           errorRateTrend: Array<{ totalRequests: number; errors: number; errorRate: number }>;
           ttftPercentiles: { p50: number; p90: number; p99: number };
           topModels: Array<{ model: string; requestCount: number }>;
+          totalCalls: number;
+          totalTokens: number;
+          avgLatency: number;
+          dailyStats: Array<{ date: string; calls: number; tokens: number; cost: number }>;
+          sparkData: Array<{ date: string; calls: number }>;
+          formatMix: Array<{ provider: string; count: number }>;
         };
       };
     };
 
+    expect(payload.data.stats).toMatchObject({ totalCalls: 2, totalTokens: 33, avgLatency: 200 });
+    expect(payload.data.stats.dailyStats.at(-1)).toMatchObject({ calls: 2, tokens: 33, cost: 4 });
+    expect(payload.data.stats.sparkData.at(-1)).toMatchObject({ calls: 2 });
+    expect(payload.data.stats.formatMix[0]).toMatchObject({ provider: "openai", count: 2 });
     expect(payload.data.stats.channelHealth).toEqual([
       expect.objectContaining({ channelId, requestsLast1h: 2, errorsLast1h: 1 }),
     ]);

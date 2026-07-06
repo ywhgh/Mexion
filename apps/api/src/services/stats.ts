@@ -34,7 +34,16 @@ export type TopModelItem = {
   totalCost: number;
   avgLatencyMs: number;
 };
+export type DailyStatItem = { date: string; calls: number; tokens: number; cost: number };
+export type SparkDataItem = { date: string; calls: number };
+export type FormatMixItem = { provider: string; count: number };
 export type StatPayload = {
+  totalCalls: number;
+  totalTokens: number;
+  avgLatency: number;
+  dailyStats: DailyStatItem[];
+  sparkData: SparkDataItem[];
+  formatMix: FormatMixItem[];
   totals: {
     requests: number;
     subs: number;
@@ -63,6 +72,73 @@ function numberValue(row: unknown, key: string): number {
   if (!row || typeof row !== "object") return 0;
   const value = (row as Record<string, unknown>)[key];
   return typeof value === "number" ? value : Number(value ?? 0);
+}
+
+function usageSummaryTable(db: DbClient): "request_logs" | "usage_events" {
+  return numberValue(db.sqlite.prepare("SELECT COUNT(*) AS value FROM request_logs").get(), "value") > 0 ? "request_logs" : "usage_events";
+}
+
+function globalUsageTotals(db: DbClient): { totalCalls: number; totalTokens: number; avgLatency: number } {
+  const table = usageSummaryTable(db);
+  const row = db.sqlite
+    .prepare(
+      `SELECT COUNT(*) AS totalCalls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS totalTokens,
+        COALESCE(AVG(NULLIF(duration_ms, 0)), 0) AS avgLatency
+       FROM ${table}`,
+    )
+    .get() as { totalCalls: number; totalTokens: number; avgLatency: number };
+  return {
+    totalCalls: Number(row.totalCalls ?? 0),
+    totalTokens: Number(row.totalTokens ?? 0),
+    avgLatency: Math.round(Number(row.avgLatency ?? 0)),
+  };
+}
+
+function dailyStats(db: DbClient): DailyStatItem[] {
+  const table = usageSummaryTable(db);
+  const cutoff = new Date(Date.now() - 91 * 86400000).toISOString();
+  return db.sqlite
+    .prepare(
+      `SELECT substr(ts, 1, 10) AS date,
+        COUNT(*) AS calls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS tokens,
+        COALESCE(SUM(COALESCE(cost, 0)), 0) AS cost
+       FROM ${table}
+       WHERE ts >= ?
+       GROUP BY substr(ts, 1, 10)
+       ORDER BY substr(ts, 1, 10) ASC`,
+    )
+    .all(cutoff) as DailyStatItem[];
+}
+
+function sparkData(db: DbClient): SparkDataItem[] {
+  const table = usageSummaryTable(db);
+  const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
+  return db.sqlite
+    .prepare(
+      `SELECT substr(ts, 1, 10) AS date, COUNT(*) AS calls
+       FROM ${table}
+       WHERE ts >= ?
+       GROUP BY substr(ts, 1, 10)
+       ORDER BY substr(ts, 1, 10) ASC`,
+    )
+    .all(cutoff) as SparkDataItem[];
+}
+
+function providerFormatMix(db: DbClient): FormatMixItem[] {
+  const table = usageSummaryTable(db);
+  const cutoff = new Date(Date.now() - 24 * 3_600_000).toISOString();
+  return db.sqlite
+    .prepare(
+      `SELECT COALESCE(provider, 'unknown') AS provider, COUNT(*) AS count
+       FROM ${table}
+       WHERE ts >= ?
+       GROUP BY COALESCE(provider, 'unknown')
+       ORDER BY count DESC, provider ASC
+       LIMIT 10`,
+    )
+    .all(cutoff) as FormatMixItem[];
 }
 
 function isoDate(daysAgo: number): string {
@@ -228,6 +304,7 @@ function topModels(db: DbClient): TopModelItem[] {
 }
 
 export function collectStats(db: DbClient): StatPayload {
+  const usageTotals = globalUsageTotals(db);
   const requests = numberValue(db.sqlite.prepare("SELECT COUNT(*) AS value FROM logs").get(), "value");
   const subs = numberValue(db.sqlite.prepare("SELECT COUNT(*) AS value FROM subs").get(), "value");
   const tokens = numberValue(db.sqlite.prepare("SELECT COUNT(*) AS value FROM tokens").get(), "value");
@@ -237,6 +314,12 @@ export function collectStats(db: DbClient): StatPayload {
   const avgLatencyMs = Math.round(numberValue(db.sqlite.prepare("SELECT COALESCE(AVG(duration_ms), 0) AS value FROM logs WHERE duration_ms > 0").get(), "value"));
   const cells = heatmap(db);
   return {
+    totalCalls: usageTotals.totalCalls,
+    totalTokens: usageTotals.totalTokens,
+    avgLatency: usageTotals.avgLatency,
+    dailyStats: dailyStats(db),
+    sparkData: sparkData(db),
+    formatMix: providerFormatMix(db),
     totals: { requests, subs, tokens, activeTokens, routes, enabledRoutes, avgLatencyMs },
     heatmap: cells,
     sparks: {
