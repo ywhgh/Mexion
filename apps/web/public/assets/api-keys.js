@@ -438,11 +438,18 @@ function ensureSkPrefix(key) {
   return key.indexOf('sk-') === 0 ? key : 'sk-' + key;
 }
 function mapApiKey(ak) {
-  var prefixRaw = String(ak.prefix || ak.keyPrefix || ak.key || '').trim();
+  ak = ak || {};
+  var rawKey = ak.key || ak.secret || ak.prefix || ak.keyPrefix || '';
+  var prefixRaw = String(rawKey).trim();
   var isActive = (typeof ak.status === 'number') ? ak.status === 1 : (ak.status == null || ak.status === 'active');
   var quotaLimit = ak.quota != null ? Number(ak.quota) : (ak.quotaLimit == null ? null : Number(ak.quotaLimit));
   if (quotaLimit === 0) quotaLimit = null;
+  var usedQuota = ak.quota_used != null ? Number(ak.quota_used) : (ak.used_quota != null ? Number(ak.used_quota) : Number(ak.usedQuota || 0));
+  if (!isFinite(usedQuota)) usedQuota = 0;
   var groupId = ak.group_id != null ? ak.group_id : ak.groupId;
+  var modelList = ak.model_allow || ak.modelAllow || ak.restrict_models || ak.models || [];
+  if (typeof modelList === 'string') modelList = modelList.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var isMasked = prefixRaw.indexOf('…') >= 0 || prefixRaw.indexOf('...') >= 0 || prefixRaw.indexOf('*') >= 0;
   return {
     id: String(ak.id),
     _apiId: ak.id,
@@ -452,15 +459,17 @@ function mapApiKey(ak) {
     prefix: prefixRaw ? prefixRaw.substring(0, 8) : 'mx_',
     mask: '············',
     suffix: prefixRaw.length > 8 ? '…' : '',
-    fullKey: prefixRaw ? prefixRaw + '…' : '',
-    group: groupId == null ? null : Number(groupId),
+    fullKey: prefixRaw ? (isMasked ? prefixRaw : prefixRaw + '…') : '',
+    group: groupId == null || groupId === '' ? null : Number(groupId),
     groupSlug: '',
     groupObj: null,
     quotaN: quotaLimit,
+    quotaUsed: usedQuota,
+    usedQuota: usedQuota,
     quotaUnit: 'd',
-    models: Array.isArray(ak.modelAllow) ? ak.modelAllow : [],
-    notes: ak.note || '',
-    ipRestrict: Array.isArray(ak.ip_whitelist) ? ak.ip_whitelist.join('\\n') : (Array.isArray(ak.ipAllow) ? ak.ipAllow.join('\\n') : (ak.ipAllow || null)),
+    models: Array.isArray(modelList) ? modelList : [],
+    notes: ak.note || ak.notes || ak.description || '',
+    ipRestrict: Array.isArray(ak.ip_whitelist) ? ak.ip_whitelist.join('\n') : (Array.isArray(ak.ipAllow) ? ak.ipAllow.join('\n') : (ak.ipAllow || null)),
     created: _fmtDate(ak.createdAt || ak.created_at),
     lastUsed: _fmtDate(ak.lastUsedAt || ak.last_used_at),
     expires: (ak.expiresAt || ak.expires_at) ? _fmtDate(ak.expiresAt || ak.expires_at) : null,
@@ -1409,6 +1418,7 @@ function openModal(){
   var cb = document.getElementById('modalConfirm');
   if (cb) {
     cb.disabled = false;
+    cb.removeAttribute('data-done');
     cb.innerHTML = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + MexionI18n.t('apikeys.modal.save') + '</span>';
     cb.onclick = null;
   }
@@ -2151,6 +2161,7 @@ function repositionOpenGrpDropdown(selectEl, dropdownEl){
 
 // ── MODAL V2: CONFIRM ─────────────────────────────────────
 document.getElementById('modalConfirm').addEventListener('click', function(){
+  if (this.getAttribute('data-done') === '1') { closeModal(); return; }
   var name = (document.getElementById('newKeyName')||{}).value||'';
   name = name.trim();
   if (!name) { var ni = document.getElementById('newKeyName'); ni && ni.focus(); return; }
@@ -2206,9 +2217,9 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
       this.innerHTML = '<svg width="14" height="14" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="var(--green)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     });
     confirmBtn.disabled = false;
+    confirmBtn.setAttribute('data-done', '1');
     confirmBtn.removeAttribute('data-i18n');
     confirmBtn.innerHTML = '<span>'+MexionI18n.t('apikeys.modal.done')+'</span>';
-    confirmBtn.onclick = closeModal;
   }
 
   MexionHttp.post('/keys', payload).then(function(resp) {
@@ -2243,7 +2254,9 @@ MexionI18n.onChange(function(){
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof MexionAuth !== 'undefined') MexionAuth.guard();
   loadGroups()
+    .catch(function() {})
     .then(function() { return loadGroupAccess(); })
+    .catch(function() {})
     .then(function() { loadKeys(); });
   document.addEventListener('user-menu:signout', function() {
     if (typeof MexionAuth !== 'undefined') MexionAuth.logout();
