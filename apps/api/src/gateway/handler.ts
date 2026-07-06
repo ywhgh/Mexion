@@ -6,6 +6,7 @@ import { DEFAULT_BODY_LIMIT_BYTES, readLimitedBody } from "../middleware/body-li
 import { estimateCost, parseUsageFromResponse } from "../lib/pricing.js";
 import { prechargeBilling, rollbackBilling, settleBilling } from "../services/billing.js";
 import { markChannelFailure, markChannelSuccess, resolveModelAlias, selectChannelCandidates, type ChannelRecord } from "../services/channels.js";
+import { broadcastLiveEvent } from "../services/live-feed.js";
 import { relayToProvider, type GatewayProtocol } from "./providers.js";
 import { isResponsesProtocol, writeChatErrorSSE, writeResponsesFailedSSE } from "./stream-error.js";
 
@@ -207,13 +208,14 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
   let lastFailure: { upstream: Response; responseText: string; channel: ChannelRecord; durationMs: number; usage: ReturnType<typeof parseUsageFromResponse> } | null = null;
 
   function insertRequestLog(channel: ChannelRecord, status: number, durationMs: number, inputTokens?: number, outputTokens?: number, cost?: number | null, errorCode?: string | null): void {
+    const ts = new Date().toISOString();
     c.get("db")
       .sqlite.prepare(
         `INSERT INTO request_logs (ts, request_id, user_id, key_prefix, method, path, model, provider, group_id, channel_id, status, input_tokens, output_tokens, duration_ms, cost, error_code, body_hash, body_length)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
-        new Date().toISOString(),
+        ts,
         requestId,
         user.id,
         key?.prefix ?? null,
@@ -232,6 +234,17 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
         bodyHash,
         rawBody.byteLength,
       );
+    broadcastLiveEvent({
+      type: "request",
+      ts,
+      model: resolved.model,
+      provider: channel.provider,
+      status,
+      durationMs,
+      cost: cost ?? 0,
+      keyPrefix: key?.prefix ?? null,
+      userId: user.id,
+    });
   }
 
   for (const channel of candidates) {

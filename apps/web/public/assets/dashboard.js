@@ -632,6 +632,19 @@ function gp(n){n=(n||'').toLowerCase();if(n.indexOf('claude')>=0)return'anthropi
       : '<div style="text-align:center;padding:40px 16px;color:var(--mute-2);font-size:13px">' +
         (MexionI18n.lang==='zh'?'暂无调用记录':'No calls yet') + '</div>';
   };
+  window.__liveFeedPush = function(row){
+    __useRealFeed = true;
+    ROWS = [row].concat(ROWS).slice(0, 20);
+    body.innerHTML = ROWS.map(function(r, i){ return rowHTML(r, i === 0); }).join('');
+    if (row && row._ts) {
+      var d = new Date(row._ts);
+      var now = new Date();
+      if (!isNaN(d.getTime()) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
+        count += 1;
+        refreshCounter();
+      }
+    }
+  };
 
   function refreshCounter(){
     if (typeof count === 'undefined' || !liveCounter) return;
@@ -1579,8 +1592,9 @@ function initDashboardData() {
     MexionI18n.onChange(function(){ setTimeout(reapplyOnLangSwitch, 50); });
   }
 
-  // ── Auto-refresh live feed every 30s ──
-  setInterval(function() {
+  // ── Live feed: SSE first, 30s polling fallback ──
+  var livePollingTimer = null;
+  function refreshLiveFeedSnapshot() {
     MexionHttp.get('/user/logs?limit=8').then(function(data) {
       var items = data.logs || data.items || [];
       if (!items.length || !window.__liveFeedSet) return;
@@ -1596,7 +1610,57 @@ function initDashboardData() {
       });
       window.__liveFeedSet(feedRows);
     }).catch(function(){});
-  }, 30000);
+  }
+  function startLiveFeedPolling() {
+    if (livePollingTimer) return;
+    refreshLiveFeedSnapshot();
+    livePollingTimer = setInterval(refreshLiveFeedSnapshot, 30000);
+  }
+  function stopLiveFeedPolling() {
+    if (!livePollingTimer) return;
+    clearInterval(livePollingTimer);
+    livePollingTimer = null;
+  }
+  function rowFromLiveEvent(event) {
+    var model = event.model || 'unknown';
+    var provider = event.provider || gp(model) || 'api';
+    var d = event.ts ? new Date(event.ts) : new Date();
+    if (isNaN(d.getTime())) d = new Date();
+    var statusCode = Number(event.status || 0);
+    return {
+      t: String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'),
+      model: model,
+      vendor: provider,
+      icon: '',
+      let: model.charAt(0).toUpperCase(),
+      tot: 0,
+      cost: Number(event.cost || 0),
+      status: statusCode >= 400 ? 'err' : 'ok',
+      err: statusCode >= 400 ? 'HTTP ' + statusCode : '',
+      _ts: event.ts || ''
+    };
+  }
+  function startLiveFeedSSE() {
+    if (!window.EventSource || !window.__liveFeedPush) {
+      startLiveFeedPolling();
+      return;
+    }
+    var sse = new EventSource('/api/stats/live-stream');
+    sse.onopen = function() {
+      stopLiveFeedPolling();
+    };
+    sse.onmessage = function(e) {
+      try {
+        var event = JSON.parse(e.data);
+        if (event && event.type === 'request') window.__liveFeedPush(rowFromLiveEvent(event));
+      } catch(err) {}
+    };
+    sse.onerror = function() {
+      try { sse.close(); } catch(err) {}
+      startLiveFeedPolling();
+    };
+  }
+  startLiveFeedSSE();
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initDashboardData);
