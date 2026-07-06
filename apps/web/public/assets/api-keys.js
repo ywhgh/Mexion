@@ -132,6 +132,10 @@ MexionI18n.register({
     'apikeys.edit.cancel': 'Cancel',
     'apikeys.edit.save': 'Save',
     'apikeys.spark.tooltip': '{n} calls',
+    'apikeys.usage.loading': 'Loading usage…',
+    'apikeys.usage.empty': 'No calls in the last 7 days',
+    'apikeys.usage.meta': '{calls} calls · {tokens} tokens · {errors} errors',
+    'apikeys.usage.error': 'Usage unavailable',
     'apikeys.rel.never': 'Never',
     'apikeys.rel.justnow': 'Just now',
     'apikeys.rel.min': '{n} min ago',
@@ -281,6 +285,10 @@ MexionI18n.register({
     'apikeys.edit.cancel': '取消',
     'apikeys.edit.save': '保存更改',
     'apikeys.spark.tooltip': '{n} 次调用',
+    'apikeys.usage.loading': '正在读取用量…',
+    'apikeys.usage.empty': '近 7 天暂无调用',
+    'apikeys.usage.meta': '{calls} 次调用 · {tokens} tokens · {errors} 次错误',
+    'apikeys.usage.error': '用量暂不可用',
     'apikeys.rel.never': '从不',
     'apikeys.rel.justnow': '刚刚',
     'apikeys.rel.min': '{n} 分钟前',
@@ -597,6 +605,94 @@ function quotaLabel(k){
   if (k.quotaN == null) return MexionI18n.t('apikeys.detail.none');
   return k.quotaN.toLocaleString() + MexionI18n.t('apikeys.quota.unit.' + (k.quotaUnit || 'd'));
 }
+function normalizeUsageDays(days) {
+  return (Array.isArray(days) ? days : []).map(function(day) {
+    return {
+      date: String(day && day.date ? day.date : ''),
+      calls: Math.max(0, Number(day && day.calls) || 0),
+      tokens: Math.max(0, Number(day && day.tokens) || 0),
+      cost: Math.max(0, Number(day && day.cost) || 0),
+      avgLatency: Math.max(0, Number(day && day.avgLatency) || 0),
+      errors: Math.max(0, Number(day && day.errors) || 0)
+    };
+  });
+}
+function usageTotals(days) {
+  return normalizeUsageDays(days).reduce(function(acc, day) {
+    acc.calls += day.calls;
+    acc.tokens += day.tokens;
+    acc.errors += day.errors;
+    return acc;
+  }, { calls: 0, tokens: 0, errors: 0 });
+}
+function usagePoints(days) {
+  var width = 60;
+  var height = 16;
+  var normalized = normalizeUsageDays(days);
+  if (!normalized.length) normalized = [{ calls: 0 }, { calls: 0 }];
+  var maxCalls = normalized.reduce(function(max, day) { return Math.max(max, day.calls); }, 0);
+  var step = normalized.length > 1 ? width / (normalized.length - 1) : width;
+  return normalized.map(function(day, index) {
+    var x = Math.round(index * step * 100) / 100;
+    var y = maxCalls > 0 ? (height - 1 - (day.calls / maxCalls) * (height - 2)) : height - 1;
+    return x + ',' + (Math.round(y * 100) / 100);
+  }).join(' ');
+}
+function renderUsageSpark(days) {
+  var normalized = normalizeUsageDays(days);
+  var totals = usageTotals(normalized);
+  var isEmpty = totals.calls <= 0;
+  var meta = isEmpty
+    ? MexionI18n.t('apikeys.usage.empty')
+    : tt('apikeys.usage.meta', {
+        calls: totals.calls.toLocaleString(),
+        tokens: totals.tokens.toLocaleString(),
+        errors: totals.errors.toLocaleString()
+      });
+  return '<div class="kd-usage-box__inner">' +
+    '<svg class="kd-spark-svg' + (isEmpty ? ' is-empty' : '') + '" width="60" height="16" viewBox="0 0 60 16" role="img" aria-label="' + escapeHtml(MexionI18n.t('apikeys.detail.section.usage')) + '">' +
+      '<polyline points="' + usagePoints(normalized) + '" fill="none"></polyline>' +
+    '</svg>' +
+    '<div class="kd-usage-meta">' + escapeHtml(meta) + '</div>' +
+  '</div>';
+}
+function renderUsageBox(k) {
+  if (k._usageError) {
+    return '<div class="kd-usage-box is-error" id="kdUsageBox" data-kid="' + escapeHtml(k.id) + '">' +
+      '<div class="kd-usage-meta">' + escapeHtml(MexionI18n.t('apikeys.usage.error')) + '</div>' +
+    '</div>';
+  }
+  if (!Array.isArray(k.usage7d)) {
+    return '<div class="kd-usage-box is-loading" id="kdUsageBox" data-kid="' + escapeHtml(k.id) + '">' +
+      '<div class="kd-usage-meta">' + escapeHtml(MexionI18n.t('apikeys.usage.loading')) + '</div>' +
+    '</div>';
+  }
+  return '<div class="kd-usage-box" id="kdUsageBox" data-kid="' + escapeHtml(k.id) + '">' + renderUsageSpark(k.usage7d) + '</div>';
+}
+function updateUsageBox(k) {
+  var box = document.getElementById('kdUsageBox');
+  if (!box || box.getAttribute('data-kid') !== String(k.id)) return;
+  var shell = document.createElement('div');
+  shell.innerHTML = renderUsageBox(k);
+  var next = shell.firstChild;
+  if (next) box.replaceWith(next);
+}
+function loadKeyUsage(k) {
+  if (!k || !k._apiId || typeof MexionHttp === 'undefined') return;
+  if (Array.isArray(k.usage7d) || k._usageLoading) return;
+  k._usageLoading = true;
+  k._usageError = false;
+  MexionHttp.get('/user/keys/' + encodeURIComponent(k._apiId) + '/usage').then(function(data) {
+    k.usage7d = normalizeUsageDays(data && data.days);
+    k._usageLoading = false;
+    k._usageError = false;
+    if (selectedKeyId === k.id) updateUsageBox(k);
+  }).catch(function() {
+    k._usageLoading = false;
+    k._usageError = true;
+    if (selectedKeyId === k.id) updateUsageBox(k);
+  });
+}
 
 // ── STATE ─────────────────────────────────────────
 var selectedKeyId = null;
@@ -821,7 +917,7 @@ function renderDetail(){
   var statusText = k.active ? MexionI18n.t('apikeys.detail.status.on') : MexionI18n.t('apikeys.detail.status.off');
   var modelText = k.models && k.models.length ? k.models.map(escapeHtml).join(', ') : MexionI18n.t('apikeys.detail.none');
   var ipText = k.ipRestrict ? escapeHtml(k.ipRestrict) : MexionI18n.t('apikeys.detail.none');
-  var usageText = k.usage7d ? '' : '<div class="kd-empty-note">—</div>';
+  var usageText = renderUsageBox(k);
   body.innerHTML =
     '<div class="kd-head">' +
       '<div><div class="kd-title">' + escapeHtml(k.name) + '</div>' +
@@ -866,6 +962,7 @@ function renderDetail(){
   deleteBtn && deleteBtn.addEventListener('click', function(){ openDeleteModal(k); });
   var editBtn = document.getElementById('kdEditBtn');
   editBtn && editBtn.addEventListener('click', function(){ openEditModal(k); });
+  loadKeyUsage(k);
 }
 
 // ── DELETE MODAL ─────────────────────────────────

@@ -28,6 +28,15 @@ export type UserKeyRecord = {
 
 export type UserKeyPublic = Omit<UserKeyRecord, "hash" | "userId"> & { userId?: never };
 
+export type UserKeyUsageDay = {
+  date: string;
+  calls: number;
+  tokens: number;
+  cost: number;
+  avgLatency: number;
+  errors: number;
+};
+
 export type CreateUserKeyInput = {
   name: string;
   note?: string | undefined;
@@ -60,6 +69,18 @@ function parseJsonStringArray(value: unknown, nullable = false): string[] | null
 function parseStatus(value: unknown): UserKeyStatus {
   if (value === "disabled" || value === "exhausted") return value;
   return "active";
+}
+
+function utcDay(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
+function recentUtcDays(length: number): { days: string[]; startIso: string } {
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const start = today - (length - 1) * 86400000;
+  const days = Array.from({ length }, (_item, index) => utcDay(new Date(start + index * 86400000)));
+  return { days, startIso: new Date(start).toISOString() };
 }
 
 export function rowToUserKey(row: unknown): UserKeyRecord | null {
@@ -191,6 +212,51 @@ export function updateUserKey(db: DbClient, userId: number, keyId: number, input
     userId,
   );
   return publicUserKey(getUserKeyById(db, userId, keyId));
+}
+
+export function getUserKeyUsage(db: DbClient, userId: number, keyId: number): { days: UserKeyUsageDay[] } {
+  const key = getUserKeyById(db, userId, keyId);
+  const window = recentUtcDays(7);
+  const byDay = new Map<string, UserKeyUsageDay>();
+  for (const day of window.days) {
+    byDay.set(day, { date: day, calls: 0, tokens: 0, cost: 0, avgLatency: 0, errors: 0 });
+  }
+
+  const rows = db.sqlite
+    .prepare(
+      `SELECT substr(ts, 1, 10) AS day,
+        COUNT(*) AS calls,
+        COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0) AS tokens,
+        COALESCE(SUM(COALESCE(cost, 0)), 0) AS cost,
+        COALESCE(AVG(NULLIF(duration_ms, 0)), 0) AS avgLatency,
+        COALESCE(SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END), 0) AS errors
+       FROM request_logs
+       WHERE user_id = ? AND key_prefix = ? AND ts >= ?
+       GROUP BY substr(ts, 1, 10)
+       ORDER BY day ASC`,
+    )
+    .all(userId, key.prefix, window.startIso) as Array<{
+    day: string;
+    calls: number;
+    tokens: number;
+    cost: number;
+    avgLatency: number;
+    errors: number;
+  }>;
+
+  for (const row of rows) {
+    if (!byDay.has(row.day)) continue;
+    byDay.set(row.day, {
+      date: row.day,
+      calls: Number(row.calls ?? 0),
+      tokens: Number(row.tokens ?? 0),
+      cost: Number(row.cost ?? 0),
+      avgLatency: Math.round(Number(row.avgLatency ?? 0)),
+      errors: Number(row.errors ?? 0),
+    });
+  }
+
+  return { days: window.days.map((day) => byDay.get(day) ?? { date: day, calls: 0, tokens: 0, cost: 0, avgLatency: 0, errors: 0 }) };
 }
 
 export async function verifyUserKey(db: DbClient, secret: string, sourceIp: string): Promise<{ user: UserPublic; key: UserKeyRecord }> {

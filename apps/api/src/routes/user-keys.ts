@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { idParamSchema } from "../contracts.js";
 import { requireUser } from "../middleware/require-user.js";
-import { createUserKey, listUserKeys, revokeUserKey, updateUserKey } from "../services/user-keys.js";
+import { createUserKey, getUserKeyUsage, listUserKeys, revokeUserKey, updateUserKey } from "../services/user-keys.js";
 
 export const userKeyRoutes = new Hono<AppBindings>();
 
@@ -31,6 +31,11 @@ userKeyRoutes.post("/", async (c) => {
   const input = createSchema.parse(await c.req.json());
   const created = await createUserKey(c.get("db"), c.get("user").id, input);
   return c.json({ ok: true, data: created }, 201);
+});
+
+userKeyRoutes.get("/:id/usage", (c) => {
+  const { id } = idParamSchema.parse(c.req.param());
+  return c.json({ ok: true, data: getUserKeyUsage(c.get("db"), c.get("user").id, id) });
 });
 
 userKeyRoutes.patch("/:id", async (c) => {
