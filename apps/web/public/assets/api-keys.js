@@ -386,7 +386,11 @@ function rebuildModalGroups() {
 
 function mapApiGroup(ag, idx) {
   var p = GROUP_PALETTE[idx % GROUP_PALETTE.length];
-  var mult = numericRatio(ag.rateMultiplier != null ? ag.rateMultiplier / 100 : ag.rate_multiplier, 1);
+  var mult = numericRatio(
+    ag.ratio != null ? ag.ratio :
+    (ag.rateMultiplier != null ? ag.rateMultiplier / 100 : ag.rate_multiplier),
+    1
+  );
   return {
     id: ag.id,
     name: ag.name || 'Group ' + ag.id,
@@ -436,7 +440,9 @@ function ensureSkPrefix(key) {
 function mapApiKey(ak) {
   var prefixRaw = String(ak.prefix || ak.keyPrefix || ak.key || '').trim();
   var isActive = (typeof ak.status === 'number') ? ak.status === 1 : (ak.status == null || ak.status === 'active');
-  var quotaLimit = ak.quotaLimit == null ? null : Number(ak.quotaLimit);
+  var quotaLimit = ak.quota != null ? Number(ak.quota) : (ak.quotaLimit == null ? null : Number(ak.quotaLimit));
+  if (quotaLimit === 0) quotaLimit = null;
+  var groupId = ak.group_id != null ? ak.group_id : ak.groupId;
   return {
     id: String(ak.id),
     _apiId: ak.id,
@@ -447,17 +453,17 @@ function mapApiKey(ak) {
     mask: '············',
     suffix: prefixRaw.length > 8 ? '…' : '',
     fullKey: prefixRaw ? prefixRaw + '…' : '',
-    group: ak.groupId == null ? null : Number(ak.groupId),
+    group: groupId == null ? null : Number(groupId),
     groupSlug: '',
     groupObj: null,
     quotaN: quotaLimit,
     quotaUnit: 'd',
     models: Array.isArray(ak.modelAllow) ? ak.modelAllow : [],
     notes: ak.note || '',
-    ipRestrict: Array.isArray(ak.ipAllow) ? ak.ipAllow.join('\\n') : (ak.ipAllow || null),
+    ipRestrict: Array.isArray(ak.ip_whitelist) ? ak.ip_whitelist.join('\\n') : (Array.isArray(ak.ipAllow) ? ak.ipAllow.join('\\n') : (ak.ipAllow || null)),
     created: _fmtDate(ak.createdAt || ak.created_at),
     lastUsed: _fmtDate(ak.lastUsedAt || ak.last_used_at),
-    expires: ak.expiresAt ? _fmtDate(ak.expiresAt) : null,
+    expires: (ak.expiresAt || ak.expires_at) ? _fmtDate(ak.expiresAt || ak.expires_at) : null,
     usage7d: null,
   };
 }
@@ -469,11 +475,8 @@ MexionI18n.register({
 
 function loadGroups() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  var isAdmin = false;
-  try { isAdmin = localStorage.getItem('mexion_user_role') === 'admin'; } catch(e) {}
-  var path = isAdmin ? '/admin/groups' : '/user/groups';
-  return MexionHttp.get(path).then(function(data) {
-    var list = (data && data.groups) || (Array.isArray(data) ? data : []);
+  return MexionHttp.get('/groups/available').then(function(data) {
+    var list = (data && (data.groups || data.items)) || (Array.isArray(data) ? data : []);
     window.__groupIdToSlug = {};
     GROUPS = list.map(function(g, idx){
       if (g && g.id != null) window.__groupIdToSlug[g.id] = String(g.id);
@@ -549,14 +552,16 @@ function inviteLockHint(acc) {
 
 function loadKeys(cb) {
   if (typeof MexionHttp === 'undefined') return;
-  MexionHttp.get('/user/keys').then(function(data) {
+  MexionHttp.get('/keys?page=1&page_size=100').then(function(data) {
     KEYS_DATA = ((data && (data.keys || data.items)) || (Array.isArray(data) ? data : [])).map(mapApiKey);
     renderGroupBar();
     renderKeyList();
     renderDetail();
     updatePageStats();
     if (cb) cb();
-  }).catch(function(err) { console.error('Load keys failed:', err); });
+  }).catch(function(err) {
+    if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (MexionI18n.lang === 'zh' ? '密钥加载失败' : 'Failed to load keys'), { tone: 'error' });
+  });
 }
 
 function updatePageStats() {
@@ -609,9 +614,9 @@ function normalizeUsageDays(days) {
   return (Array.isArray(days) ? days : []).map(function(day) {
     return {
       date: String(day && day.date ? day.date : ''),
-      calls: Math.max(0, Number(day && day.calls) || 0),
-      tokens: Math.max(0, Number(day && day.tokens) || 0),
-      cost: Math.max(0, Number(day && day.cost) || 0),
+      calls: Math.max(0, Number(day && (day.calls != null ? day.calls : day.requests)) || 0),
+      tokens: Math.max(0, Number(day && (day.tokens != null ? day.tokens : day.total_tokens)) || 0),
+      cost: Math.max(0, Number(day && (day.actual_cost != null ? day.actual_cost : day.cost)) || 0),
       avgLatency: Math.max(0, Number(day && day.avgLatency) || 0),
       errors: Math.max(0, Number(day && day.errors) || 0)
     };
@@ -682,8 +687,8 @@ function loadKeyUsage(k) {
   if (Array.isArray(k.usage7d) || k._usageLoading) return;
   k._usageLoading = true;
   k._usageError = false;
-  MexionHttp.get('/user/keys/' + encodeURIComponent(k._apiId) + '/usage').then(function(data) {
-    k.usage7d = normalizeUsageDays(data && data.days);
+  MexionHttp.get('/user/api-keys/' + encodeURIComponent(k._apiId) + '/usage/daily?days=7').then(function(data) {
+    k.usage7d = normalizeUsageDays((data && (data.items || data.days)) || []);
     k._usageLoading = false;
     k._usageError = false;
     if (selectedKeyId === k.id) updateUsageBox(k);
@@ -811,9 +816,13 @@ function openGroupChipDropdown(chip, k){
 }
 function applyGroupChange(k, groupId){
   if (groupId === k.group) return;
-  if (window.MexionToast && MexionToast.show) {
-    MexionToast.show(MexionI18n.lang === 'zh' ? '当前版本暂不支持修改密钥分组，请新建密钥选择分组' : 'Changing key group is not supported yet. Create a new key with the desired group.', { tone: 'error' });
-  }
+  if (!k || !k._apiId || typeof MexionHttp === 'undefined') return;
+  MexionHttp.put('/keys/' + k._apiId, { group_id: groupId == null ? null : Number(groupId) }).then(function() {
+    k.group = groupId == null ? null : Number(groupId);
+    loadKeys();
+  }).catch(function(err) {
+    if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (MexionI18n.lang === 'zh' ? '分组更新失败' : 'Failed to update group'), { tone: 'error' });
+  });
 }
 function renderKeyList(){
   var list = document.getElementById('keyList');
@@ -955,7 +964,9 @@ function renderDetail(){
   var toggleBtn = document.getElementById('kdToggle');
   toggleBtn && toggleBtn.addEventListener('click', function(){
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
-      MexionHttp.patch('/user/keys/' + k._apiId, { status: k.active ? 'disabled' : 'active' }).then(function() { loadKeys(); }).catch(function() {});
+      MexionHttp.put('/keys/' + k._apiId, { status: k.active ? 'inactive' : 'active' }).then(function() { loadKeys(); }).catch(function(err) {
+        if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (MexionI18n.lang === 'zh' ? '状态更新失败' : 'Failed to update status'), { tone: 'error' });
+      });
     }
   });
   var deleteBtn = document.getElementById('kdDeleteBtn');
@@ -990,7 +1001,7 @@ function openDeleteModal(k) {
     confirmSpan.textContent = lang === 'zh' ? '删除中…' : 'Deleting…';
 
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
-      MexionHttp.delete('/user/keys/' + k._apiId).then(function() {
+      MexionHttp.delete('/keys/' + k._apiId).then(function() {
         if (selectedKeyId === k.id) selectedKeyId = null;
         closeDelModal();
         loadKeys();
@@ -1149,7 +1160,7 @@ function openEditModal(k) {
 
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
       var editSlug = window.__groupIdToSlug ? (window.__groupIdToSlug[_editGroupId] || '') : '';
-      MexionHttp.patch('/user/keys/' + k._apiId, { name: newName, status: _editStatus === 'active' ? 'active' : 'disabled' }).then(function() {
+      MexionHttp.put('/keys/' + k._apiId, { name: newName, status: _editStatus === 'active' ? 'active' : 'inactive', group_id: _editGroupId == null ? null : Number(_editGroupId) }).then(function() {
         closeEditModal();
         loadKeys();
       }).catch(function(err) {
@@ -1327,7 +1338,7 @@ document.addEventListener('keydown', function(e){
       if (selectedKeyId === currentKid) selectedKeyId = null;
       close();
       if (dk && dk._apiId && typeof MexionHttp !== 'undefined') {
-        MexionHttp.delete('/user/keys/' + dk._apiId).then(function() {
+        MexionHttp.delete('/keys/' + dk._apiId).then(function() {
           loadKeys();
         }).catch(function() {});
       } else {
@@ -2133,39 +2144,33 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
   if (!name) { var ni = document.getElementById('newKeyName'); ni && ni.focus(); return; }
   if (typeof MexionHttp === 'undefined') return;
 
-  if (selGroupId == null) {
-    if (window.MexionToast && window.MexionToast.show) {
-      window.MexionToast.show(MexionI18n.lang === 'zh' ? '请先选择一个分组' : 'Please select a group first', { tone: 'error' });
-    }
-    return;
-  }
   var payload = {
     name: name,
-    note: ((document.getElementById('newKeyNotes') || {}).value || '').trim(),
-    groupId: selGroupId == null ? null : Number(selGroupId),
-    quotaLimit: null,
-    modelAllow: null,
-    ipAllow: [],
-    expiresAt: null
+    group_id: selGroupId == null ? null : Number(selGroupId)
   };
 
   var expDate = window.__expState ? window.__expState.get() : null;
-  if (expDate) payload.expiresAt = expDate.toISOString();
+  if (expDate) {
+    var expDays = Math.ceil((expDate.getTime() - Date.now()) / 86400000);
+    if (expDays > 0) payload.expires_in_days = expDays;
+  }
 
   var isUnlimited = document.getElementById('togUnlimited');
   if (isUnlimited && !isUnlimited.classList.contains('is-on')) {
     var qInput = document.querySelector('#quotaLimitWrap input');
     var qv = qInput ? parseInt(qInput.value || '0', 10) : 0;
-    if (qv > 0) payload.quotaLimit = qv;
+    if (qv > 0) payload.quota = qv;
   }
 
   var modelInput = document.querySelector('#msecAdv input');
   if (modelInput && modelInput.value.trim()) {
-    payload.modelAllow = modelInput.value.split(/[\n,]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+    if (window.MexionToast && MexionToast.show) {
+      window.MexionToast.show(MexionI18n.lang === 'zh' ? 'sub2api 密钥接口不支持模型限制，已忽略该字段' : 'Model restriction is not supported by sub2api keys and was ignored');
+    }
   }
   var ipEl = document.querySelector('#msecAdv textarea');
   if (ipEl && ipEl.value.trim()) {
-    payload.ipAllow = ipEl.value.trim().split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    payload.ip_whitelist = ipEl.value.trim().split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
   }
 
   var confirmBtn = document.getElementById('modalConfirm');
@@ -2194,7 +2199,7 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
     confirmBtn.onclick = closeModal;
   }
 
-  MexionHttp.post('/user/keys', payload).then(function(resp) {
+  MexionHttp.post('/keys', payload).then(function(resp) {
     loadKeys(function() {
       // 取「后端 id 最大」者 = 刚创建的 token。原来取 KEYS_DATA[length-1],但列表是「最新在前」,
       // length-1 实为最旧的 token → 弹窗一次性密钥显示成了别的(旧)key,与列表新 key 不一致。
@@ -2202,12 +2207,12 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
       if (newest) selectedKeyId = newest.id;
       renderKeyList();
       renderDetail();
-      var fullKey = (resp && (resp.secret || resp.key || (resp.data && resp.data.secret))) || '';
+      var fullKey = (resp && (resp.secret || resp.key || (resp.data && (resp.data.secret || resp.data.key)))) || '';
       showNewKey(fullKey || (MexionI18n.lang === 'zh' ? '密钥已创建，但未返回明文' : 'Key created, but no secret returned'));
     });
   }).catch(function(err) {
-    console.error('Create key failed:', err);
     confirmBtn.disabled = false;
+    if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (MexionI18n.lang === 'zh' ? '创建失败' : 'Create failed'), { tone: 'error' });
   });
 });
 
@@ -2242,7 +2247,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var start = performance.now();
       void url;
       if (typeof MexionHttp === 'undefined') { resolve(-1); return; }
-      MexionHttp.get('/health')
+      MexionHttp.get('/settings/public')
         .then(function(){ resolve(Math.round(performance.now() - start)); })
         .catch(function(){ resolve(-1); });
     });
