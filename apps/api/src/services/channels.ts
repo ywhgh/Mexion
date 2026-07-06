@@ -425,9 +425,13 @@ export function resolveModelAlias(db: DbClient, model: string): { model: string;
   throw new HTTPException(400, { message: "Model alias chain too deep" });
 }
 
-export function selectChannel(db: DbClient, model: string, groupId?: number | null): ChannelRecord {
+export function selectChannelCandidates(db: DbClient, model: string, groupId?: number | null): ChannelRecord[] {
   const resolved = resolveModelAlias(db, model);
-  if (resolved.alias?.channelId) return getChannel(db, resolved.alias.channelId);
+  if (resolved.alias?.channelId) {
+    const channel = getChannel(db, resolved.alias.channelId);
+    if (channel.status !== "active") throw new HTTPException(503, { message: "No available channel" });
+    return [channel];
+  }
   const params: Array<number | string> = [];
   let where = "WHERE status = 'active'";
   if (groupId !== null && groupId !== undefined) {
@@ -442,14 +446,22 @@ export function selectChannel(db: DbClient, model: string, groupId?: number | nu
     )
     .all(...params);
   const now = Date.now();
+  const candidates: ChannelRecord[] = [];
   for (const row of rows) {
     const channel = rowToChannel(row);
     if (!channel) continue;
     if (channel.errorCount > 5 && channel.lastCheckedAt && now - Date.parse(channel.lastCheckedAt) < 5 * 60_000) continue;
     if (channel.modelList && channel.modelList.length > 0 && !channel.modelList.includes(resolved.model)) continue;
-    return channel;
+    candidates.push(channel);
   }
-  throw new HTTPException(503, { message: "No available channel" });
+  if (candidates.length === 0) throw new HTTPException(503, { message: "No available channel" });
+  return candidates;
+}
+
+export function selectChannel(db: DbClient, model: string, groupId?: number | null): ChannelRecord {
+  const channel = selectChannelCandidates(db, model, groupId)[0];
+  if (!channel) throw new HTTPException(503, { message: "No available channel" });
+  return channel;
 }
 
 function assertAliasNoCycle(db: DbClient, sourceModel: string, targetModel: string): void {

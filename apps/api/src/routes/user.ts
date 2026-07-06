@@ -71,7 +71,7 @@ userRoutes.post("/login", async (c) => {
   try {
     const { user, sessionToken } = await loginUser(c.get("db"), { emailOrUsername, password: input.password });
     setUserCookie(c, sessionToken);
-    return c.json({ ok: true, data: { ...user, user, sessionToken } });
+    return c.json({ ok: true, data: { user, sessionToken } });
   } catch (error) {
     const admin = findAdminByUsername(c.get("db"), emailOrUsername);
     if (!admin || !(await bcrypt.compare(input.password, admin.passwordHash))) throw error;
@@ -91,7 +91,7 @@ userRoutes.post("/login", async (c) => {
       createdAt: safeAdmin.createdAt,
       updatedAt: safeAdmin.createdAt,
     };
-    return c.json({ ok: true, data: { ...user, user, sessionToken: "" } });
+    return c.json({ ok: true, data: { user, sessionToken: "" } });
   }
 });
 
@@ -119,12 +119,12 @@ userRoutes.get("/self", async (c, next) => {
       createdAt: admin.createdAt,
       updatedAt: admin.createdAt,
     };
-    return c.json({ ok: true, data: { ...user, user } });
+    return c.json({ ok: true, data: { user, sessionToken: "" } });
   }
   await next();
 }, requireUser, (c) => {
   const user = c.get("user");
-  return c.json({ ok: true, data: { ...user, user } });
+  return c.json({ ok: true, data: { user, sessionToken: "" } });
 });
 userRoutes.post("/checkin", requireUser, (c) => c.json({ ok: true, data: dailyCheckin(c.get("db"), c.get("user").id) }));
 userRoutes.get("/setting", requireUser, (c) => c.json({ ok: true, data: getUserSetting(c.get("db"), c.get("user").id) }));

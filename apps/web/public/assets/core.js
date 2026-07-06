@@ -705,13 +705,14 @@
     }).then(function (json) {
       if (json.success === false) return Promise.reject(new Error(json.message || 'Login failed'));
       var loginData = json.data || {};
+      var sourceUser = loginData.user || loginData;
       var user = {
-        id: loginData.id,
-        email: email,
-        username: loginData.display_name || loginData.username || email.split('@')[0],
-        role: loginData.role === 100 || loginData.role === 'admin' ? 'admin' : 'user',
-        balance: 0,
-        status: loginData.status === 1 ? 'active' : 'disabled'
+        id: sourceUser.id,
+        email: sourceUser.email || email,
+        username: sourceUser.display_name || sourceUser.displayName || sourceUser.username || email.split('@')[0],
+        role: sourceUser.role === 100 || sourceUser.role === 'admin' ? 'admin' : 'user',
+        balance: sourceUser.balance || 0,
+        status: sourceUser.status === 1 || sourceUser.status === 'active' ? 'active' : 'disabled'
       };
       setSession('', user, '', rememberMe);
       return fetchUser().then(function (fullUser) { return fullUser; }).catch(function () { return user; });
@@ -723,7 +724,7 @@
     if (_userRefreshPromise) return _userRefreshPromise;
     _userRefreshPromise = MexionHttp.get('/user/self').then(function (data) {
       return storeSyncedUser(
-        normalizeUser(data),
+        normalizeUser(data && data.user ? data.user : data),
         options && options.source ? options.source : 'fetch'
       );
     }).finally(function () {
