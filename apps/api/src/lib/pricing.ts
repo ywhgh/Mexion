@@ -33,7 +33,9 @@ function numberField(obj: Record<string, unknown> | null, ...keys: string[]): nu
 
 export function parseUsageFromResponse(_provider: string, responseBody: unknown): UsageTokens {
   const body = objectValue(responseBody);
-  const usage = objectValue(body?.usage) ?? objectValue(body?.usageMetadata);
+  const response = objectValue(body?.response);
+  const message = objectValue(body?.message);
+  const usage = objectValue(body?.usage) ?? objectValue(response?.usage) ?? objectValue(message?.usage) ?? objectValue(body?.usageMetadata);
   const inputTokens = numberField(usage, "prompt_tokens", "input_tokens", "inputTokens", "promptTokenCount");
   const outputTokens = numberField(usage, "completion_tokens", "output_tokens", "outputTokens", "candidatesTokenCount");
   const totalTokens = numberField(usage, "total_tokens", "totalTokens", "totalTokenCount");

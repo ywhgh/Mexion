@@ -66,6 +66,75 @@ function downstreamStatus(upstream: Response): number {
   return upstream.status >= 400 && upstream.status < 500 ? upstream.status : 502;
 }
 
+function usageHasTokens(usage: ReturnType<typeof parseUsageFromResponse>): boolean {
+  return usage.inputTokens > 0 || usage.outputTokens > 0;
+}
+
+function parseStreamJsonLine(line: string): unknown | null {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed === "[DONE]") return null;
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function createUsageTrackingStream(
+  upstreamBody: ReadableStream<Uint8Array>,
+  onDone: (usage: ReturnType<typeof parseUsageFromResponse> | null) => void,
+  provider: string,
+): ReadableStream<Uint8Array> {
+  const decoder = new TextDecoder();
+  let lineBuffer = "";
+  let streamUsage: ReturnType<typeof parseUsageFromResponse> | null = null;
+
+  function rememberUsage(parsed: unknown): void {
+    const usage = parseUsageFromResponse(provider, parsed);
+    if (!usageHasTokens(usage)) return;
+    streamUsage = {
+      inputTokens: Math.max(streamUsage?.inputTokens ?? 0, usage.inputTokens),
+      outputTokens: Math.max(streamUsage?.outputTokens ?? 0, usage.outputTokens),
+    };
+  }
+
+  function processLine(line: string): void {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    if (trimmed.startsWith("data:")) {
+      rememberUsage(parseStreamJsonLine(trimmed.slice(5)));
+      return;
+    }
+    if (trimmed.startsWith("{")) rememberUsage(parseStreamJsonLine(trimmed));
+  }
+
+  function processText(text: string): void {
+    lineBuffer += text;
+    let nextBreak = lineBuffer.search(/\r?\n/);
+    while (nextBreak >= 0) {
+      const line = lineBuffer.slice(0, nextBreak);
+      lineBuffer = lineBuffer.slice(lineBuffer[nextBreak] === "\r" && lineBuffer[nextBreak + 1] === "\n" ? nextBreak + 2 : nextBreak + 1);
+      processLine(line);
+      nextBreak = lineBuffer.search(/\r?\n/);
+    }
+    if (lineBuffer.length > 65536) lineBuffer = lineBuffer.slice(-65536);
+  }
+
+  return upstreamBody.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        controller.enqueue(chunk);
+        processText(decoder.decode(chunk, { stream: true }));
+      },
+      flush() {
+        processText(decoder.decode());
+        if (lineBuffer.trim()) processLine(lineBuffer);
+        onDone(streamUsage);
+      },
+    }),
+  );
+}
+
 export async function handleGatewayRequest(c: Context<AppBindings>, options: GatewayOptions): Promise<Response> {
   const started = performance.now();
   const requestId = crypto.randomUUID();
@@ -129,23 +198,37 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
       });
 
       if (body.stream === true && upstream.ok && upstream.body) {
-        const durationMs = Math.max(0, Math.round(performance.now() - started));
-        settleBilling(c.get("db"), requestId, {
-          actualCost: estimatedCost,
-          inputTokens: roughInputTokens(rawBody.byteLength),
-          outputTokens: 0,
-          durationMs,
-          model: resolved.model,
-          provider: channel.provider,
-          channelId: channel.id,
-          bodyHash,
-          bodyLength: rawBody.byteLength,
-          keyPrefix: key?.prefix ?? null,
-          status: "stream",
-        });
-        markChannelSuccess(c.get("db"), channel.id, durationMs);
-        insertRequestLog(channel, upstream.status, durationMs, roughInputTokens(rawBody.byteLength), 0, estimatedCost, null);
-        return new Response(upstream.body, { status: upstream.status, headers: responseHeaders(upstream.headers) });
+        const trackedBody = createUsageTrackingStream(
+          upstream.body,
+          (streamUsage) => {
+            const durationMs = Math.max(0, Math.round(performance.now() - started));
+            const hasRealUsage = !!streamUsage && usageHasTokens(streamUsage);
+            const inputTokens = hasRealUsage ? (streamUsage.inputTokens || roughInputTokens(rawBody.byteLength)) : roughInputTokens(rawBody.byteLength);
+            const outputTokens = hasRealUsage ? streamUsage.outputTokens : 0;
+            const actualCost = hasRealUsage ? estimateCost(channel.provider, resolved.model, inputTokens, outputTokens) : estimatedCost;
+            try {
+              settleBilling(c.get("db"), requestId, {
+                actualCost,
+                inputTokens,
+                outputTokens,
+                durationMs,
+                model: resolved.model,
+                provider: channel.provider,
+                channelId: channel.id,
+                bodyHash,
+                bodyLength: rawBody.byteLength,
+                keyPrefix: key?.prefix ?? null,
+                status: hasRealUsage ? "ok" : "stream_estimated",
+              });
+              markChannelSuccess(c.get("db"), channel.id, durationMs);
+              insertRequestLog(channel, upstream.status, durationMs, inputTokens, outputTokens, actualCost, null);
+            } catch (error) {
+              console.warn("Failed to settle streaming billing", error);
+            }
+          },
+          channel.provider,
+        );
+        return new Response(trackedBody, { status: upstream.status, headers: responseHeaders(upstream.headers) });
       }
 
       const responseText = await upstream.text();

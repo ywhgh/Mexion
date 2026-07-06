@@ -81,6 +81,39 @@ describe("gateway handler", () => {
     expect((db.sqlite.prepare("SELECT COUNT(*) AS c FROM request_logs WHERE user_id = ?").get(user.id) as { c: number }).c).toBe(1);
   });
 
+  it("captures streaming usage when settling", async () => {
+    const { app, db, secret, user } = await fixture();
+    const encoder = new TextEncoder();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(encoder.encode('data: {"id":"chunk","choices":[{"delta":{"content":"hi"}}]}\n\n'));
+            controller.enqueue(encoder.encode('data: {"response":{"usage":{"input_tokens":123,"output_tokens":45,"total_tokens":168}}}\n\n'));
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+          },
+        }),
+        { status: 200, headers: { "content-type": "text/event-stream" } },
+      )),
+    );
+    const res = await app.request("/v1/chat/completions", {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+      body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "user", content: "hi" }], stream: true }),
+    });
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain("[DONE]");
+    expect((db.sqlite.prepare("SELECT status FROM billing_sessions ORDER BY id DESC LIMIT 1").get() as { status: string }).status).toBe("settled");
+    expect(
+      db.sqlite.prepare("SELECT input_tokens AS inputTokens, output_tokens AS outputTokens, status FROM usage_events WHERE user_id = ? ORDER BY id DESC LIMIT 1").get(user.id),
+    ).toEqual({ inputTokens: 123, outputTokens: 45, status: "ok" });
+    expect(
+      db.sqlite.prepare("SELECT input_tokens AS inputTokens, output_tokens AS outputTokens FROM request_logs WHERE user_id = ? ORDER BY id DESC LIMIT 1").get(user.id),
+    ).toEqual({ inputTokens: 123, outputTokens: 45 });
+  });
+
   it("rolls back provider 500", async () => {
     const { app, db, secret } = await fixture();
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: { message: "bad" } }), { status: 500, headers: { "content-type": "application/json" } })));
