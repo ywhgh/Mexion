@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { requireUser } from "../middleware/require-user.js";
-import { activateSubscriptionPlan, getBillingSummary, getUsageSummary, listSubscriptionPlans } from "../services/billing.js";
+import { activateSubscriptionPlan, getBillingSummary, getSubscriptionProgress, getSubscriptionSummary, getUsageSummary, listSubscriptionPlans } from "../services/billing.js";
 
 export const billingRoutes = new Hono<AppBindings>();
 
@@ -13,6 +13,7 @@ billingRoutes.get("/subscription/plans", (c) => c.json({ ok: true, data: { plans
 billingRoutes.use("/user/billing", requireUser);
 billingRoutes.use("/user/usage", requireUser);
 billingRoutes.use("/user/subscriptions", requireUser);
+billingRoutes.use("/user/subscriptions/*", requireUser);
 billingRoutes.use("/user/logs", requireUser);
 
 billingRoutes.get("/user/billing", (c) => c.json({ ok: true, data: getBillingSummary(c.get("db"), c.get("user").id) }));
@@ -24,6 +25,8 @@ billingRoutes.get("/user/subscriptions", (c) => {
     .all(c.get("user").id);
   return c.json({ ok: true, data: { subscriptions: rows } });
 });
+billingRoutes.get("/user/subscriptions/progress", (c) => c.json({ ok: true, data: { progress: getSubscriptionProgress(c.get("db"), c.get("user").id) } }));
+billingRoutes.get("/user/subscriptions/summary", (c) => c.json({ ok: true, data: { summary: getSubscriptionSummary(c.get("db"), c.get("user").id) } }));
 billingRoutes.post("/user/subscriptions", async (c) => {
   const input = subscriptionSchema.parse(await c.req.json());
   return c.json({ ok: true, data: { subscription: activateSubscriptionPlan(c.get("db"), c.get("user").id, input.planId) } }, 201);

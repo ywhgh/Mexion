@@ -206,6 +206,104 @@ function getBillingLang() {
   return (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
 }
 
+function billingEsc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"]/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch];
+  });
+}
+
+function formatQuotaUnits(value) {
+  var num = Number(value || 0);
+  if (!isFinite(num)) num = 0;
+  return Math.round(num).toLocaleString();
+}
+
+function formatSubscriptionDate(value) {
+  var d = value ? new Date(value) : null;
+  if (!d || isNaN(d.getTime())) return '—';
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function ensureSubscriptionProgressCard() {
+  var card = document.getElementById('subProgressCard');
+  if (card) return card;
+  var hero = document.querySelector('.bill-hero');
+  var actionGrid = document.querySelector('.action-grid');
+  card = document.createElement('section');
+  card.className = 'card sub-progress-card fade-in fade-in--3';
+  card.id = 'subProgressCard';
+  card.innerHTML =
+    '<div class="card__head">' +
+      '<span class="card__title" id="subProgressTitle">§ 订阅进度</span>' +
+      '<span class="card__title-meta" id="subProgressMeta">—</span>' +
+    '</div>' +
+    '<div class="sub-summary-grid" id="subSummaryGrid"></div>' +
+    '<div class="sub-progress-list" id="subProgressList"></div>';
+  if (actionGrid && actionGrid.parentNode) actionGrid.parentNode.insertBefore(card, actionGrid);
+  else if (hero && hero.parentNode) hero.parentNode.appendChild(card);
+  return card;
+}
+
+function renderSubscriptionProgress(progressData, summaryData) {
+  var lang = getBillingLang();
+  var card = ensureSubscriptionProgressCard();
+  var title = document.getElementById('subProgressTitle');
+  var meta = document.getElementById('subProgressMeta');
+  var summaryGrid = document.getElementById('subSummaryGrid');
+  var list = document.getElementById('subProgressList');
+  var progress = Array.isArray(progressData) ? progressData : [];
+  var summary = summaryData || {};
+
+  if (title) title.textContent = lang === 'zh' ? '§ 订阅进度' : '§ Subscription progress';
+  if (meta) meta.textContent = progress.length + (lang === 'zh' ? ' 个活跃套餐' : ' active plan' + (progress.length === 1 ? '' : 's'));
+
+  if (summaryGrid) {
+    var pct = Math.round(Number(summary.overallPercent || 0));
+    summaryGrid.innerHTML =
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '总额度' : 'Total quota') + '</span><b>' + formatQuotaUnits(summary.totalQuota) + '</b></div>' +
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '已用' : 'Used') + '</span><b>' + formatQuotaUnits(summary.totalUsed) + '</b></div>' +
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '剩余' : 'Remaining') + '</span><b>' + formatQuotaUnits(summary.totalRemaining) + '</b></div>' +
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '总体进度' : 'Overall') + '</span><b>' + pct + '%</b></div>' +
+      '<div class="sub-summary-cell sub-summary-cell--wide"><span>' + (lang === 'zh' ? '最早到期' : 'Earliest expiry') + '</span><b>' + formatSubscriptionDate(summary.earliestExpiry) + '</b></div>';
+  }
+
+  if (!list) return;
+  if (!progress.length) {
+    card.hidden = false;
+    list.innerHTML = '<div class="sub-progress-empty">' + (lang === 'zh' ? '暂无活跃订阅，启用套餐后这里会显示额度进度。' : 'No active subscriptions. Progress appears here after a plan is activated.') + '</div>';
+    return;
+  }
+  list.innerHTML = progress.map(function(item) {
+    var used = Math.max(0, Math.min(100, Number(item.usedPercent || 0)));
+    var pctLabel = Math.round(used) + '%';
+    var name = billingEsc(item.planName || ('Plan #' + item.planId));
+    var days = Number(item.daysLeft || 0);
+    var metaText = lang === 'zh'
+      ? '剩余 ' + formatQuotaUnits(item.remainingQuota) + ' quota · 还有 ' + days + ' 天到期'
+      : formatQuotaUnits(item.remainingQuota) + ' quota left · expires in ' + days + ' day' + (days === 1 ? '' : 's');
+    return '<div class="sub-progress-item' + (item.isLow ? ' is-low' : '') + '">' +
+      '<div class="sub-progress-header">' +
+        '<span class="sub-plan-name">' + name + '</span>' +
+        '<span class="sub-progress-pct">' + pctLabel + '</span>' +
+      '</div>' +
+      '<div class="sub-progress-bar" aria-hidden="true"><div class="sub-progress-fill" style="width:' + used.toFixed(2) + '%"></div></div>' +
+      '<div class="sub-progress-meta">' + billingEsc(metaText) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function loadSubscriptionProgress() {
+  if (typeof MexionHttp === 'undefined') return Promise.resolve();
+  return Promise.all([
+    MexionHttp.get('/user/subscriptions/progress').catch(function(){ return { progress: [] }; }),
+    MexionHttp.get('/user/subscriptions/summary').catch(function(){ return { summary: {} }; })
+  ]).then(function(results) {
+    var progress = results[0] && (results[0].progress || results[0].items || results[0]);
+    var summary = results[1] && (results[1].summary || results[1]);
+    renderSubscriptionProgress(progress, summary);
+  });
+}
+
 function refreshBillingUserState(animate, source) {
   if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
     return MexionAuth.refreshUser({ source: source || 'billing-refresh', force: true }).then(function(user){
@@ -281,7 +379,8 @@ function pollBillingSnapshot(source) {
   BILLING_POLL_INFLIGHT = true;
   return Promise.allSettled([
     refreshBillingUserState(false, source || 'billing-poll'),
-    reloadBillingTransactions()
+    reloadBillingTransactions(),
+    loadSubscriptionProgress()
   ]).then(function(r) { BILLING_POLL_INFLIGHT = false; return r; },
          function(e) { BILLING_POLL_INFLIGHT = false; throw e; });
 }
@@ -1286,7 +1385,7 @@ document.addEventListener('DOMContentLoaded', function(){
   Promise.all([
     MexionHttp.get('/subscription/plans').catch(function(){ return { plans: [] }; }),
     MexionHttp.get('/user/subscriptions').catch(function(){ return { subscriptions: [] }; })
-  ]).then(function(){});
+  ]).then(function(){ loadSubscriptionProgress(); });
   reloadBillingTransactions();
   startBillingPolling();
 
@@ -1324,6 +1423,7 @@ document.addEventListener('DOMContentLoaded', function(){
 /* Re-render dynamic strings when language flips */
 MexionI18n.onChange(function(){ MexionI18n.preserve(function(){
   if (typeof window.__billingUpdateTopupUI === 'function') window.__billingUpdateTopupUI();
+  loadSubscriptionProgress();
   reloadBillingTransactions();
 }); });
 

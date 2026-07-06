@@ -16,6 +16,28 @@ export type BillingSessionRecord = {
 
 export type PrechargeInput = { requestId: string; userId: number; keyId?: number | null | undefined; estimatedCost: number };
 export type SettleInput = { actualCost: number; inputTokens: number; outputTokens: number; durationMs: number; ttftMs?: number | null | undefined; model?: string | null | undefined; provider?: string | null | undefined; channelId?: number | null | undefined; bodyHash?: string | null | undefined; bodyLength?: number | null | undefined; keyPrefix?: string | null | undefined; status?: string | undefined };
+export type SubscriptionProgressItem = {
+  id: number;
+  planId: number;
+  planName: string;
+  quotaTotal: number;
+  quotaUsed: number;
+  usedPercent: number;
+  remainingQuota: number;
+  daysLeft: number;
+  startsAt: string;
+  expiresAt: string;
+  status: string;
+  isLow: boolean;
+};
+export type SubscriptionSummary = {
+  totalQuota: number;
+  totalUsed: number;
+  totalRemaining: number;
+  activePlans: number;
+  earliestExpiry: string | null;
+  overallPercent: number;
+};
 
 function numberValue(row: unknown, key: string): number {
   if (!row || typeof row !== "object") return 0;
@@ -176,6 +198,79 @@ export function getBillingSummary(db: DbClient, userId: number): Record<string, 
     .prepare("SELECT substr(ts,1,10) AS day, COALESCE(SUM(cost),0) AS cost, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COUNT(*) AS calls FROM usage_events WHERE user_id = ? AND ts >= datetime('now','-7 days') GROUP BY day ORDER BY day")
     .all(userId);
   return { ...user, subscriptions, recentUsage };
+}
+
+function activeSubscriptionRows(db: DbClient, userId: number): Array<{
+  id: number;
+  planId: number;
+  planName: string | null;
+  quotaTotal: number;
+  quotaUsed: number;
+  startsAt: string;
+  expiresAt: string;
+  status: string;
+}> {
+  return db.sqlite
+    .prepare(
+      `SELECT us.id, us.plan_id AS planId, sp.name AS planName, us.quota_total AS quotaTotal,
+        us.quota_used AS quotaUsed, us.starts_at AS startsAt, us.expires_at AS expiresAt, us.status
+       FROM user_subscriptions us
+       LEFT JOIN subscription_plans sp ON sp.id = us.plan_id
+       WHERE us.user_id = ? AND us.status = 'active' AND us.expires_at > ?
+       ORDER BY us.expires_at ASC, us.id ASC`,
+    )
+    .all(userId, new Date().toISOString()) as Array<{
+      id: number;
+      planId: number;
+      planName: string | null;
+      quotaTotal: number;
+      quotaUsed: number;
+      startsAt: string;
+      expiresAt: string;
+      status: string;
+    }>;
+}
+
+export function getSubscriptionProgress(db: DbClient, userId: number): SubscriptionProgressItem[] {
+  const now = Date.now();
+  return activeSubscriptionRows(db, userId).map((row) => {
+    const quotaTotal = Math.max(0, Number(row.quotaTotal ?? 0));
+    const quotaUsed = Math.max(0, Number(row.quotaUsed ?? 0));
+    const remainingQuota = Math.max(0, quotaTotal - quotaUsed);
+    const usedPercent = quotaTotal > 0 ? Math.min(100, Math.max(0, (quotaUsed / quotaTotal) * 100)) : 0;
+    const expiresAtMs = new Date(row.expiresAt).getTime();
+    const daysLeft = Number.isFinite(expiresAtMs) ? Math.max(0, Math.ceil((expiresAtMs - now) / 86400000)) : 0;
+    return {
+      id: row.id,
+      planId: row.planId,
+      planName: row.planName || `Plan #${row.planId}`,
+      quotaTotal,
+      quotaUsed,
+      usedPercent,
+      remainingQuota,
+      daysLeft,
+      startsAt: row.startsAt,
+      expiresAt: row.expiresAt,
+      status: row.status,
+      isLow: quotaTotal > 0 ? remainingQuota < quotaTotal * 0.1 || daysLeft <= 3 : daysLeft <= 3,
+    };
+  });
+}
+
+export function getSubscriptionSummary(db: DbClient, userId: number): SubscriptionSummary {
+  const rows = activeSubscriptionRows(db, userId);
+  const totalQuota = rows.reduce((sum, row) => sum + Math.max(0, Number(row.quotaTotal ?? 0)), 0);
+  const totalUsed = rows.reduce((sum, row) => sum + Math.max(0, Number(row.quotaUsed ?? 0)), 0);
+  const totalRemaining = Math.max(0, totalQuota - totalUsed);
+  const earliestExpiry = rows.length > 0 ? rows[0]?.expiresAt ?? null : null;
+  return {
+    totalQuota,
+    totalUsed,
+    totalRemaining,
+    activePlans: rows.length,
+    earliestExpiry,
+    overallPercent: totalQuota > 0 ? Math.min(100, Math.max(0, (totalUsed / totalQuota) * 100)) : 0,
+  };
 }
 
 export function getUsageSummary(db: DbClient, userId: number): Record<string, unknown> {
