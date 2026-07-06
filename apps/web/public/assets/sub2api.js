@@ -126,7 +126,7 @@
     var mode = remember === false ? 'session' : 'local';
     var token = data.access_token || data.token || getToken();
     var refresh = data.refresh_token || getRefreshToken();
-    var expires = data.expires_in ? String(Date.now() + Number(data.expires_in) * 1000) : safeGet(localStorage, 'token_expires_at');
+    var expires = data.expires_in ? String(Date.now() + Number(data.expires_in) * 1000) : (safeGet(localStorage, 'token_expires_at') || safeGet(sessionStorage, 'token_expires_at'));
 
     AUTH_KEYS.forEach(function (k) { if (mode === 'local') safeRemove(sessionStorage, k); else safeRemove(localStorage, k); });
     var store = mode === 'local' ? localStorage : sessionStorage;
@@ -161,11 +161,21 @@
     var raw = safeGet(localStorage, 'auth_user') || safeGet(sessionStorage, 'auth_user') || safeGet(localStorage, 'mexion_user') || safeGet(sessionStorage, 'mexion_user');
     try { return raw ? normalizeUser(JSON.parse(raw)) : null; } catch (e) { return null; }
   }
+  function currentRemember() {
+    var mode = safeGet(localStorage, 'mexion_auth_persist') || safeGet(sessionStorage, 'mexion_auth_persist');
+    if (mode === 'session') return false;
+    if (mode === 'local') return true;
+    return !!safeGet(localStorage, 'auth_token');
+  }
+  function normalizeRatio(raw, percentStyle) {
+    var n = Number(raw);
+    if (!isFinite(n) || n <= 0) return 1;
+    return (percentStyle || n > 10) ? n / 100 : n;
+  }
 
   function toLegacyGroup(g, idx) {
     g = g || {};
-    var ratio = g.ratio != null ? Number(g.ratio) : (g.rate_multiplier != null ? Number(g.rate_multiplier) / 100 : (g.rateMultiplier != null ? Number(g.rateMultiplier) / 100 : 1));
-    if (!isFinite(ratio) || ratio <= 0) ratio = 1;
+    var ratio = g.ratio != null ? normalizeRatio(g.ratio, false) : (g.rate_multiplier != null ? normalizeRatio(g.rate_multiplier, false) : normalizeRatio(g.rateMultiplier, true));
     return {
       id: g.id,
       name: g.name || ('group_' + (idx + 1)),
@@ -174,7 +184,7 @@
       desc: g.description || g.desc || '',
       ratio: ratio,
       rateMultiplier: Math.round(ratio * 100),
-      rate_multiplier: Math.round(ratio * 100),
+      rate_multiplier: ratio,
       isDefault: !!(g.is_default || g.isDefault),
       isDefaultGroup: !!(g.is_default || g.isDefault),
       is_public: g.is_public,
@@ -186,6 +196,7 @@
     var status = k.status === 'inactive' ? 'disabled' : (k.status || 'active');
     var quota = k.quota != null ? Number(k.quota) : (k.quotaLimit != null ? Number(k.quotaLimit) : null);
     if (quota === 0) quota = null;
+    var used = k.quota_used != null ? k.quota_used : (k.used_quota != null ? k.used_quota : k.usedQuota);
     return {
       id: k.id,
       name: k.name || ('Key ' + (k.id || '')),
@@ -198,9 +209,10 @@
       group_id: k.group_id != null ? k.group_id : k.groupId,
       quotaLimit: quota,
       quota_limit: quota,
-      usedQuota: k.used_quota != null ? k.used_quota : k.usedQuota,
-      quotaUsed: k.used_quota != null ? k.used_quota : k.quotaUsed,
-      used_quota: k.used_quota,
+      usedQuota: used,
+      quotaUsed: used,
+      quota_used: used,
+      used_quota: used,
       expiresAt: k.expires_at || k.expiresAt || null,
       expires_at: k.expires_at || k.expiresAt || null,
       lastUsedAt: k.last_used_at || k.lastUsedAt || null,
@@ -386,7 +398,7 @@
     }).then(function (res) {
       return res.json().then(unwrap);
     }).then(function (data) {
-      persistTokens(data, true);
+      persistTokens(data, currentRemember());
       return data.access_token;
     }).finally(function () {
       refreshPromise = null;
@@ -484,7 +496,7 @@
       if (!auth.isLoggedIn()) return Promise.resolve(null);
       return http.get('/user/profile').then(function (user) {
         var u = normalizeUser(user);
-        persistAuth({ user: u, access_token: getToken(), refresh_token: getRefreshToken() }, true);
+        persistAuth({ user: u, access_token: getToken(), refresh_token: getRefreshToken() }, currentRemember());
         return u;
       });
     },
