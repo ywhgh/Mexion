@@ -378,11 +378,11 @@ function rebuildModalGroups() {
 
 function mapApiGroup(ag, idx) {
   var p = GROUP_PALETTE[idx % GROUP_PALETTE.length];
-  var mult = numericRatio(ag.rate_multiplier, 1);
+  var mult = numericRatio(ag.rateMultiplier != null ? ag.rateMultiplier / 100 : ag.rate_multiplier, 1);
   return {
     id: ag.id,
     name: ag.name || 'Group ' + ag.id,
-    desc: ag.description || '',
+    desc: ag.description || (ag.isDefault ? 'Default group' : ''),
     slug: ag.slug || ag.name || '',
     mult: mult,
     baseMult: mult,
@@ -426,58 +426,33 @@ function ensureSkPrefix(key) {
   return key.indexOf('sk-') === 0 ? key : 'sk-' + key;
 }
 function mapApiKey(ak) {
-  var key = ensureSkPrefix(ak.key || '');
-  var isActive = (typeof ak.status === 'number') ? ak.status === 1 : ak.status === 'active';
-  var groupSlug = ak.group || '';
-  var groupId = (window.__groupIdToSlug) ? (function(){ for(var id in window.__groupIdToSlug){ if(window.__groupIdToSlug[id]===groupSlug) return parseInt(id); } return null; })() : null;
-  var quotaUsd = ak.unlimited_quota ? null : (ak.remain_quota > 0 ? Math.round(ak.remain_quota / 500000 * 100) / 100 : null);
+  var prefixRaw = String(ak.prefix || ak.keyPrefix || ak.key || '').trim();
+  var isActive = (typeof ak.status === 'number') ? ak.status === 1 : (ak.status == null || ak.status === 'active');
+  var quotaLimit = ak.quotaLimit == null ? null : Number(ak.quotaLimit);
   return {
     id: String(ak.id),
     _apiId: ak.id,
-    _raw: ak, // 保留原始 token 全字段，更新时回传避免被后端清零(额度/过期/无限额→401)
+    _raw: ak,
     name: ak.name || 'Unnamed',
     active: isActive,
-    prefix: key.substring(0, 7),
+    prefix: prefixRaw ? prefixRaw.substring(0, 8) : 'mx_',
     mask: '············',
-    suffix: key.length > 4 ? key.substring(key.length - 4) : key,
-    fullKey: key,
-    group: groupId,
-    groupSlug: groupSlug,
+    suffix: prefixRaw.length > 8 ? '…' : '',
+    fullKey: prefixRaw ? prefixRaw + '…' : '',
+    group: ak.groupId == null ? null : Number(ak.groupId),
+    groupSlug: '',
     groupObj: null,
-    quotaN: quotaUsd,
+    quotaN: quotaLimit,
     quotaUnit: 'd',
-    models: [],
-    notes: '',
-    ipRestrict: ak.allow_ips || ak.ip_whitelist || null,
-    created: _fmtDate(ak.created_time || ak.created_at),
-    lastUsed: _fmtDate(ak.accessed_time || ak.last_used_at),
-    expires: (ak.expired_time && ak.expired_time > 0) ? _fmtDate(ak.expired_time) : null,
-    usage7d: [0, 0, 0, 0, 0, 0, 0],
+    models: Array.isArray(ak.modelAllow) ? ak.modelAllow : [],
+    notes: ak.note || '',
+    ipRestrict: Array.isArray(ak.ipAllow) ? ak.ipAllow.join('\\n') : (ak.ipAllow || null),
+    created: _fmtDate(ak.createdAt || ak.created_at),
+    lastUsed: _fmtDate(ak.lastUsedAt || ak.last_used_at),
+    expires: ak.expiresAt ? _fmtDate(ak.expiresAt) : null,
+    usage7d: null,
   };
 }
-
-// 二开修复：PUT /token/ 是「整对象更新」——不发的字段后端按零值覆盖（额度→0、过期→0即1970、
-// 无限额→false），会把令牌打成「已耗尽+已过期」→ 鉴权 401。这里基于原始 token 回传全部字段，
-// 只覆盖本次要改的（名称/分组/状态），其余原样保留。
-function tokenUpdateBody(k, over) {
-  var r = (k && k._raw) || {};
-  var body = {
-    id: k._apiId,
-    name: r.name,
-    group: r.group || '',
-    status: r.status,
-    remain_quota: r.remain_quota,
-    unlimited_quota: r.unlimited_quota,
-    expired_time: r.expired_time,
-    model_limits_enabled: r.model_limits_enabled,
-    model_limits: r.model_limits,
-    allow_ips: r.allow_ips,
-    cross_group_retry: r.cross_group_retry,
-  };
-  if (over) { for (var key in over) body[key] = over[key]; }
-  return body;
-}
-
 /* Add per-language unit suffix for quota cap */
 MexionI18n.register({
   en: { 'apikeys.quota.unit.d': '/day', 'apikeys.quota.unit.h': '/hr', 'apikeys.quota.unit.m': '/min' },
@@ -486,46 +461,33 @@ MexionI18n.register({
 
 function loadGroups() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/user/groups').then(function(data) {
-    var list = [];
+  var isAdmin = false;
+  try { isAdmin = localStorage.getItem('mexion_user_role') === 'admin'; } catch(e) {}
+  var path = isAdmin ? '/admin/groups' : '/user/groups';
+  return MexionHttp.get(path).then(function(data) {
+    var list = (data && data.groups) || (Array.isArray(data) ? data : []);
     window.__groupIdToSlug = {};
-    if (data && typeof data === 'object' && !Array.isArray(data)) {
-      Object.keys(data).forEach(function(slug) {
-        var info = data[slug] || {};
-        var meta = (window.GROUP_META && window.GROUP_META[slug]) || {};
-        var fakeId = meta.id || (Math.abs(slug.split('').reduce(function(h,c){return(h*31+c.charCodeAt(0))|0},0)) % 10000 + 1000);
-        list.push({
-          id: fakeId, name: meta.name || slug, slug: slug,
-          platform: meta.platform || 'openai',
-          rate_multiplier: info.ratio || meta.rate_multiplier || 1,
-          subscription_type: meta.subscription_type || 'standard',
-          description: info.desc || meta.description || '',
-          allow_image_generation: meta.allow_image_generation || false,
-          supported_model_scopes: meta.supported_model_scopes || []
-        });
-        window.__groupIdToSlug[fakeId] = slug;
-      });
-    } else if (Array.isArray(data)) {
-      list = data;
-      data.forEach(function(g) { if (g.id && g.name) window.__groupIdToSlug[g.id] = g.slug || g.name; });
+    GROUPS = list.map(function(g, idx){
+      if (g && g.id != null) window.__groupIdToSlug[g.id] = String(g.id);
+      return mapApiGroup(g, idx);
+    });
+    if (!GROUPS.length) {
+      GROUPS = [mapApiGroup({ id: null, name: MexionI18n.lang === 'zh' ? '默认分组' : 'default', rateMultiplier: 100, isDefault: true }, 0)];
     }
-    GROUPS = list.map(mapApiGroup);
     rebuildModalGroups();
-  }).catch(function() {});
+  }).catch(function() {
+    window.__groupIdToSlug = {};
+    GROUPS = [mapApiGroup({ id: null, name: MexionI18n.lang === 'zh' ? '默认分组' : 'default', rateMultiplier: 100, isDefault: true }, 0)];
+    rebuildModalGroups();
+  });
 }
-
 // 二开：分组邀请解锁状态。slug -> {group, rule:{invitees,topup_usd,tiers}, invitees(进度), topup_usd(进度), unlocked, ratio, matched_tier, next_tier}
 var GROUP_ACCESS = {};
 function loadGroupAccess() {
-  if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/user/group-access').then(function(data){
-    GROUP_ACCESS = {};
-    var arr = (data && data.groups) || [];
-    arr.forEach(function(x){ if (x && x.group) GROUP_ACCESS[x.group] = x; });
-    applyGroupAccessRatios();
-  }).catch(function(){ GROUP_ACCESS = {}; });
-}
-function groupAccessBySlug(slug) {
+  GROUP_ACCESS = {};
+  applyGroupAccessRatios();
+  return Promise.resolve();
+}function groupAccessBySlug(slug) {
   return slug ? GROUP_ACCESS[slug] : null;
 }
 function accessEffectiveRatio(acc) {
@@ -579,8 +541,8 @@ function inviteLockHint(acc) {
 
 function loadKeys(cb) {
   if (typeof MexionHttp === 'undefined') return;
-  MexionHttp.get('/token/?p=0&size=100').then(function(data) {
-    KEYS_DATA = (data.items || []).map(mapApiKey);
+  MexionHttp.get('/user/keys').then(function(data) {
+    KEYS_DATA = ((data && (data.keys || data.items)) || (Array.isArray(data) ? data : [])).map(mapApiKey);
     renderGroupBar();
     renderKeyList();
     renderDetail();
@@ -705,7 +667,7 @@ function filteredKeys(){
   });
 }
 
-// ── 二开:卡片分组 chip 内联下拉,点 chip 直接切换该 key 的分组(复用 MODAL_GROUPS + tokenUpdateBody + __groupIdToSlug)──
+// ── 二开:卡片分组 chip 内联下拉,点 chip 直接切换该 key 的分组(复用 MODAL_GROUPS + __groupIdToSlug)──
 var _grpChipDD = null;
 function _closeGrpChipDD(){
   if (_grpChipDD){ _grpChipDD.remove(); _grpChipDD = null; document.removeEventListener('mousedown', _grpChipOutside, true); }
@@ -752,28 +714,11 @@ function openGroupChipDropdown(chip, k){
   setTimeout(function(){ document.addEventListener('mousedown', _grpChipOutside, true); }, 0);
 }
 function applyGroupChange(k, groupId){
-  if (groupId === k.group) return; // 没变
-  var lockAcc = groupLockFor(groupId); // 二开(req2)：双保险——锁定组不切换(即便被程序化调用)
-  if (lockAcc){
-    var zhl = !(window.MexionI18n && MexionI18n.lang === 'en');
-    if (window.MexionToast && MexionToast.show) MexionToast.show((zhl?'分组未解锁 · ':'Locked group · ')+inviteLockHint(lockAcc), { tone:'error' });
-    return;
-  }
-  var slug = window.__groupIdToSlug ? (window.__groupIdToSlug[groupId] || '') : '';
-  var zh = !(window.MexionI18n && MexionI18n.lang === 'en');
-  if (typeof MexionHttp !== 'undefined' && k._apiId) {
-    // 复用 tokenUpdateBody 整对象 PUT(只覆盖 group,不清其它字段——见 401 那次的坑)
-    MexionHttp.put('/token/', tokenUpdateBody(k, { group: slug })).then(function(){
-      if (window.MexionToast && MexionToast.show) MexionToast.show(zh ? '分组已切换' : 'Group switched');
-      loadKeys();
-    }).catch(function(err){
-      if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (zh ? '切换失败,请重试' : 'Switch failed'), { tone: 'error' });
-    });
-  } else {
-    k.group = groupId; renderKeyList(); renderDetail();
+  if (groupId === k.group) return;
+  if (window.MexionToast && MexionToast.show) {
+    MexionToast.show(MexionI18n.lang === 'zh' ? '当前版本暂不支持修改密钥分组，请新建密钥选择分组' : 'Changing key group is not supported yet. Create a new key with the desired group.', { tone: 'error' });
   }
 }
-
 function renderKeyList(){
   var list = document.getElementById('keyList');
   var countEl = document.getElementById('ksCount');
@@ -852,31 +797,8 @@ function renderKeyList(){
   list.querySelectorAll('.key-copy-btn').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      var val = btn.getAttribute('data-val');
-      var kid = btn.getAttribute('data-kid');
-      var svgCopy = '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="5" y="5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V3a1 1 0 0 1 1-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
-      var svgOk   = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      function flash(fk) {
-        copyText(fk);
-        btn.setAttribute('data-val', fk);
-        btn.classList.add('is-ok');
-        btn.innerHTML = svgOk;
-        setTimeout(function(){ btn.classList.remove('is-ok'); btn.innerHTML = svgCopy; }, 1400);
-      }
-      if (val && val.indexOf('*') < 0) {
-        flash(val);
-      } else {
-        var k = kid ? KEYS_DATA.find(function(x){ return x.id === kid; }) : null;
-        if (k && k._apiId && typeof MexionHttp !== 'undefined') {
-          MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
-            var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || val);
-            k.fullKey = fk;
-            flash(fk);
-          }).catch(function(){ flash(val); });
-        } else {
-          flash(val);
-        }
-      }
+      var val = btn.getAttribute('data-val') || '';
+      if (val) (window.MexionCopy || copyText)(val, btn);
     });
   });
 }
@@ -890,167 +812,60 @@ function renderDetail(){
   if (!k) {
     empty.style.display = '';
     body.className = 'kd-body';
+    body.innerHTML = '';
     return;
   }
   empty.style.display = 'none';
   body.className = 'kd-body is-on';
   var g = groupById(k.group);
-
-  // sparkline
-  var sparkTotal = k.usage7d.reduce(function(a,b){return a+b;},0);
-  var maxU = Math.max.apply(null, k.usage7d) || 1;
-  var sparkBars = k.usage7d.map(function(v, i){
-    var h = Math.max(4, Math.round((v/maxU)*100));
-    var isPeak = v === maxU;
-    return '<div class="kd-spark__bar'+(isPeak?' is-peak':'')+'" style="height:'+h+'%" title="'+tt('apikeys.spark.tooltip',{n:v})+'"></div>';
-  }).join('');
-  var days = [];
-  for (var di = 6; di >= 0; di--) {
-    var dd = new Date(); dd.setDate(dd.getDate() - di);
-    days.push((dd.getMonth()+1) + '/' + dd.getDate());
-  }
-
-  var html =
-    // header
-    '<div class="kdh">' +
-      '<div class="kdh__top">' +
-        '<span class="pill '+(k.active?'pill--ok':'pill--off')+'">' +
-          '<span class="pill__dot"></span>'+MexionI18n.t(k.active?'apikeys.detail.status.on':'apikeys.detail.status.off')+'</span>' +
-        '<div class="kdh__actions">' +
-          '<button class="kdh-btn" id="kdToggle">'+(k.active?
-            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="4" x2="8" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="8" y1="4" x2="4" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> '+MexionI18n.t('apikeys.detail.action.disable'):
-            '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6l2 2 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> '+MexionI18n.t('apikeys.detail.action.enable')
-          )+'</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="kdh__name" id="kdName">'+escapeHtml(k.name)+'</div>' +
-      '<div class="kdh__key" style="margin-top:10px">' +
-        '<span class="kdh__key-val" id="kdKeyVal">' +
-          '<span class="prefix">'+k.prefix+'</span>' +
-          '<span class="mask"> ············ </span>' +
-          '<span class="suffix">'+k.suffix+'</span>' +
-        '</span>' +
-        '<button class="kd-icbtn" id="kdRevealBtn" title="'+MexionI18n.t('apikeys.detail.action.reveal.title')+'">' +
-          '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 7S4 3 7 3s5.5 4 5.5 4S11 11 7 11 1.5 7 1.5 7z" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>' +
-        '</button>' +
-        '<button class="kd-icbtn" id="kdCopyFull" data-val="'+k.fullKey+'" title="'+MexionI18n.t('apikeys.detail.action.copyfull.title')+'">' +
-          '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="5" y="5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V3a1 1 0 0 1 1-1h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>' +
-        '</button>' +
-      '</div>' +
+  var statusText = k.active ? MexionI18n.t('apikeys.detail.status.on') : MexionI18n.t('apikeys.detail.status.off');
+  var modelText = k.models && k.models.length ? k.models.map(escapeHtml).join(', ') : MexionI18n.t('apikeys.detail.none');
+  var ipText = k.ipRestrict ? escapeHtml(k.ipRestrict) : MexionI18n.t('apikeys.detail.none');
+  var usageText = k.usage7d ? '' : '<div class="kd-empty-note">—</div>';
+  body.innerHTML =
+    '<div class="kd-head">' +
+      '<div><div class="kd-title">' + escapeHtml(k.name) + '</div>' +
+      '<div class="kd-sub"><span class="key-status key-status--' + (k.active?'on':'off') + '"></span>' + statusText + '</div></div>' +
     '</div>' +
-    // notes (always show — friendly empty state if missing)
-    '<div class="kds">' +
-      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.notes')+'</div>' +
-      (k.notes && k.notes.trim()
-        ? '<div class="kd-notes-text">'+escapeHtml(k.notes)+'</div>'
-        : '<div class="kd-notes-text kd-notes-text--empty">'+MexionI18n.t('apikeys.detail.notes.empty')+'</div>') +
+    '<div class="kd-keybox">' +
+      '<code id="kdKeyVal"><span class="prefix">' + escapeHtml(k.prefix) + '</span><span class="mask"> ············ </span><span class="suffix">' + escapeHtml(k.suffix) + '</span></code>' +
+      '<button class="kd-icbtn" id="kdRevealBtn" title="' + MexionI18n.t('apikeys.detail.action.reveal.title') + '">!' + '</button>' +
+      '<button class="kd-icbtn" id="kdCopyFull" title="' + MexionI18n.t('apikeys.detail.action.copyfull.title') + '">⧉</button>' +
     '</div>' +
-    // usage sparkline
-    '<div class="kds">' +
-      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.usage')+' <span style="margin-left:auto;font-weight:500;color:var(--ink);letter-spacing:0">'+(sparkTotal > 0 ? sparkTotal + (MexionI18n.lang==='zh'?' 次':' calls') : (MexionI18n.lang==='zh'?'暂无调用':'no calls'))+'</span></div>' +
-      '<div class="kd-spark">'+sparkBars+'</div>' +
-      '<div class="kd-spark__labels"><span>'+days[0]+'</span><span>'+days[3]+'</span><span>'+days[6]+'</span></div>' +
+    '<div class="kd-section"><div class="kd-section__title">' + MexionI18n.t('apikeys.detail.section.usage') + '</div>' + usageText + '</div>' +
+    '<div class="kd-section"><div class="kd-section__title">' + MexionI18n.t('apikeys.detail.section.notes') + '</div><p>' + escapeHtml(k.notes || MexionI18n.t('apikeys.detail.notes.empty')) + '</p></div>' +
+    '<div class="kd-meta">' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.group') + '</span><b>' + escapeHtml(g.name) + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.quota') + '</span><b>' + quotaLabel(k) + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.ip') + '</span><b>' + ipText + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.created') + '</span><b>' + escapeHtml(k.created || '—') + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.lastused') + '</span><b>' + escapeHtml(k.lastUsed || '—') + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.expires') + '</span><b>' + escapeHtml(k.expires || MexionI18n.t('apikeys.detail.expires.never')) + '</b></div>' +
+      '<div><span>' + MexionI18n.t('apikeys.detail.meta.id') + '</span><b>' + escapeHtml(k.id) + '</b></div>' +
     '</div>' +
-    // group card
-    '<div class="kds">' +
-      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.meta.group')+'</div>' +
-      '<div class="kd-group-card" style="background:'+g.soft+';border-color:'+g.border+'">' +
-        '<span class="kd-group-card__dot" style="background:'+g.color+'"></span>' +
-        '<div class="kd-group-card__info">' +
-          '<div class="kd-group-card__name" style="color:'+g.color+'">'+escapeHtml(g.name)+'</div>' +
-          (g.desc ? '<div class="kd-group-card__desc">'+escapeHtml(displayDescWithRatio(g.desc, g.mult))+'</div>' : '') +
-        '</div>' +
-        '<div class="kd-group-card__mult" style="color:'+g.color+'">×'+ratioText(g.mult)+'</div>' +
-      '</div>' +
-    '</div>' +
-    // metadata
-    '<div class="kds">' +
-      '<div class="kds__title">'+MexionI18n.t('apikeys.detail.section.meta')+'</div>' +
-      '<div class="kd-kv">' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.quota')+'</span><span class="kd-kv-v '+(k.quotaN?'':'is-none')+'">'+quotaLabel(k)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.expires')+'</span><span class="kd-kv-v '+(k.expires?'':'is-none')+'">'+expiresLabel(k.expires)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.created')+'</span><span class="kd-kv-v">'+k.created+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.lastused')+'</span><span class="kd-kv-v">'+relTime(k.lastUsed)+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.ip')+'</span><span class="kd-kv-v '+(k.ipRestrict?'':'is-none')+'">'+(k.ipRestrict||MexionI18n.t('apikeys.detail.none'))+'</span></div>' +
-        '<div class="kd-kv-row"><span class="kd-kv-k">'+MexionI18n.t('apikeys.detail.meta.id')+'</span><span class="kd-kv-v" style="font-size:11px;color:var(--mute-2)">'+k.id+'</span></div>' +
-      '</div>' +
-    '</div>' +
-    // footer actions
-    '<div class="kd-foot">' +
-      '<button class="kd-foot-btn" id="kdEditBtn">' +
-        '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M10.5 2.5l1 1L5 10H4V9L10.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
-        MexionI18n.t('apikeys.detail.footer.edit') +
-      '</button>' +
-      '<button class="kd-foot-btn kd-foot-btn--danger" id="kdDeleteBtn">' +
-        '<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V4M12 4l-.8 7.2A1 1 0 0 1 10.2 12H3.8a1 1 0 0 1-1-.8L2 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>' +
-        MexionI18n.t('apikeys.detail.footer.delete') +
-      '</button>' +
+    '<div class="kd-actions">' +
+      '<button class="btn-secondary" id="kdToggle">' + (k.active ? MexionI18n.t('apikeys.detail.action.disable') : MexionI18n.t('apikeys.detail.action.enable')) + '</button>' +
+      '<button class="btn-secondary" id="kdEditBtn">' + MexionI18n.t('apikeys.detail.footer.edit') + '</button>' +
+      '<button class="btn-secondary" id="kdDeleteBtn">' + MexionI18n.t('apikeys.detail.footer.delete') + '</button>' +
     '</div>';
 
-  body.innerHTML = html;
-
-  // fetchFullKey helper
-  function fetchFullKey(cb) {
-    if (k.fullKey && k.fullKey.indexOf('*') < 0) { cb(k.fullKey); return; }
-    if (k._apiId && typeof MexionHttp !== 'undefined') {
-      MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
-        var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
-        k.fullKey = fk;
-        cb(fk);
-      }).catch(function() { cb(k.fullKey); });
-    } else { cb(k.fullKey); }
+  function secretUnavailable(){
+    if (window.MexionToast && MexionToast.show) MexionToast.show(MexionI18n.lang === 'zh' ? '完整密钥仅创建时显示一次' : 'Full secret is only shown when created');
   }
-
-  // reveal/hide toggle
-  var revealed = false;
   var revealBtn = document.getElementById('kdRevealBtn');
-  var keyValEl  = document.getElementById('kdKeyVal');
-  revealBtn && revealBtn.addEventListener('click', function(){
-    revealed = !revealed;
-    if (revealed) {
-      fetchFullKey(function(fk) {
-        keyValEl.innerHTML = '<span style="font-feature-settings:\'tnum\'">'+fk+'</span>';
-      });
-    } else {
-      keyValEl.innerHTML = '<span class="prefix">'+k.prefix+'</span><span class="mask"> ············ </span><span class="suffix">'+k.suffix+'</span>';
-    }
-    revealBtn.innerHTML = revealed
-      ? '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M7 3C4 3 2 7 2 7s2 4 5 4M12 7s-.5-1-1.5-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
-      : '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 7S4 3 7 3s5.5 4 5.5 4S11 11 7 11 1.5 7 1.5 7z" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>';
-  });
-
-  // copy full key
+  revealBtn && revealBtn.addEventListener('click', secretUnavailable);
   var copyFullBtn = document.getElementById('kdCopyFull');
-  copyFullBtn && copyFullBtn.addEventListener('click', function(){
-    fetchFullKey(function(fk) { (window.MexionCopy || copyText)(fk, copyFullBtn); });
-  });
-
-  // toggle active state
+  copyFullBtn && copyFullBtn.addEventListener('click', function(){ (window.MexionCopy || copyText)(k.fullKey, copyFullBtn); });
   var toggleBtn = document.getElementById('kdToggle');
   toggleBtn && toggleBtn.addEventListener('click', function(){
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
-      var newStatus = k.active ? 2 : 1;
-      MexionHttp.put('/token/', tokenUpdateBody(k, { status: newStatus })).then(function() {
-        loadKeys();
-      }).catch(function() {});
-    } else {
-      k.active = !k.active;
-      renderKeyList();
-      renderDetail();
+      MexionHttp.patch('/user/keys/' + k._apiId, { status: k.active ? 'disabled' : 'active' }).then(function() { loadKeys(); }).catch(function() {});
     }
   });
-
-  // delete
   var deleteBtn = document.getElementById('kdDeleteBtn');
-  deleteBtn && deleteBtn.addEventListener('click', function(){
-    openDeleteModal(k);
-  });
-
-  // edit
+  deleteBtn && deleteBtn.addEventListener('click', function(){ openDeleteModal(k); });
   var editBtn = document.getElementById('kdEditBtn');
-  editBtn && editBtn.addEventListener('click', function(){
-    openEditModal(k);
-  });
+  editBtn && editBtn.addEventListener('click', function(){ openEditModal(k); });
 }
 
 // ── DELETE MODAL ─────────────────────────────────
@@ -1078,7 +893,7 @@ function openDeleteModal(k) {
     confirmSpan.textContent = lang === 'zh' ? '删除中…' : 'Deleting…';
 
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
-      MexionHttp.delete('/token/' + k._apiId).then(function() {
+      MexionHttp.delete('/user/keys/' + k._apiId).then(function() {
         if (selectedKeyId === k.id) selectedKeyId = null;
         closeDelModal();
         loadKeys();
@@ -1237,11 +1052,7 @@ function openEditModal(k) {
 
     if (typeof MexionHttp !== 'undefined' && k._apiId) {
       var editSlug = window.__groupIdToSlug ? (window.__groupIdToSlug[_editGroupId] || '') : '';
-      MexionHttp.put('/token/', tokenUpdateBody(k, {
-        name: newName,
-        group: editSlug,
-        status: _editStatus === 'active' ? 1 : 2
-      })).then(function() {
+      MexionHttp.patch('/user/keys/' + k._apiId, { name: newName, status: _editStatus === 'active' ? 'active' : 'disabled' }).then(function() {
         closeEditModal();
         loadKeys();
       }).catch(function(err) {
@@ -1378,12 +1189,7 @@ document.addEventListener('keydown', function(e){
         copyText(k.fullKey);
         flashOk(item);
       } else if (k._apiId && typeof MexionHttp !== 'undefined') {
-        MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
-          var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
-          k.fullKey = fk;
-          copyText(fk);
-          flashOk(item);
-        }).catch(function() { copyText(k.fullKey); flashOk(item); });
+        copyText(k.fullKey); flashOk(item);
       } else {
         copyText(k.fullKey);
         flashOk(item);
@@ -1406,11 +1212,7 @@ document.addEventListener('keydown', function(e){
       if (k.fullKey && k.fullKey.indexOf('*') < 0) {
         doCopy(k.fullKey);
       } else if (k._apiId && typeof MexionHttp !== 'undefined') {
-        MexionHttp.post('/token/' + k._apiId + '/key', {}).then(function(keyData) {
-          var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || k.fullKey);
-          k.fullKey = fk;
-          doCopy(fk);
-        }).catch(function() { doCopy(k.fullKey); });
+        doCopy(k.fullKey);
       } else {
         doCopy(k.fullKey);
       }
@@ -1428,7 +1230,7 @@ document.addEventListener('keydown', function(e){
       if (selectedKeyId === currentKid) selectedKeyId = null;
       close();
       if (dk && dk._apiId && typeof MexionHttp !== 'undefined') {
-        MexionHttp.delete('/token/' + dk._apiId).then(function() {
+        MexionHttp.delete('/user/keys/' + dk._apiId).then(function() {
           loadKeys();
         }).catch(function() {});
       } else {
@@ -2240,30 +2042,33 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
     }
     return;
   }
-  var groupSlug = selGroupId != null && window.__groupIdToSlug ? window.__groupIdToSlug[selGroupId] : '';
-  var payload = { name: name, group: groupSlug || '', unlimited_quota: true, remain_quota: 0, expired_time: -1 };
+  var payload = {
+    name: name,
+    note: ((document.getElementById('newKeyNotes') || {}).value || '').trim(),
+    groupId: selGroupId == null ? null : Number(selGroupId),
+    quotaLimit: null,
+    modelAllow: null,
+    ipAllow: [],
+    expiresAt: null
+  };
 
-  /* Expiry: calendar → expired_time (unix timestamp) */
   var expDate = window.__expState ? window.__expState.get() : null;
-  if (expDate) {
-    payload.expired_time = Math.floor(expDate.getTime() / 1000);
-  }
+  if (expDate) payload.expiresAt = expDate.toISOString();
 
-  /* Quota */
   var isUnlimited = document.getElementById('togUnlimited');
   if (isUnlimited && !isUnlimited.classList.contains('is-on')) {
     var qInput = document.querySelector('#quotaLimitWrap input');
     var qv = qInput ? parseInt(qInput.value || '0', 10) : 0;
-    if (qv > 0) {
-      payload.remain_quota = Math.round(qv * 500000);
-      payload.unlimited_quota = false;
-    }
+    if (qv > 0) payload.quotaLimit = qv;
   }
 
-  /* IP whitelist */
+  var modelInput = document.querySelector('#msecAdv input');
+  if (modelInput && modelInput.value.trim()) {
+    payload.modelAllow = modelInput.value.split(/[\n,]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+  }
   var ipEl = document.querySelector('#msecAdv textarea');
   if (ipEl && ipEl.value.trim()) {
-    payload.allow_ips = ipEl.value.trim().split('\n').map(function(s){ return s.trim(); }).filter(Boolean).join(',');
+    payload.ipAllow = ipEl.value.trim().split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
   }
 
   var confirmBtn = document.getElementById('modalConfirm');
@@ -2292,7 +2097,7 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
     confirmBtn.onclick = closeModal;
   }
 
-  MexionHttp.post('/token/', payload).then(function(resp) {
+  MexionHttp.post('/user/keys', payload).then(function(resp) {
     loadKeys(function() {
       // 取「后端 id 最大」者 = 刚创建的 token。原来取 KEYS_DATA[length-1],但列表是「最新在前」,
       // length-1 实为最旧的 token → 弹窗一次性密钥显示成了别的(旧)key,与列表新 key 不一致。
@@ -2300,19 +2105,8 @@ document.getElementById('modalConfirm').addEventListener('click', function(){
       if (newest) selectedKeyId = newest.id;
       renderKeyList();
       renderDetail();
-      // Fetch full key for the new token
-      if (newest && newest.id) {
-        MexionHttp.post('/token/' + newest.id + '/key', {}).then(function(keyData) {
-          var fullKey = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || '');
-          if (fullKey) showNewKey(fullKey);
-        }).catch(function() {
-          var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (MexionI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
-          showNewKey(maskedKey);
-        });
-      } else {
-        var maskedKey = (resp && resp.key) ? ensureSkPrefix(resp.key) : (MexionI18n.lang === 'zh' ? '令牌已创建' : 'Token created');
-        showNewKey(maskedKey);
-      }
+      var fullKey = (resp && (resp.secret || resp.key || (resp.data && resp.data.secret))) || '';
+      showNewKey(fullKey || (MexionI18n.lang === 'zh' ? '密钥已创建，但未返回明文' : 'Key created, but no secret returned'));
     });
   }).catch(function(err) {
     console.error('Create key failed:', err);
@@ -2501,3 +2295,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if(allBtn) allBtn.addEventListener('click', testAll);
   });
 })();
+

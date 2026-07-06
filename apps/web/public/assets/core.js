@@ -521,6 +521,7 @@
     get:    function (path) { return request('GET', path); },
     post:   function (path, body) { return request('POST', path, body); },
     put:    function (path, body) { return request('PUT', path, body); },
+    patch:  function (path, body) { return request('PATCH', path, body); },
     delete: function (path) { return request('DELETE', path); },
   };
 })();
