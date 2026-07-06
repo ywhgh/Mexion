@@ -241,3 +241,16 @@ export const requestLogs = sqliteTable("request_logs", {
   bodyHash: text("body_hash"),
   bodyLength: integer("body_length"),
 });
+
+export const auditLogs = sqliteTable("audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ts: text("ts").notNull(),
+  adminId: integer("admin_id").notNull(),
+  action: text("action").notNull(),
+  targetType: text("target_type").notNull(),
+  targetId: text("target_id").notNull(),
+  before: text("before"),
+  after: text("after"),
+  ip: text("ip"),
+  note: text("note"),
+});

@@ -211,6 +211,18 @@ const statements = [
     body_hash TEXT,
     body_length INTEGER
   )`,
+  `CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts TEXT NOT NULL,
+    admin_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id TEXT NOT NULL,
+    "before" TEXT,
+    "after" TEXT,
+    ip TEXT,
+    note TEXT
+  )`,
   `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
   `CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`,
   `CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(session_token)`,
@@ -220,6 +232,8 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS idx_model_aliases_source ON model_aliases(source_model)`,
   `CREATE INDEX IF NOT EXISTS idx_usage_events_user_ts ON usage_events(user_id, ts)`,
   `CREATE INDEX IF NOT EXISTS idx_request_logs_user_ts ON request_logs(user_id, ts)`,
+  `CREATE INDEX IF NOT EXISTS idx_audit_logs_ts ON audit_logs(ts)`,
+  `CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)`,
   `CREATE INDEX IF NOT EXISTS idx_billing_sessions_request ON billing_sessions(request_id)`,
   `CREATE INDEX IF NOT EXISTS idx_tokens_prefix ON tokens(prefix)`,
   `CREATE INDEX IF NOT EXISTS idx_tokens_sub ON tokens(sub_id)`,

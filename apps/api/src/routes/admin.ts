@@ -1,8 +1,9 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { idParamSchema } from "../contracts.js";
 import { requireAdmin } from "../middleware/require-admin.js";
+import { listAuditLogs, recordAuditLog } from "../services/audit.js";
 import {
   createChannel,
   createGroup,
@@ -64,6 +65,14 @@ const userUpdateSchema = z.object({
   balance: z.number().optional(),
   role: z.enum(["user", "admin"]).optional(),
 });
+const auditListSchema = z.object({
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  action: z.string().trim().min(1).optional(),
+});
+
+function requestIp(c: Context<AppBindings>): string | null {
+  return c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || null;
+}
 
 adminRoutes.use("*", requireAdmin);
 
@@ -80,7 +89,9 @@ adminRoutes.patch("/channels/:id", async (c) => {
 });
 adminRoutes.delete("/channels/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
+  const before = listChannels(c.get("db")).find((channel) => channel.id === id) ?? null;
   deleteChannel(c.get("db"), id);
+  recordAuditLog(c.get("db"), { adminId: c.get("admin").id, action: "channel.delete", targetType: "channel", targetId: id, before, after: null, ip: requestIp(c) });
   return c.json({ ok: true, data: { deleted: true } });
 });
 
@@ -92,7 +103,9 @@ adminRoutes.patch("/groups/:id", async (c) => {
 });
 adminRoutes.delete("/groups/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
+  const before = listGroups(c.get("db")).find((group) => group.id === id) ?? null;
   deleteGroup(c.get("db"), id);
+  recordAuditLog(c.get("db"), { adminId: c.get("admin").id, action: "group.delete", targetType: "group", targetId: id, before, after: null, ip: requestIp(c) });
   return c.json({ ok: true, data: { deleted: true } });
 });
 
@@ -108,13 +121,22 @@ adminRoutes.patch("/model-aliases/:id", async (c) => {
 
 adminRoutes.delete("/model-aliases/:id", (c) => {
   const { id } = idParamSchema.parse(c.req.param());
+  const before = listModelAliases(c.get("db")).find((alias) => alias.id === id) ?? null;
   deleteModelAlias(c.get("db"), id);
+  recordAuditLog(c.get("db"), { adminId: c.get("admin").id, action: "alias.delete", targetType: "model_alias", targetId: id, before, after: null, ip: requestIp(c) });
   return c.json({ ok: true, data: { deleted: true } });
 });
 
 adminRoutes.get("/users", (c) => c.json({ ok: true, data: { users: listAllUsers(c.get("db")) } }));
 adminRoutes.patch("/users/:id", async (c) => {
   const { id } = idParamSchema.parse(c.req.param());
+  const before = listAllUsers(c.get("db")).find((user) => user.id === id) ?? null;
   const user = adminUpdateUser(c.get("db"), id, userUpdateSchema.parse(await c.req.json()), c.get("admin").id);
+  recordAuditLog(c.get("db"), { adminId: c.get("admin").id, action: "user.update", targetType: "user", targetId: id, before, after: user, ip: requestIp(c) });
   return c.json({ ok: true, data: { user } });
+});
+
+adminRoutes.get("/audit-logs", (c) => {
+  const input = auditListSchema.parse(c.req.query());
+  return c.json({ ok: true, data: { logs: listAuditLogs(c.get("db"), input) } });
 });
