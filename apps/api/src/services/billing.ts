@@ -273,6 +273,41 @@ export function getSubscriptionSummary(db: DbClient, userId: number): Subscripti
   };
 }
 
+export function expireDueSubscriptions(db: DbClient, now = new Date()): number {
+  const result = db.sqlite
+    .prepare("UPDATE user_subscriptions SET status = 'expired' WHERE status = 'active' AND expires_at < ?")
+    .run(now.toISOString());
+  return result.changes;
+}
+
+export function cleanupOldExpiredSubscriptions(db: DbClient, now = new Date()): number {
+  const cutoff = new Date(now.getTime() - 90 * 86400000).toISOString();
+  const result = db.sqlite
+    .prepare("DELETE FROM user_subscriptions WHERE status = 'expired' AND expires_at < ?")
+    .run(cutoff);
+  return result.changes;
+}
+
+export function startSubscriptionExpiryTask(db: DbClient): NodeJS.Timeout {
+  let cycles = 0;
+  function runCycle(): void {
+    try {
+      expireDueSubscriptions(db);
+      cycles += 1;
+      if (cycles >= 24) {
+        cleanupOldExpiredSubscriptions(db);
+        cycles = 0;
+      }
+    } catch (error) {
+      console.warn("Subscription expiry task failed", error);
+    }
+  }
+  runCycle();
+  const timer = setInterval(runCycle, 3_600_000);
+  timer.unref();
+  return timer;
+}
+
 export function getUsageSummary(db: DbClient, userId: number): Record<string, unknown> {
   const totals = db.sqlite
     .prepare("SELECT COUNT(*) AS totalCalls, COALESCE(SUM(input_tokens + output_tokens),0) AS totalTokens, COALESCE(SUM(cost),0) AS totalCost, COALESCE(AVG(NULLIF(duration_ms,0)),0) AS avgLatency FROM usage_events WHERE user_id = ?")
