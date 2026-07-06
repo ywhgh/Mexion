@@ -411,7 +411,7 @@ MexionI18n.register({
   zh: { 'models.unit.tok1m': '/ 百万 Token', 'models.unit.image': '/ 张',     'models.unit.min': '/ 分钟' }
 });
 
-/* ─── DATA: groups loaded from /user/groups ─── */
+/* ─── DATA: groups loaded from /groups/available ─── */
 let GROUPS = [];
 let usingSampleGroups = false;
 
@@ -597,23 +597,35 @@ function scopeToCaps(scopes, allowImage) {
   return caps;
 }
 
+function normalizeGroupRatio(ag) {
+  var raw = ag && ag.ratio;
+  if (raw == null) raw = ag && ag.rate_multiplier;
+  if (raw == null) raw = ag && ag.rateMultiplier;
+  var ratio = Number(raw);
+  if (raw != null && String(raw) === String(ag && ag.rateMultiplier) && ratio > 10) ratio = ratio / 100;
+  if (!Number.isFinite(ratio) || ratio <= 0) ratio = 1.0;
+  return ratio;
+}
+
 function mapGroup(ag) {
+  ag = ag || {};
   var badges = [];
   // 所有分组都可按量(余额)使用；订阅分组额外标「可订阅」——附加而非替换，
   // 避免「订阅」单独出现被误解为"仅订阅可用"（GPT-Pro 等组实为余额 + 订阅二选一）。
   badges.push('bal');
   if (ag.subscription_type === 'subscription') badges.push('sub');
-  var ratio = Number(ag.rateMultiplier != null ? ag.rateMultiplier / 100 : ag.rate_multiplier);
-  if (!Number.isFinite(ratio) || ratio <= 0) ratio = 1.0;
+  var ratio = normalizeGroupRatio(ag);
   var displayProvider = ag.prov || platformToProv(ag.provider || ag.platform) || 'others';
   var concreteProviders = uniqueProviders(ag.providers).filter(isConcreteProvider);
   if (!concreteProviders.length && isConcreteProvider(displayProvider) && displayProvider !== 'others') {
     concreteProviders = [displayProvider];
   }
+  var caps = scopeToCaps(ag.supported_model_scopes, ag.allow_image_generation);
+  if (!caps.length) caps = scopeToCaps([ag.provider || ag.platform || displayProvider], ag.allow_image_generation);
   return {
     id: ag.id,
-    slug: ag.slug || GROUP_ID_TO_SLUG[ag.id] || '',
-    name: ag.name,
+    slug: ag.slug || GROUP_ID_TO_SLUG[ag.id] || ag.name || String(ag.id || ''),
+    name: ag.name || ('Group ' + (ag.id || '')),
     description: ag.description || '',
     prov: displayProvider,
     providers: concreteProviders,
@@ -621,7 +633,7 @@ function mapGroup(ag) {
     baseRatio: ratio,
     inviteRatio: null,
     badges: badges,
-    caps: scopeToCaps(ag.supported_model_scopes, ag.allow_image_generation),
+    caps: caps,
     accountCount: ag.accountCount || ag.account_count || 0
   };
 }
@@ -629,7 +641,7 @@ function mapGroup(ag) {
 function updateHero() {}
 
 // 真实起价：$/1M = min(该组可用模型的 model_ratio × 2) × 分组倍率。
-// 数据源 /api/status/models（公开模型 + 渠道快照），倍率用 /user/groups 已有的 g.ratio。
+// 数据源 /channels/available（公开可用渠道 + 模型定价），倍率用 /groups/available 与 /groups/rates。
 // 按次计费模型（model_price>0 / quota_type=1）不计入 $/1M 起价。
 function fmtPrice(v){
   if (v == null || !isFinite(v)) return '';
@@ -637,12 +649,12 @@ function fmtPrice(v){
   if (v < 1)    return '$' + v.toFixed(3);
   return '$' + v.toFixed(2);
 }
-// 全站模型快照数据（/api/status/models 一次拉全）：供「模型价格」视图展示每个模型在各分组的价格。
+// 全站模型快照数据（/channels/available 一次拉全）：供「模型价格」视图展示每个模型在各分组的价格。
 var MODEL_PRICING = [];   // [{name, ratio, completion, cache, quotaType, modelPrice, groups:[slug...]}]
-var PRICING_ROWS = [];     // /api/status/models 派生行，便于重算派生价格
+var PRICING_ROWS = [];     // /channels/available 派生行，便于重算派生价格
 var PRICING_GROUP_RATIOS = {};
 var GROUP_RATIOS = {};    // {group: ratio}  权威分组倍率
-var USABLE_GROUPS = {};   // 当前用户可用分组（由 /user/groups 派生）
+var USABLE_GROUPS = {};   // 当前用户可用分组（由 /groups/available 派生）
 // 二开：手动分区（管理端配置）。{sections:[{id,name,icon,order}], assign:{分组名:sectionId}}。手动优先于自动 provider。
 var SECTION_CONFIG = { sections: [], assign: {} };
 function loadSectionConfig(){
@@ -650,26 +662,122 @@ function loadSectionConfig(){
   return Promise.resolve();
 }
 
+function firstFinite(){
+  for (var i = 0; i < arguments.length; i++) {
+    var n = Number(arguments[i]);
+    if (isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
+
+function uniquePush(list, value) {
+  if (value == null || value === '') return;
+  if (list.indexOf(value) < 0) list.push(value);
+}
+
+function groupKeyFromId(id, fallbackName) {
+  var g = GROUPS.find(function(x){ return String(x.id) === String(id); });
+  return g ? (g.slug || g.name || String(g.id)) : (fallbackName || String(id));
+}
+
+function pricingFromSub2Model(model) {
+  var pricing = (model && model.pricing) || {};
+  var intervals = Array.isArray(pricing.intervals) ? pricing.intervals : [];
+  var firstInterval = intervals.length ? intervals[0] : {};
+  var input = firstFinite(pricing.input_price, firstInterval.input_price);
+  var output = firstFinite(pricing.output_price, firstInterval.output_price, input);
+  var perReq = firstFinite(pricing.per_request_price, firstInterval.per_request_price);
+  var image = firstFinite(pricing.image_output_price);
+  var billingMode = String(pricing.billing_mode || '').toLowerCase();
+  var quotaType = (perReq != null || image != null || billingMode.indexOf('request') >= 0) ? 1 : 0;
+  if (quotaType && perReq == null && image != null) perReq = image;
+  return {
+    ratio: input != null ? input / 2 : 1,
+    completion: (input && output) ? (output / input) : 1,
+    quotaType: quotaType,
+    modelPrice: perReq || 0,
+    imgResPrice: image != null ? { '1k': image } : null,
+    videoSecondPrice: null
+  };
+}
+
 function attachGroupPrices(){
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
-  return MexionHttp.get('/status/models').then(function(data){
-    var models = Array.isArray(data && data.models) ? data.models : [];
-    var channels = Array.isArray(data && data.channels) ? data.channels : [];
-    PRICING_ROWS = models.map(function(name){
-      var groupIds = [];
-      channels.forEach(function(ch){
-        if (Array.isArray(ch.modelList) && ch.modelList.indexOf(name) >= 0 && ch.groupId != null) {
-          var g = GROUPS.find(function(x){ return String(x.id) === String(ch.groupId); });
-          groupIds.push(g ? (g.slug || g.name) : String(ch.groupId));
-        }
+  return MexionHttp.get('/channels/available').then(function(data){
+    var channels = Array.isArray(data) ? data : (Array.isArray(data && data.items) ? data.items : (Array.isArray(data && data.channels) ? data.channels : []));
+    var byName = {};
+    var groupCounts = {};
+    var groupProviders = {};
+    var groupCaps = {};
+
+    channels.forEach(function(ch){
+      var sections = Array.isArray(ch && ch.platforms) ? ch.platforms : [];
+      sections.forEach(function(sec){
+        var provider = platformToProv(sec.platform);
+        var groups = Array.isArray(sec.groups) ? sec.groups : [];
+        var groupKeys = [];
+        groups.forEach(function(g){
+          var key = groupKeyFromId(g.id, g.name);
+          uniquePush(groupKeys, key);
+          groupCounts[key] = (groupCounts[key] || 0) + 1;
+          if (!groupProviders[key]) groupProviders[key] = [];
+          uniquePush(groupProviders[key], provider);
+          if (!groupCaps[key]) groupCaps[key] = [];
+          scopeToCaps([sec.platform || g.platform || provider], false).forEach(function(c){ uniquePush(groupCaps[key], c); });
+        });
+        var supported = Array.isArray(sec.supported_models) ? sec.supported_models : [];
+        supported.forEach(function(sm){
+          var name = sm && sm.name;
+          if (!name) return;
+          var row = byName[name];
+          var parsed = pricingFromSub2Model(sm);
+          if (!row) {
+            row = byName[name] = {
+              model_name: name,
+              model_ratio: parsed.ratio,
+              completion_ratio: parsed.completion,
+              quota_type: parsed.quotaType,
+              model_price: parsed.modelPrice,
+              imgResPrice: parsed.imgResPrice,
+              videoSecondPrice: parsed.videoSecondPrice,
+              enable_groups: []
+            };
+          }
+          if (parsed.quotaType && !row.quota_type) row.quota_type = parsed.quotaType;
+          if (parsed.modelPrice && (!row.model_price || parsed.modelPrice < row.model_price)) row.model_price = parsed.modelPrice;
+          if (parsed.ratio && (!row.model_ratio || parsed.ratio < row.model_ratio)) row.model_ratio = parsed.ratio;
+          if (parsed.completion && parsed.completion !== 1) row.completion_ratio = parsed.completion;
+          if (parsed.imgResPrice) row.imgResPrice = parsed.imgResPrice;
+          groupKeys.forEach(function(key){ uniquePush(row.enable_groups, key); });
+        });
       });
-      if (!groupIds.length) groupIds = GROUPS.map(function(g){ return g.slug || g.name; });
-      return { model_name: name, model_ratio: 1, completion_ratio: 1, enable_groups: Array.from(new Set(groupIds)) };
     });
+
+    PRICING_ROWS = Object.keys(byName).map(function(k){ return byName[k]; });
     PRICING_GROUP_RATIOS = {};
     MODEL_PRICING = PRICING_ROWS.map(function(m){
-      return { name: m.model_name || m.model || '', ratio: Number(m.model_ratio) || 1, completion: Number(m.completion_ratio) || 1, cache: 0, quotaType: 0, modelPrice: 0, imgResPrice: null, videoSecondPrice: null, groups: (m.enable_groups || m.enableGroups || []).slice() };
+      return {
+        name: m.model_name || m.model || '',
+        ratio: Number(m.model_ratio) || 1,
+        completion: Number(m.completion_ratio) || 1,
+        cache: 0,
+        quotaType: Number(m.quota_type) || 0,
+        modelPrice: Number(m.model_price) || 0,
+        imgResPrice: m.imgResPrice || null,
+        videoSecondPrice: m.videoSecondPrice || null,
+        groups: (m.enable_groups || m.enableGroups || []).slice()
+      };
     }).filter(function(m){ return m.name; });
+    GROUPS.forEach(function(g){
+      var key = g.slug || g.name;
+      if (groupCounts[key]) g.accountCount = groupCounts[key];
+      if (groupProviders[key] && groupProviders[key].length) {
+        g.providers = groupProviders[key].filter(isConcreteProvider);
+        if (g.providers.length === 1) g.prov = g.providers[0];
+        else if (g.providers.length > 1) g.prov = 'mixed';
+      }
+      if (groupCaps[key] && groupCaps[key].length) g.caps = groupCaps[key];
+    });
     recomputeGroupPrices();
   }).catch(function(){ MODEL_PRICING = []; PRICING_ROWS = []; });
 }
@@ -845,34 +953,33 @@ function loadGroups() {
     return;
   }
   stream.innerHTML = '<div style="padding:48px 0;text-align:center;color:var(--muted);font-size:13px">加载中…</div>';
-  MexionHttp.get('/user/groups').then(function(data) {
+  Promise.all([
+    MexionHttp.get('/groups/available'),
+    MexionHttp.get('/groups/rates').catch(function(){ return {}; })
+  ]).then(function(results) {
+    var data = results[0];
+    var rates = results[1] || {};
     var items = [];
-    if (data && Array.isArray(data.groups)) {
-      items = data.groups.map(function(g){
-        return {
-          id: g.id,
-          slug: g.name,
-          name: g.name,
-          description: g.description || '',
-          rateMultiplier: g.rateMultiplier,
-          rate_multiplier: g.rateMultiplier != null ? g.rateMultiplier / 100 : 1,
-          subscription_type: 'standard',
-          allow_image_generation: false,
-          supported_model_scopes: []
-        };
-      });
-    } else if (Array.isArray(data)) {
+    if (Array.isArray(data)) {
       items = data;
-    } else if (data && data.items) {
+    } else if (data && Array.isArray(data.groups)) {
+      items = data.groups;
+    } else if (data && Array.isArray(data.items)) {
       items = data.items;
     }
+    items = items.map(function(g){
+      var next = Object.assign({}, g);
+      var rate = rates[g.id] != null ? rates[g.id] : rates[String(g.id)];
+      if (rate != null) next.ratio = Number(rate);
+      return next;
+    });
     if (!items.length && isPreviewRuntime()) {
       useSampleGroups();
       return;
     }
     usingSampleGroups = false;
     GROUPS = items.map(mapGroup);
-    // 并行拉公开模型快照、分区配置与本地可用状态，再统一重算派生价格。
+    // 并行拉公开可用渠道、分区配置与本地可用状态，再统一重算派生价格。
     Promise.all([attachGroupPrices(), loadSectionConfig(), loadGroupAccess()]).then(function(){
       applyGroupAccessRatios();
       recomputeGroupPrices();
@@ -882,8 +989,7 @@ function loadGroups() {
       updateHero();
       renderActiveView();
     });
-  }).catch(function(err) {
-    console.error('loadGroups failed:', err);
+  }).catch(function() {
     if (isPreviewRuntime()) {
       useSampleGroups();
       return;
@@ -1534,21 +1640,21 @@ $('#mcSubmit').addEventListener('click', ()=>{
     }, 360);
     return;
   }
-  var expiresAt = null;
-  if (mcState.days > 0) {
-    var exp = new Date(Date.now() + mcState.days * 86400000);
-    expiresAt = exp.toISOString();
-  }
   var createPayload = {
     name: name,
-    groupId: currentGroup && Number.isFinite(Number(currentGroup.id)) ? Number(currentGroup.id) : null,
-    quotaLimit: mcState.quota > 0 ? Math.round(mcState.quota * 500000) : null,
-    expiresAt: expiresAt
+    group_id: currentGroup && Number.isFinite(Number(currentGroup.id)) ? Number(currentGroup.id) : null,
+    quota: mcState.quota > 0 ? mcState.quota : 0
   };
-  MexionHttp.post('/user/keys', createPayload).then(function(resp){
+  if (mcState.days > 0) createPayload.expires_in_days = mcState.days;
+  MexionHttp.post('/keys', createPayload).then(function(resp){
     btn.innerHTML = orig; btn.disabled = false;
     closeCreate();
-    if (resp && resp.secret && window.MexionToast && MexionToast.show) MexionToast.show((MexionI18n.lang === 'zh' ? '密钥已创建，只显示一次：' : 'Key created, shown once: ') + resp.secret);
+    var fullKey = resp && (resp.key || resp.secret || (resp.data && (resp.data.key || resp.data.secret)));
+    if (window.MexionToast && MexionToast.show) {
+      MexionToast.show(fullKey
+        ? ((MexionI18n.lang === 'zh' ? '密钥已创建，只显示一次：' : 'Key created, shown once: ') + fullKey)
+        : (MexionI18n.lang === 'zh' ? '密钥已创建' : 'Key created'));
+    }
     window.location.href = '/api-keys/';
   }).catch((err)=>{
     btn.innerHTML = orig; btn.disabled = false;
