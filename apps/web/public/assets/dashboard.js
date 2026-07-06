@@ -1698,5 +1698,75 @@ if (document.readyState === 'loading') {
         }
       }).catch(function () {});
     });
+
+    function escAdmin(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function fmtAdmin(n) {
+      return (Number(n) || 0).toLocaleString();
+    }
+    function pillClass(status) {
+      if (status === 'active' || status === 'ok') return 'pill--ok';
+      if (status === 'error' || status === 'disabled') return 'pill--err';
+      return 'pill--warn';
+    }
+    function renderChannelHealth(items) {
+      var el = document.getElementById('channelHealthList');
+      if (!el) return;
+      if (!items || !items.length) {
+        el.innerHTML = '<div class="ops-empty">暂无渠道数据</div>';
+        return;
+      }
+      el.innerHTML = items.slice(0, 8).map(function(item) {
+        var status = item.status || 'unknown';
+        var latency = item.latencyMs == null ? '—' : fmtAdmin(item.latencyMs) + 'ms';
+        var req = fmtAdmin(item.requestsLast1h || 0) + ' req';
+        var errors = fmtAdmin(item.errorsLast1h || 0) + ' err';
+        return '<div class="ops-row">' +
+          '<div class="ops-row__main">' +
+            '<div class="ops-row__title">' + escAdmin(item.name || ('#' + item.channelId)) + '</div>' +
+            '<div class="ops-row__meta">' + escAdmin(item.provider || 'provider') + ' · ' + latency + ' · ' + req + ' · ' + errors + '</div>' +
+          '</div>' +
+          '<div class="ops-row__side"><span class="pill ' + pillClass(status) + '"><span class="pill__dot"></span>' + escAdmin(status) + '</span></div>' +
+        '</div>';
+      }).join('');
+    }
+    function renderProviderDistribution(items) {
+      var el = document.getElementById('providerDistList');
+      if (!el) return;
+      if (!items || !items.length) {
+        el.innerHTML = '<div class="ops-empty">暂无 Provider 数据</div>';
+        return;
+      }
+      var max = items.reduce(function(m, item) { return Math.max(m, Number(item.requestCount || 0)); }, 1);
+      el.innerHTML = items.slice(0, 8).map(function(item) {
+        var count = Number(item.requestCount || 0);
+        var pct = max > 0 ? Math.max(0.02, count / max) : 0;
+        return '<div class="ops-row">' +
+          '<div class="ops-row__main">' +
+            '<div class="ops-row__title">' + escAdmin(item.provider || 'unknown') + '</div>' +
+            '<div class="ops-row__meta">' + fmtAdmin(count) + ' req · ' + fmtAdmin(item.errorCount || 0) + ' err · ' + fmtAdmin(item.avgLatencyMs || 0) + 'ms avg · cost ' + fmtAdmin(item.totalCost || 0) + '</div>' +
+            '<div class="ops-meter"><div class="ops-meter__fill" style="transform:scaleX(' + pct + ')"></div></div>' +
+          '</div>' +
+          '<div class="ops-row__side">' + Math.round(pct * 100) + '%</div>' +
+        '</div>';
+      }).join('');
+    }
+    function renderOpsStats(stats) {
+      var opsSection = document.getElementById('opsSection');
+      if (opsSection) opsSection.hidden = false;
+      renderChannelHealth(stats.channelHealth || []);
+      renderProviderDistribution(stats.providerDistribution || []);
+      var ttft = stats.ttftPercentiles;
+      var heroSub = document.querySelector('.hero__sub');
+      if (heroSub && ttft && !heroSub.getAttribute('data-ops-ttft')) {
+        heroSub.setAttribute('data-ops-ttft', '1');
+        heroSub.innerHTML += ' · TTFT p50 ' + fmtAdmin(ttft.p50 || 0) + 'ms · p99 ' + fmtAdmin(ttft.p99 || 0) + 'ms';
+      }
+    }
+    MexionHttp.get('/stats/overview').then(function(data) {
+      var stats = data && (data.stats || data);
+      if (stats) renderOpsStats(stats);
+    }).catch(function () {});
   } catch (e) {}
 })();
