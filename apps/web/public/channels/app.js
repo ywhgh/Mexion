@@ -5,6 +5,7 @@
   var groups = [];
   var selected = null;
   var filter = 'all';
+  var checkedIds = new Set();
 
   function $(id) { return document.getElementById(id); }
   function esc(value) {
@@ -95,6 +96,30 @@
       return !search || [channel.name, channel.provider, channel.baseUrl, groupName(channel.groupId), channel.status].join(' ').toLowerCase().indexOf(search) >= 0;
     });
   }
+  function syncCheckedIds() {
+    var available = new Set(channels.map(function(channel) { return channel.id; }));
+    Array.from(checkedIds).forEach(function(id) { if (!available.has(id)) checkedIds.delete(id); });
+  }
+  function checkedArray() {
+    return Array.from(checkedIds);
+  }
+  function renderHealth() {
+    var bar = $('channelHealthBar');
+    if (!bar) return;
+    var active = channels.filter(function(c) { return c.status === 'active'; }).length;
+    var error = channels.filter(function(c) { return c.status === 'error'; }).length;
+    var off = channels.filter(function(c) { return c.status === 'disabled'; }).length;
+    bar.innerHTML = '<span class="pill pill--ok">' + active + ' 启用</span>' +
+      (error ? '<span class="pill pill--err">' + error + ' 错误</span>' : '') +
+      (off ? '<span class="pill pill--warn">' + off + ' 停用</span>' : '');
+  }
+  function renderBatch() {
+    var batch = $('channelBatch');
+    var count = $('batchCount');
+    var total = checkedIds.size;
+    if (batch) batch.hidden = total === 0;
+    if (count) count.textContent = '已选 ' + total;
+  }
   function renderFilter() {
     var box = $('providerFilter');
     if (!box) return;
@@ -103,6 +128,18 @@
       return '<button class="channels-chip" type="button" data-provider="' + provider + '" aria-pressed="' + (filter === provider ? 'true' : 'false') + '">' + (provider === 'all' ? '全部' : provider) + '</button>';
     }).join('');
   }
+  function channelRow(channel) {
+    return '<div class="channels-row ' + (selected && selected.id === channel.id ? 'is-active' : '') + '" data-id="' + channel.id + '">' +
+      '<input type="checkbox" class="channels-row-check" data-id="' + channel.id + '" aria-label="选择 ' + esc(channel.name) + '" ' + (checkedIds.has(channel.id) ? 'checked' : '') + '>' +
+      '<span class="channels-row__dot ' + statusClass(channel.status) + '"></span>' +
+      '<span class="channels-row__main"><span class="channels-row__name">' + esc(channel.name) + '</span><span class="channels-row__url">' + esc(channel.baseUrl) + '</span></span>' +
+      '<span class="channels-mono">' + esc(channel.provider) + '</span>' +
+      '<span class="channels-muted">' + esc(groupName(channel.groupId)) + '</span>' +
+      '<span>' + latencyHtml(channel.latencyMs) + '</span>' +
+      '<span class="channels-status ' + statusClass(channel.status) + '">' + esc(channel.status) + '</span>' +
+      '<button class="channels-menu" type="button" aria-label="选择">›</button>' +
+    '</div>';
+  }
   function renderList() {
     var list = $('channelList');
     var count = $('channelCount');
@@ -110,22 +147,14 @@
     var items = visibleChannels();
     if (count) count.textContent = items.length + '/' + channels.length;
     if (stats) stats.textContent = '共 ' + channels.length + ' 个渠道，' + channels.filter(function(c) { return c.status === 'active'; }).length + ' 个启用。';
+    renderHealth();
+    renderBatch();
     if (!list) return;
     if (!items.length) {
       list.innerHTML = '<div class="channels-empty">暂无匹配渠道</div>';
       return;
     }
-    list.innerHTML = items.map(function(channel) {
-      return '<div class="channels-row ' + (selected && selected.id === channel.id ? 'is-active' : '') + '" data-id="' + channel.id + '">' +
-        '<span class="channels-row__dot ' + statusClass(channel.status) + '"></span>' +
-        '<span class="channels-row__main"><span class="channels-row__name">' + esc(channel.name) + '</span><span class="channels-row__url">' + esc(channel.baseUrl) + '</span></span>' +
-        '<span class="channels-mono">' + esc(channel.provider) + '</span>' +
-        '<span class="channels-muted">' + esc(groupName(channel.groupId)) + '</span>' +
-        '<span>' + latencyHtml(channel.latencyMs) + '</span>' +
-        '<span class="channels-status ' + statusClass(channel.status) + '">' + esc(channel.status) + '</span>' +
-        '<button class="channels-menu" type="button" aria-label="选择">›</button>' +
-      '</div>';
-    }).join('');
+    list.innerHTML = items.map(channelRow).join('');
   }
   function renderDetail() {
     var box = $('channelDetail');
@@ -167,6 +196,7 @@
     select.value = currentValue == null ? '' : String(currentValue);
   }
   function render() {
+    syncCheckedIds();
     renderFilter();
     renderList();
     renderDetail();
@@ -279,6 +309,33 @@
     selected = channels.find(function(channel) { return String(channel.id) === String(id); }) || null;
     render();
   }
+  function runSerial(ids, task) {
+    return ids.reduce(function(promise, id) { return promise.then(function() { return task(id); }); }, Promise.resolve());
+  }
+  function batchUpdate(status) {
+    var ids = checkedArray();
+    if (!ids.length) return;
+    runSerial(ids, function(id) {
+      return api('/admin/channels/' + id, { method: 'PATCH', body: { status: status } });
+    }).then(function() {
+      checkedIds.clear();
+      toast('批量更新完成', 'success');
+      return load();
+    }).catch(function(error) { toast(error.message, 'error'); });
+  }
+  function batchDelete() {
+    var ids = checkedArray();
+    if (!ids.length) return;
+    if (!confirm('确认删除选中的 ' + ids.length + ' 个渠道？')) return;
+    runSerial(ids, function(id) {
+      return api('/admin/channels/' + id, { method: 'DELETE' });
+    }).then(function() {
+      checkedIds.clear();
+      if (selected && ids.indexOf(selected.id) >= 0) selected = null;
+      toast('批量删除完成', 'success');
+      return load();
+    }).catch(function(error) { toast(error.message, 'error'); });
+  }
   function bind(id, event, handler) {
     var el = $(id);
     if (el) el.addEventListener(event, handler);
@@ -304,12 +361,40 @@
       render();
     });
 
-    var list = $('channelList');
-    if (list) list.addEventListener('click', function(event) {
-      var row = event.target.closest('[data-id]');
-      if (!row) return;
-      selectChannel(row.dataset.id);
+    var batch = $('channelBatch');
+    if (batch) batch.addEventListener('click', function(event) {
+      var button = event.target.closest('[data-batch]');
+      if (!button) return;
+      if (button.dataset.batch === 'enable') batchUpdate('active');
+      if (button.dataset.batch === 'disable') batchUpdate('disabled');
+      if (button.dataset.batch === 'delete') batchDelete();
     });
+
+    var list = $('channelList');
+    if (list) {
+      list.addEventListener('change', function(event) {
+        var checkbox = event.target.closest('.channels-row-check');
+        if (!checkbox) return;
+        var id = Number(checkbox.dataset.id);
+        if (checkbox.checked) checkedIds.add(id);
+        else checkedIds.delete(id);
+        renderBatch();
+      });
+      list.addEventListener('click', function(event) {
+        if (event.target.closest('.channels-row-check')) return;
+        var row = event.target.closest('[data-id]');
+        if (!row) return;
+        selectChannel(row.dataset.id);
+      });
+      list.addEventListener('dblclick', function(event) {
+        if (event.target.closest('.channels-row-check')) return;
+        var row = event.target.closest('[data-id]');
+        if (!row) return;
+        selected = channels.find(function(channel) { return String(channel.id) === String(row.dataset.id); }) || null;
+        render();
+        openEditModal(selected);
+      });
+    }
 
     var detail = $('channelDetail');
     if (detail) detail.addEventListener('click', function(event) {

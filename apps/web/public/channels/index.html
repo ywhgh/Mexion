@@ -90,7 +90,7 @@
           <span style="color:var(--ink)">渠道管理</span>
         </nav>
         <div class="page-head__title">渠道<em>管理</em></div>
-        <div class="page-head__sub" id="channelStats">加载中…</div>
+        <div class="page-head__sub"><span id="channelStats">加载中…</span><span class="channels-health-bar" id="channelHealthBar"></span></div>
       </div>
       <button class="btn-primary" id="createChannelBtn" type="button">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -105,8 +105,14 @@
             <div class="channels-search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9.2 9.2 12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><input id="channelSearch" type="search" placeholder="搜索渠道、Provider、Base URL"></div>
             <span class="channels-count" id="channelCount">—</span>
           </div>
+          <div class="channels-batch" id="channelBatch" hidden>
+            <span id="batchCount">已选 0</span>
+            <button class="btn-secondary" data-batch="enable" type="button">批量启用</button>
+            <button class="btn-secondary" data-batch="disable" type="button">批量停用</button>
+            <button class="btn-secondary channels-btn-danger" data-batch="delete" type="button">批量删除</button>
+          </div>
           <div class="channels-filter" id="providerFilter"></div>
-          <div class="channels-colhead"><span></span><span>名称</span><span>Provider</span><span>分组</span><span>延迟</span><span class="colh-r">状态</span><span></span></div>
+          <div class="channels-colhead"><span></span><span></span><span>名称</span><span>Provider</span><span>分组</span><span>延迟</span><span class="colh-r">状态</span><span></span></div>
           <div id="channelList"></div>
         </div>
       </div>

@@ -111,3 +111,20 @@
 @media(max-width: 760px) {
   .kd-grid { grid-template-columns: 1fr; }
 }
+
+/* M3 — selectable channel ledger rows */
+.channels-colhead,
+.channels-row {
+  grid-template-columns: 28px 14px minmax(0,1.3fr) minmax(86px,.7fr) minmax(0,.9fr) minmax(70px,.6fr) minmax(78px,.7fr) 28px;
+}
+.channels-batch[hidden] {
+  display: none;
+}
+.channels-batch .btn-secondary {
+  min-height: 30px;
+  padding: 0 10px;
+}
+@media(max-width:768px){
+  .channels-row{grid-template-columns:28px 10px minmax(0,1fr) 28px}
+  .channels-row>.channels-mono,.channels-row>.channels-muted,.channels-row>.channels-status{display:none}
+}
