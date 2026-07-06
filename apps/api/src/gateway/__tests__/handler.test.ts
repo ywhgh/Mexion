@@ -81,6 +81,42 @@ describe("gateway handler", () => {
     expect((db.sqlite.prepare("SELECT COUNT(*) AS c FROM request_logs WHERE user_id = ?").get(user.id) as { c: number }).c).toBe(1);
   });
 
+  it("injects prompt cache control for Codex requests on Anthropic channels", async () => {
+    const db = openDb(":memory:");
+    const app = createApp({ db });
+    const user = await registerUser(db, { username: "codex", email: "codex@example.com", password: "long-password" });
+    db.sqlite.prepare("UPDATE users SET balance = ? WHERE id = ?").run(1000, user.id);
+    activateSubscriptionPlan(db, user.id, 1);
+    const key = await createUserKey(db, user.id, { name: "codex" });
+    createChannel(db, { name: "anthropic", provider: "anthropic", baseUrl: "https://api.anthropic.com", secretValue: "sk-ant", modelList: ["claude-3-5-sonnet"] });
+    let forwarded: unknown = null;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+        const body = init?.body;
+        if (body instanceof ArrayBuffer) forwarded = JSON.parse(new TextDecoder().decode(body)) as Record<string, unknown>;
+        return new Response(JSON.stringify({ id: "resp", usage: { input_tokens: 10, output_tokens: 2 } }), { status: 200, headers: { "content-type": "application/json" } });
+      }),
+    );
+
+    const res = await app.request("/backend-api/codex/responses", {
+      method: "POST",
+      headers: { authorization: `Bearer ${key.secret}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-3-5-sonnet",
+        messages: [
+          { role: "system", content: [{ type: "text", text: "cache ".repeat(900) }] },
+          { role: "user", content: "hi" },
+        ],
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(forwarded).not.toBeNull();
+    const sent = forwarded as Record<string, unknown>;
+    const messages = sent.messages as Array<{ content: Array<{ cache_control?: { type: string } }> }>;
+    expect(messages[0]?.content[0]?.cache_control).toEqual({ type: "ephemeral" });
+  });
+
   it("captures streaming usage when settling", async () => {
     const { app, db, secret, user } = await fixture();
     const encoder = new TextEncoder();

@@ -7,6 +7,7 @@ import { estimateCost, parseUsageFromResponse } from "../lib/pricing.js";
 import { prechargeBilling, rollbackBilling, settleBilling } from "../services/billing.js";
 import { markChannelFailure, markChannelSuccess, resolveModelAlias, selectChannelCandidates, type ChannelRecord } from "../services/channels.js";
 import { broadcastLiveEvent } from "../services/live-feed.js";
+import { injectPromptCacheControl } from "./codex-cache.js";
 import { relayToProvider, type GatewayProtocol } from "./providers.js";
 import { isResponsesProtocol, writeChatErrorSSE, writeResponsesFailedSSE } from "./stream-error.js";
 
@@ -197,7 +198,6 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
   }
   const resolved = resolveModelAlias(c.get("db"), originalModel);
   const providerBody = { ...body, model: resolved.model };
-  const providerRawBody = new TextEncoder().encode(JSON.stringify(providerBody));
   const candidates = selectChannelCandidates(c.get("db"), originalModel, key?.groupId ?? null).slice(0, 3);
   const firstChannel = candidates[0];
   if (!firstChannel) throw new HTTPException(503, { message: "No available channel" });
@@ -249,12 +249,14 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
 
   for (const channel of candidates) {
     try {
+      const channelBody = options.protocol === "codex" ? injectPromptCacheControl(providerBody, channel.provider) : providerBody;
+      const channelRawBody = new TextEncoder().encode(JSON.stringify(channelBody));
       const upstream = await relayToProvider({
         db: c.get("db"),
         channel,
         protocol: options.protocol,
-        requestBody: providerBody,
-        rawBody: providerRawBody,
+        requestBody: channelBody,
+        rawBody: channelRawBody,
         model: resolved.model,
         path: new URL(c.req.url).pathname,
       });
