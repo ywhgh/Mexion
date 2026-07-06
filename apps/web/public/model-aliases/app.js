@@ -15,11 +15,11 @@
     var method = options.method || 'GET';
     if (window.MexionHttp) {
       if (method === 'POST') return MexionHttp.post(path, options.body || {});
-      if (method === 'PATCH') return MexionHttp.patch(path, options.body || {});
+      if (method === 'PATCH' || method === 'PUT') return MexionHttp.put(path, options.body || {});
       if (method === 'DELETE') return MexionHttp.delete(path);
       return MexionHttp.get(path);
     }
-    return fetch('/api' + path, {
+    return fetch('/api/v1' + path, {
       method: method,
       credentials: 'same-origin',
       headers: options.body ? { 'Content-Type': 'application/json' } : {},
@@ -34,25 +34,55 @@
   function toast(message, tone) {
     if (window.MexionToast) MexionToast.show(message, { tone: tone || 'default' });
   }
+  function normalizeGroup(group) {
+    group = group || {};
+    return { id: group.id, name: group.name || ('group_' + group.id), provider: group.platform || '' };
+  }
+  function normalizeAccount(account) {
+    account = account || {};
+    var groupIds = Array.isArray(account.group_ids) ? account.group_ids : [];
+    return {
+      id: account.id,
+      sourceModel: account.name || ('account_' + account.id),
+      targetModel: (account.platform || 'openai') + ' · ' + (account.type || 'apikey'),
+      channelId: account.group_id != null ? account.group_id : (groupIds.length ? groupIds[0] : null),
+      enabled: account.status !== 'inactive' && account.status !== 'disabled',
+      status: account.status || 'active',
+      raw: account
+    };
+  }
+  function accountPayload() {
+    var name = $('aliasSource').value.trim();
+    var key = $('aliasTarget').value.trim();
+    var groupId = $('aliasChannel').value ? Number($('aliasChannel').value) : null;
+    return {
+      name: name,
+      platform: 'openai',
+      type: 'apikey',
+      credentials: key ? { api_key: key } : {},
+      group_ids: groupId ? [groupId] : [],
+      status: 'active'
+    };
+  }
   function channelName(id) {
     var channel = channels.find(function(item) { return item.id === id; });
-    return channel ? channel.name : '全局';
+    return channel ? channel.name : '未分组';
   }
   function renderChannelOptions() {
     var select = $('aliasChannel');
     if (!select) return;
-    select.innerHTML = '<option value="">全局生效</option>' + channels.map(function(channel) {
-      return '<option value="' + channel.id + '">' + esc(channel.name) + ' · ' + esc(channel.provider) + '</option>';
+    select.innerHTML = '<option value="">不绑定分组</option>' + channels.map(function(channel) {
+      return '<option value="' + channel.id + '">' + esc(channel.name) + (channel.provider ? ' · ' + esc(channel.provider) : '') + '</option>';
     }).join('');
   }
   function render() {
     var stats = $('aliasStats');
     var list = $('aliasList');
-    if (stats) stats.textContent = '共 ' + aliases.length + ' 条模型别名，' + aliases.filter(function(item) { return item.enabled; }).length + ' 条启用。';
+    if (stats) stats.textContent = '共 ' + aliases.length + ' 个账号，' + aliases.filter(function(item) { return item.enabled; }).length + ' 个启用。';
     renderChannelOptions();
     if (!list) return;
     if (!aliases.length) {
-      list.innerHTML = '<div class="aliases-empty">暂无模型别名</div>';
+      list.innerHTML = '<div class="aliases-empty">暂无账号</div>';
       return;
     }
     list.innerHTML = aliases.map(function(alias) {
@@ -66,9 +96,9 @@
     }).join('');
   }
   function load() {
-    return Promise.all([api('/admin/model-aliases'), api('/admin/channels')]).then(function(results) {
-      aliases = results[0].aliases || [];
-      channels = results[1].channels || [];
+    return Promise.all([api('/admin/accounts?page=1&page_size=50'), api('/admin/groups?page=1&page_size=100')]).then(function(results) {
+      aliases = ((results[0] && (results[0].items || results[0].accounts || results[0].aliases)) || (Array.isArray(results[0]) ? results[0] : [])).map(normalizeAccount);
+      channels = ((results[1] && (results[1].items || results[1].groups)) || (Array.isArray(results[1]) ? results[1] : [])).map(normalizeGroup);
       render();
     }).catch(function(error) { toast(error.message, 'error'); });
   }
@@ -83,18 +113,9 @@
     $('aliasModal').hidden = true;
   }
   function createAlias() {
-    var sourceModel = $('aliasSource').value.trim();
-    var targetModel = $('aliasTarget').value.trim();
-    if (sourceModel && targetModel && sourceModel === targetModel) {
-      toast('源模型与目标模型不能相同', 'error');
-      return;
-    }
-    var body = {
-      sourceModel: sourceModel,
-      targetModel: targetModel,
-      channelId: $('aliasChannel').value ? Number($('aliasChannel').value) : null
-    };
-    api('/admin/model-aliases', { method: 'POST', body: body }).then(function() {
+    var body = accountPayload();
+    if (!body.name) { toast('请输入账号名称', 'error'); return; }
+    api('/admin/accounts', { method: 'POST', body: body }).then(function() {
       close();
       toast('已创建', 'success');
       return load();
@@ -118,14 +139,14 @@
       var alias = aliasByEvent(event);
       if (!alias) return;
       if (button.dataset.act === 'toggle') {
-        api('/admin/model-aliases/' + alias.id, { method: 'PATCH', body: { enabled: !alias.enabled } }).then(function() {
+        api('/admin/accounts/' + alias.id, { method: 'PUT', body: { status: alias.enabled ? 'inactive' : 'active' } }).then(function() {
           toast('已更新', 'success');
           return load();
         }).catch(function(error) { toast(error.message, 'error'); });
         return;
       }
-      if (!confirm('确认删除模型别名？')) return;
-      api('/admin/model-aliases/' + alias.id, { method: 'DELETE' }).then(function() {
+      if (!confirm('确认删除账号？')) return;
+      api('/admin/accounts/' + alias.id, { method: 'DELETE' }).then(function() {
         toast('已删除', 'success');
         return load();
       }).catch(function(error) { toast(error.message, 'error'); });

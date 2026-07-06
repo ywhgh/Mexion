@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mexion — 模型别名</title>
+<title>Mexion — 账号管理</title>
 
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="preload" href="/assets/common.css" as="style">
@@ -83,7 +83,7 @@
       </div>
     </header>
 
-    <div class="page-head fade-in fade-in--1"><div class="page-head__left"><nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">模型别名</span></nav><div class="page-head__title">模型<em>别名</em></div><div class="page-head__sub" id="aliasStats">加载中…</div></div><button class="btn-primary" id="newAliasBtn" type="button">新建别名</button></div><div class="aliases-card card fade-in fade-in--2"><div class="aliases-colhead"><span>源模型</span><span>目标模型</span><span>关联渠道</span><span>状态</span><span>操作</span></div><div id="aliasList"></div></div><div class="aliases-modal-bg" id="aliasModal" hidden role="dialog" aria-modal="true"><div class="aliases-modal"><div class="aliases-modal__head"><h2 class="aliases-modal__title">新建别名</h2><button class="aliases-modal__close" id="aliasClose" type="button">×</button></div><div class="aliases-modal__body"><label class="aliases-field"><span>01 源模型名</span><input class="aliases-input" id="aliasSource" placeholder="gpt-4"></label><label class="aliases-field"><span>02 目标模型名</span><input class="aliases-input" id="aliasTarget" placeholder="gpt-4o"></label><label class="aliases-field"><span>03 关联渠道</span><select class="aliases-input" id="aliasChannel"><option value="">全局生效</option></select></label></div><div class="aliases-modal__foot"><button class="btn-secondary" id="aliasCancel" type="button">取消</button><button class="btn-primary" id="aliasSave" type="button">创建别名</button></div></div></div>
+    <div class="page-head fade-in fade-in--1"><div class="page-head__left"><nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">账号管理</span></nav><div class="page-head__title">账号<em>管理</em></div><div class="page-head__sub" id="aliasStats">加载中…</div></div><button class="btn-primary" id="newAliasBtn" type="button">新建账号</button></div><div class="aliases-card card fade-in fade-in--2"><div class="aliases-colhead"><span>账号名称</span><span>API Key</span><span>所属分组</span><span>状态</span><span>操作</span></div><div id="aliasList"></div></div><div class="aliases-modal-bg" id="aliasModal" hidden role="dialog" aria-modal="true"><div class="aliases-modal"><div class="aliases-modal__head"><h2 class="aliases-modal__title">新建账号</h2><button class="aliases-modal__close" id="aliasClose" type="button">×</button></div><div class="aliases-modal__body"><label class="aliases-field"><span>01 账号名称</span><input class="aliases-input" id="aliasSource" placeholder="OpenAI 主账号"></label><label class="aliases-field"><span>02 API Key</span><input class="aliases-input" id="aliasTarget" placeholder="sk-..."></label><label class="aliases-field"><span>03 所属分组</span><select class="aliases-input" id="aliasChannel"><option value="">不绑定分组</option></select></label></div><div class="aliases-modal__foot"><button class="btn-secondary" id="aliasCancel" type="button">取消</button><button class="btn-primary" id="aliasSave" type="button">创建账号</button></div></div></div>
 
   </main>
 </div>
@@ -93,4 +93,5 @@
 <script src="/model-aliases/app.js" defer></script>
 </body>
 </html>
+
 

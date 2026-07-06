@@ -16,11 +16,11 @@
     var method = options.method || 'GET';
     if (window.MexionHttp) {
       if (method === 'POST') return MexionHttp.post(path, options.body || {});
-      if (method === 'PATCH') return MexionHttp.patch(path, options.body || {});
+      if (method === 'PATCH' || method === 'PUT') return MexionHttp.put(path, options.body || {});
       if (method === 'DELETE') return MexionHttp.delete(path);
       return MexionHttp.get(path);
     }
-    return fetch('/api' + path, {
+    return fetch('/api/v1' + path, {
       method: method,
       credentials: 'same-origin',
       headers: options.body ? { 'Content-Type': 'application/json' } : {},
@@ -34,6 +34,19 @@
   }
   function toast(message, tone) {
     if (window.MexionToast) MexionToast.show(message, { tone: tone || 'default' });
+  }
+  function normalizeGroup(group) {
+    group = group || {};
+    return {
+      id: group.id,
+      name: group.name || ('group_' + group.id),
+      description: group.description || '',
+      rateMultiplier: Math.round(Number(group.rate_multiplier != null ? group.rate_multiplier : (group.ratio != null ? group.ratio : 1)) * 100),
+      isDefault: !!(group.is_default || group.isDefault),
+      channelCount: Number(group.channel_count || group.account_count || group.channelCount || 0),
+      keyCount: Number(group.key_count || group.api_key_count || group.keyCount || 0),
+      raw: group
+    };
   }
   function rateText(group) {
     return (Number(group.rateMultiplier || 100) / 100).toFixed(2) + 'x';
@@ -76,8 +89,8 @@
     }).join('');
   }
   function load() {
-    return api('/admin/groups').then(function(data) {
-      groups = data.groups || [];
+    return api('/admin/groups?page=1&page_size=100').then(function(data) {
+      groups = ((data && (data.items || data.groups)) || (Array.isArray(data) ? data : [])).map(normalizeGroup);
       groups.forEach(function(group, index) {
         if (!localOrder[group.id]) localOrder[group.id] = index + 1;
       });
@@ -100,10 +113,11 @@
     var body = {
       name: $('groupName').value.trim(),
       description: $('groupDesc').value.trim(),
-      rateMultiplier: Math.round(Number($('groupRate').value || 1) * 100),
-      isDefault: $('groupDefault').checked
+      rate_multiplier: Number($('groupRate').value || 1),
+      is_public: !$('groupDefault').checked,
+      is_default: $('groupDefault').checked
     };
-    api('/admin/groups' + (editing ? '/' + editing.id : ''), { method: editing ? 'PATCH' : 'POST', body: body }).then(function() {
+    api('/admin/groups' + (editing ? '/' + editing.id : ''), { method: editing ? 'PUT' : 'POST', body: body }).then(function() {
       close();
       toast('已保存', 'success');
       return load();

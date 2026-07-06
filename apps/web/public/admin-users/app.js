@@ -13,12 +13,12 @@
   function api(path, options) {
     options = options || {};
     if (window.MexionHttp) {
-      if ((options.method || 'GET') === 'PATCH') return MexionHttp.patch(path, options.body || {});
+      if ((options.method || 'GET') === 'PATCH' || (options.method || 'GET') === 'PUT') return MexionHttp.put(path, options.body || {});
       if ((options.method || 'GET') === 'POST') return MexionHttp.post(path, options.body || {});
       if ((options.method || 'GET') === 'DELETE') return MexionHttp.delete(path);
       return MexionHttp.get(path);
     }
-    return fetch('/api' + path, {
+    return fetch('/api/v1' + path, {
       method: options.method || 'GET',
       credentials: 'same-origin',
       headers: options.body ? { 'Content-Type': 'application/json' } : {},
@@ -49,9 +49,9 @@
         '<span class="users-muted">' + esc(u.email || '—') + '</span>' +
         '<span>' + (u.role === 'admin' ? '<span class="pill pill--warn">admin</span>' : '<span class="users-mono">user</span>') + '</span>' +
         '<span><span class="pill ' + (u.status === 'active' ? 'pill--ok' : 'pill--err') + '">' + esc(u.status) + '</span></span>' +
-        '<span class="users-mono">' + Number(u.balance || 0).toLocaleString() + '</span>' +
-        '<span class="users-mono">' + Number(u.used_quota || u.quotaUsed || 0).toLocaleString() + '</span>' +
-        '<span class="users-muted">' + date(u.createdAt) + '</span>' +
+        '<span class="users-mono">$' + Number(u.balance || 0).toFixed(4) + '</span>' +
+        '<span class="users-mono">$' + Number(u.quota_used || u.used_quota || u.quotaUsed || 0).toFixed(4) + '</span>' +
+        '<span class="users-muted">' + date(u.created_at || u.createdAt) + '</span>' +
         '<span class="users-actions"><button class="users-action" data-act="status">' + (u.status === 'active' ? '封禁' : '解封') + '</button><button class="users-action" data-act="balance">调余额</button></span>' +
       '</div>';
     }).join('') : '<div class="users-empty">暂无用户</div>';
@@ -78,16 +78,15 @@
     }).join('') : '<div class="users-empty">暂无操作日志</div>';
   }
   function loadUsers() {
-    return api('/admin/users').then(function(data) {
-      users = data.users || [];
+    return api('/admin/users?page=1&page_size=50').then(function(data) {
+      users = (data && (data.items || data.users)) || (Array.isArray(data) ? data : []);
       renderUsers();
     }).catch(function(error) { toast(error.message, 'error'); });
   }
   function loadAuditLogs() {
-    return api('/admin/audit-logs?limit=50').then(function(data) {
-      auditLogs = data.logs || [];
-      renderAuditLogs();
-    }).catch(function(error) { toast(error.message, 'error'); });
+    auditLogs = [];
+    renderAuditLogs();
+    return Promise.resolve();
   }
   function refresh() {
     loadUsers();
@@ -105,7 +104,7 @@
       var user = users.find(function(item) { return item.id === id; });
       if (!user) return;
       if (button.dataset.act === 'status') {
-        api('/admin/users/' + id, { method: 'PATCH', body: { status: user.status === 'active' ? 'banned' : 'active' } }).then(function() {
+        api('/admin/users/' + id, { method: 'PUT', body: { status: user.status === 'active' ? 'disabled' : 'active' } }).then(function() {
           toast('已更新', 'success');
           refresh();
         }).catch(function(error) { toast(error.message, 'error'); });
@@ -113,10 +112,11 @@
       }
       var value = prompt('输入新的余额', String(user.balance || 0));
       if (value == null) return;
-      api('/admin/users/' + id, { method: 'PATCH', body: { balance: Number(value) } }).then(function() {
+      api('/admin/users/' + id + '/balance', { method: 'POST', body: { balance: Number(value), operation: 'set', notes: 'Mexion admin UI' } }).then(function() {
         toast('已更新', 'success');
         refresh();
       }).catch(function(error) { toast(error.message, 'error'); });
     };
   });
 })();
+

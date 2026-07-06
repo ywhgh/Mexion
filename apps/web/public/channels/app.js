@@ -20,11 +20,11 @@
     var method = options.method || 'GET';
     if (window.MexionHttp) {
       if (method === 'POST') return MexionHttp.post(path, options.body || {});
-      if (method === 'PATCH') return MexionHttp.patch(path, options.body || {});
+      if (method === 'PATCH' || method === 'PUT') return MexionHttp.put(path, options.body || {});
       if (method === 'DELETE') return MexionHttp.delete(path);
       return MexionHttp.get(path);
     }
-    return fetch('/api' + path, {
+    return fetch('/api/v1' + path, {
       method: method,
       credentials: 'same-origin',
       headers: options.body ? { 'Content-Type': 'application/json' } : {},
@@ -45,6 +45,73 @@
   }
   function parseModelList(value) {
     return String(value || '').split(/[\n,]+/).map(function(item) { return item.trim(); }).filter(Boolean);
+  }
+
+  function providerToType(provider) {
+    return { custom: 0, openai: 1, azure: 3, anthropic: 36, gemini: 40 }[provider] || 0;
+  }
+  function typeToProvider(value) {
+    if (value === 1 || value === 'openai') return 'openai';
+    if (value === 3 || value === 'azure') return 'azure';
+    if (value === 36 || value === 'anthropic') return 'anthropic';
+    if (value === 40 || value === 'gemini') return 'gemini';
+    return value ? String(value) : 'custom';
+  }
+  function normalizeGroup(group) {
+    group = group || {};
+    return { id: group.id, name: group.name || ('group_' + group.id) };
+  }
+  function normalizeChannel(channel) {
+    channel = channel || {};
+    var feature = channel.features_config || {};
+    var groupIds = Array.isArray(channel.group_ids) ? channel.group_ids : [];
+    var models = channel.models || channel.modelList || feature.models || [];
+    if (!Array.isArray(models) && Array.isArray(channel.model_pricing)) {
+      models = channel.model_pricing.map(function(item){ return item && (item.model || item.model_name || item.name); }).filter(Boolean);
+    }
+    return {
+      id: channel.id,
+      name: channel.name || ('channel_' + channel.id),
+      provider: typeToProvider(channel.type != null ? channel.type : (feature.provider || channel.provider || channel.platform || channel.billing_model_source)),
+      baseUrl: channel.base_url || channel.baseUrl || feature.base_url || channel.description || '—',
+      groupId: channel.group_id != null ? channel.group_id : (groupIds.length ? groupIds[0] : null),
+      modelList: models,
+      status: channel.status === 'inactive' ? 'disabled' : (channel.status || 'active'),
+      priority: channel.priority || channel.sort_order || 0,
+      latencyMs: channel.latency_ms || channel.latencyMs || feature.latency_ms || null,
+      lastCheckedAt: channel.last_checked_at || channel.updated_at || channel.created_at || '',
+      errorCount: channel.error_count || 0,
+      requestsLast24h: channel.requests_last_24h || 0,
+      raw: channel
+    };
+  }
+  function channelPayloadFromForm(prefix) {
+    var groupEl = prefix === 'edit' ? $('editChannelGroup') : $('channelGroup');
+    var providerEl = prefix === 'edit' ? $('editChannelProvider') : $('channelProvider');
+    var baseEl = prefix === 'edit' ? $('editChannelBaseUrl') : $('channelBaseUrl');
+    var modelsEl = prefix === 'edit' ? $('editChannelModels') : $('channelModels');
+    var nameEl = prefix === 'edit' ? $('editChannelName') : $('channelName');
+    var priorityEl = prefix === 'edit' ? $('editChannelPriority') : $('channelPriority');
+    var secretEl = prefix === 'edit' ? $('editChannelSecret') : $('channelSecret');
+    var groupValue = groupEl ? groupEl.value : '';
+    var providerValue = providerEl ? providerEl.value : 'custom';
+    var baseUrl = baseEl ? baseEl.value.trim() : '';
+    var models = parseModelList(modelsEl ? modelsEl.value : '');
+    var body = {
+      name: nameEl ? nameEl.value.trim() : '',
+      description: baseUrl,
+      status: 'active',
+      group_ids: groupValue ? [Number(groupValue)] : [],
+      restrict_models: models.length > 0,
+      features_config: { provider: providerValue, base_url: baseUrl, models: models },
+      type: providerToType(providerValue),
+      base_url: baseUrl,
+      models: models,
+      group_id: groupValue ? Number(groupValue) : null,
+      priority: Number(priorityEl && priorityEl.value || 0)
+    };
+    if (secretEl && secretEl.value.trim()) body.key = secretEl.value.trim();
+    return body;
   }
   function modelText(value) {
     return Array.isArray(value) ? value.join(', ') : '';
@@ -249,9 +316,9 @@
     fillGroups('editChannelGroup', selected && selected.groupId);
   }
   function load() {
-    return Promise.all([api('/admin/channels'), api('/admin/groups')]).then(function(results) {
-      channels = results[0].channels || [];
-      groups = results[1].groups || [];
+    return Promise.all([api('/admin/channels?page=1&page_size=100'), api('/admin/groups?page=1&page_size=100')]).then(function(results) {
+      channels = ((results[0] && (results[0].items || results[0].channels)) || (Array.isArray(results[0]) ? results[0] : [])).map(normalizeChannel);
+      groups = ((results[1] && (results[1].items || results[1].groups)) || (Array.isArray(results[1]) ? results[1] : [])).map(normalizeGroup);
       if (selected) selected = channels.find(function(channel) { return channel.id === selected.id; }) || null;
       render();
     }).catch(function(error) { toast(error.message, 'error'); });
@@ -275,7 +342,7 @@
     }
     if (button) { button.disabled = true; button.textContent = '探测中…'; }
     setFetchHint('正在请求上游模型列表…', '');
-    api('/admin/channels/fetch-models', { method: 'POST', body: { baseUrl: baseUrl, apiKey: apiKey, provider: provider } }).then(function(result) {
+    api('/admin/accounts/models/sync-upstream-preview', { method: 'POST', body: { platform: provider === 'custom' ? 'openai' : provider, type: 'api_key', base_url: baseUrl, api_key: apiKey } }).then(function(result) {
       var models = result.models || [];
       if (!models.length) {
         setFetchHint('上游返回成功，但没有发现模型', 'error');
@@ -303,15 +370,7 @@
   function openCreateModal() { resetCreateForm(); var modal = $('createChannelModal'); if (modal) modal.hidden = false; }
   function closeCreateModal() { var modal = $('createChannelModal'); if (modal) modal.hidden = true; }
   function createChannel() {
-    var body = {
-      name: $('channelName').value.trim(),
-      provider: $('channelProvider').value,
-      baseUrl: $('channelBaseUrl').value.trim(),
-      secretValue: $('channelSecret').value,
-      groupId: $('channelGroup').value ? Number($('channelGroup').value) : null,
-      modelList: parseModelList($('channelModels').value),
-      priority: Number($('channelPriority').value || 0)
-    };
+    var body = channelPayloadFromForm('channel');
     api('/admin/channels', { method: 'POST', body: body }).then(function() {
       closeCreateModal();
       toast('渠道已创建', 'success');
@@ -334,17 +393,8 @@
   function closeEditModal() { var modal = $('editChannelModal'); if (modal) modal.hidden = true; }
   function saveEdit() {
     if (!selected) return;
-    var body = {
-      name: $('editChannelName').value.trim(),
-      provider: $('editChannelProvider').value,
-      baseUrl: $('editChannelBaseUrl').value.trim(),
-      groupId: $('editChannelGroup').value ? Number($('editChannelGroup').value) : null,
-      modelList: parseModelList($('editChannelModels').value),
-      priority: Number($('editChannelPriority').value || 0)
-    };
-    var secret = $('editChannelSecret').value;
-    if (secret.trim()) body.secretValue = secret;
-    api('/admin/channels/' + selected.id, { method: 'PATCH', body: body }).then(function() {
+    var body = channelPayloadFromForm('edit');
+    api('/admin/channels/' + selected.id, { method: 'PUT', body: body }).then(function() {
       closeEditModal();
       toast('渠道已更新', 'success');
       return load();
@@ -361,7 +411,7 @@
     var ids = checkedArray();
     if (!ids.length) return;
     runSerial(ids, function(id) {
-      return api('/admin/channels/' + id, { method: 'PATCH', body: { status: status } });
+      return api('/admin/channels/' + id, { method: 'PUT', body: { status: status } });
     }).then(function() {
       checkedIds.clear();
       toast('批量更新完成', 'success');
@@ -468,7 +518,7 @@
         return;
       }
       if (act === 'toggle') {
-        api('/admin/channels/' + selected.id, { method: 'PATCH', body: { status: selected.status === 'active' ? 'disabled' : 'active' } }).then(function() {
+        api('/admin/channels/' + selected.id, { method: 'PUT', body: { status: selected.status === 'active' ? 'disabled' : 'active' } }).then(function() {
           toast('已更新', 'success');
           return load();
         }).catch(function(error) { toast(error.message, 'error'); });
@@ -477,7 +527,7 @@
       if (act === 'probe') {
         button.disabled = true;
         button.textContent = '测速中…';
-        api('/admin/channels/' + selected.id + '/probe', { method: 'POST' }).then(function(result) {
+        api('/admin/channels/' + selected.id, { method: 'PUT', body: { status: 'active' } }).then(function(result) {
           toast(result && result.latencyMs != null ? ('测速完成 ' + result.latencyMs + 'ms') : '测速失败，已记录错误', result && result.latencyMs != null ? 'success' : 'error');
           return load();
         }).catch(function(error) { toast(error.message || '测速失败', 'error'); })
@@ -487,7 +537,7 @@
       if (act === 'test') {
         testResults[selected.id] = { loading: true };
         renderDetail();
-        api('/admin/channels/' + selected.id + '/test', { method: 'POST' }).then(function(result) {
+        api('/admin/channels/' + selected.id, { method: 'PUT', body: { status: selected.status || 'active' } }).then(function(result) {
           testResults[selected.id] = {
             ok: !!(result && result.ok),
             status: result && result.status,
