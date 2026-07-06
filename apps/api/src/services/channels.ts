@@ -211,6 +211,10 @@ function getChannel(db: DbClient, id: number): ChannelRecord {
   return channel;
 }
 
+export function getChannelById(db: DbClient, id: number): ChannelRecord {
+  return getChannel(db, id);
+}
+
 function assertGroupExists(db: DbClient, groupId: number | null | undefined): void {
   if (groupId === null || groupId === undefined) return;
   getGroup(db, groupId);

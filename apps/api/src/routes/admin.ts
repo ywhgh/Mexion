@@ -2,6 +2,7 @@ import { Hono, type Context } from "hono";
 import { z } from "zod";
 import type { AppBindings } from "../app.js";
 import { idParamSchema } from "../contracts.js";
+import { safeFetch } from "../lib/safe-http.js";
 import { requireAdmin } from "../middleware/require-admin.js";
 import { listAuditLogs, recordAuditLog } from "../services/audit.js";
 import {
@@ -12,6 +13,7 @@ import {
   deleteGroup,
   deleteModelAlias,
   fetchUpstreamModels,
+  getChannelById,
   listChannels,
   listGroups,
   listModelAliases,
@@ -74,6 +76,21 @@ function requestIp(c: Context<AppBindings>): string | null {
   return c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for")?.split(",")[0]?.trim() || c.req.header("x-real-ip") || null;
 }
 
+function stripTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, "");
+}
+
+function appendPath(baseUrl: string, path: string): string {
+  return `${stripTrailingSlashes(baseUrl)}/${path.replace(/^\/+/, "")}`;
+}
+
+function channelModelsEndpoint(channel: { provider: string; baseUrl: string }): string {
+  const base = stripTrailingSlashes(channel.baseUrl);
+  if (channel.provider === "gemini") return base.endsWith("/v1beta") ? appendPath(base, "models") : appendPath(base, "v1beta/models");
+  if (channel.provider === "azure") return base.includes("/openai") ? appendPath(base, "deployments") : appendPath(base, "openai/deployments");
+  return base.endsWith("/v1") ? appendPath(base, "models") : appendPath(base, "v1/models");
+}
+
 adminRoutes.use("*", requireAdmin);
 
 adminRoutes.get("/channels", (c) => c.json({ ok: true, data: { channels: listChannels(c.get("db")) } }));
@@ -83,6 +100,30 @@ adminRoutes.post("/channels/fetch-models", async (c) => {
   return c.json({ ok: true, data: result });
 });
 adminRoutes.post("/channels", async (c) => c.json({ ok: true, data: { channel: createChannel(c.get("db"), channelCreateSchema.parse(await c.req.json())) } }, 201));
+adminRoutes.post("/channels/:id/probe", async (c) => {
+  const { id } = idParamSchema.parse(c.req.param());
+  const db = c.get("db");
+  const channel = getChannelById(db, id);
+  const started = performance.now();
+  const now = new Date().toISOString();
+  try {
+    await safeFetch(channelModelsEndpoint(channel), {
+      method: "HEAD",
+      timeoutMs: 5000,
+      firstByteTimeoutMs: 5000,
+    });
+    const latencyMs = Math.round(performance.now() - started);
+    db.sqlite
+      .prepare("UPDATE channels SET latency_ms = ?, last_checked_at = ?, error_count = 0, status = 'active' WHERE id = ?")
+      .run(latencyMs, now, id);
+    return c.json({ ok: true, data: { latencyMs, status: "active" } });
+  } catch {
+    db.sqlite
+      .prepare("UPDATE channels SET latency_ms = NULL, last_checked_at = ?, error_count = error_count + 1, status = 'error' WHERE id = ?")
+      .run(now, id);
+    return c.json({ ok: true, data: { latencyMs: null, status: "error" } });
+  }
+});
 adminRoutes.patch("/channels/:id", async (c) => {
   const { id } = idParamSchema.parse(c.req.param());
   return c.json({ ok: true, data: { channel: updateChannel(c.get("db"), id, channelUpdateSchema.parse(await c.req.json())) } });
