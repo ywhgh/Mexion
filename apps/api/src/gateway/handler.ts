@@ -7,6 +7,7 @@ import { estimateCost, parseUsageFromResponse } from "../lib/pricing.js";
 import { prechargeBilling, rollbackBilling, settleBilling } from "../services/billing.js";
 import { markChannelFailure, markChannelSuccess, resolveModelAlias, selectChannelCandidates, type ChannelRecord } from "../services/channels.js";
 import { relayToProvider, type GatewayProtocol } from "./providers.js";
+import { isResponsesProtocol, writeChatErrorSSE, writeResponsesFailedSSE } from "./stream-error.js";
 
 export type GatewayOptions = { protocol: GatewayProtocol };
 
@@ -82,12 +83,15 @@ function parseStreamJsonLine(line: string): unknown | null {
 
 function createUsageTrackingStream(
   upstreamBody: ReadableStream<Uint8Array>,
-  onDone: (usage: ReturnType<typeof parseUsageFromResponse> | null) => void,
+  onDone: (usage: ReturnType<typeof parseUsageFromResponse> | null, streamErrored: boolean) => void,
   provider: string,
+  opts: { protocol: GatewayProtocol; model: string },
 ): ReadableStream<Uint8Array> {
   const decoder = new TextDecoder();
   let lineBuffer = "";
   let streamUsage: ReturnType<typeof parseUsageFromResponse> | null = null;
+  let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+  let settled = false;
 
   function rememberUsage(parsed: unknown): void {
     const usage = parseUsageFromResponse(provider, parsed);
@@ -120,19 +124,64 @@ function createUsageTrackingStream(
     if (lineBuffer.length > 65536) lineBuffer = lineBuffer.slice(-65536);
   }
 
-  return upstreamBody.pipeThrough(
-    new TransformStream<Uint8Array, Uint8Array>({
-      transform(chunk, controller) {
+  function settle(streamErrored: boolean): void {
+    if (settled) return;
+    settled = true;
+    processText(decoder.decode());
+    if (lineBuffer.trim()) processLine(lineBuffer);
+    onDone(streamUsage, streamErrored);
+  }
+
+  async function writeCompensation(controller: ReadableStreamDefaultController<Uint8Array>): Promise<void> {
+    const writer = new WritableStream<Uint8Array>({
+      write(chunk) {
         controller.enqueue(chunk);
-        processText(decoder.decode(chunk, { stream: true }));
       },
-      flush() {
-        processText(decoder.decode());
-        if (lineBuffer.trim()) processLine(lineBuffer);
-        onDone(streamUsage);
-      },
-    }),
-  );
+    }).getWriter();
+    if (isResponsesProtocol(opts.protocol)) {
+      await writeResponsesFailedSSE(writer, { model: opts.model, errorType: "upstream_error", message: "Upstream disconnected" });
+    } else {
+      await writeChatErrorSSE(writer, "Upstream disconnected");
+    }
+    writer.releaseLock();
+  }
+
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      reader = upstreamBody.getReader();
+      void (async () => {
+        let streamErrored = false;
+        try {
+          for (;;) {
+            const result = await reader.read();
+            if (result.done) break;
+            const chunk = result.value;
+            controller.enqueue(chunk);
+            processText(decoder.decode(chunk, { stream: true }));
+          }
+        } catch {
+          streamErrored = true;
+          try {
+            await writeCompensation(controller);
+          } catch {
+            // Downstream is already gone; nothing else can be written after headers/data were sent.
+          }
+        } finally {
+          settle(streamErrored);
+          try {
+            controller.close();
+          } catch {
+            // Client may have closed while we were compensating.
+          }
+          reader?.releaseLock();
+        }
+      })();
+    },
+    cancel(reason) {
+      settle(true);
+      return reader?.cancel(reason);
+    },
+  });
 }
 
 export async function handleGatewayRequest(c: Context<AppBindings>, options: GatewayOptions): Promise<Response> {
@@ -200,7 +249,7 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
       if (body.stream === true && upstream.ok && upstream.body) {
         const trackedBody = createUsageTrackingStream(
           upstream.body,
-          (streamUsage) => {
+          (streamUsage, streamErrored) => {
             const durationMs = Math.max(0, Math.round(performance.now() - started));
             const hasRealUsage = !!streamUsage && usageHasTokens(streamUsage);
             const inputTokens = hasRealUsage ? (streamUsage.inputTokens || roughInputTokens(rawBody.byteLength)) : roughInputTokens(rawBody.byteLength);
@@ -218,15 +267,17 @@ export async function handleGatewayRequest(c: Context<AppBindings>, options: Gat
                 bodyHash,
                 bodyLength: rawBody.byteLength,
                 keyPrefix: key?.prefix ?? null,
-                status: hasRealUsage ? "ok" : "stream_estimated",
+                status: streamErrored ? "stream_error" : (hasRealUsage ? "ok" : "stream_estimated"),
               });
-              markChannelSuccess(c.get("db"), channel.id, durationMs);
-              insertRequestLog(channel, upstream.status, durationMs, inputTokens, outputTokens, actualCost, null);
+              if (streamErrored) markChannelFailure(c.get("db"), channel.id);
+              else markChannelSuccess(c.get("db"), channel.id, durationMs);
+              insertRequestLog(channel, streamErrored ? 502 : upstream.status, durationMs, inputTokens, outputTokens, actualCost, streamErrored ? "UPSTREAM_STREAM_DISCONNECTED" : null);
             } catch (error) {
               console.warn("Failed to settle streaming billing", error);
             }
           },
           channel.provider,
+          { protocol: options.protocol, model: resolved.model },
         );
         return new Response(trackedBody, { status: upstream.status, headers: responseHeaders(upstream.headers) });
       }
