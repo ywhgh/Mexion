@@ -1043,18 +1043,18 @@ function renderMySubscriptions(subs) {
     var startTs = sub.start_time || sub.starts_at;
     var expiresAt = endTs ? ((typeof endTs === 'number' && endTs > 1e9) ? new Date(endTs * 1000) : new Date(endTs)) : null;
     var startedAt = startTs ? ((typeof startTs === 'number' && startTs > 1e9) ? new Date(startTs * 1000) : new Date(startTs)) : null;
-    var remaining = expiresAt ? Math.max(0, Math.ceil((expiresAt - new Date()) / 86400000)) : 0;
+    var remaining = sub.days_remaining != null ? Math.max(0, Number(sub.days_remaining) || 0) : (expiresAt ? Math.max(0, Math.ceil((expiresAt - new Date()) / 86400000)) : 0);
     var expM = expiresAt ? (expiresAt.getMonth()+1) : '--';
     var expD = expiresAt ? expiresAt.getDate() : '--';
     var startStr = startedAt ? startedAt.getFullYear() + '-' + String(startedAt.getMonth()+1).padStart(2,'0') + '-' + String(startedAt.getDate()).padStart(2,'0') : '';
     var remainStr = remaining > 0 ? (lang === 'zh' ? '剩余 ' + remaining + ' 天' : remaining + ' days left') : (lang === 'zh' ? '已到期' : 'Expired');
-    var totalQuota = (sub.amount_total || 0) / 500000;
-    var usedQuota = (sub.amount_used || 0) / 500000;
-    var dailyUsed = usedQuota;
-    var dailyLimit = totalQuota;
-    var monthlyUsed = usedQuota;
-    var monthlyLimit = totalQuota;
-    var dailyPct = dailyLimit ? Math.min(100, dailyUsed / dailyLimit * 100) : 0;
+    var monthlyPct = Math.max(0, Math.min(1, Number(sub._monthlyProgress || 0)));
+    var dailyPctRaw = Math.max(0, Math.min(1, Number(sub._dailyProgress || 0)));
+    var dailyLimit = Number(sub.daily_limit_usd || sub.quota_daily || 0);
+    var dailyUsed = dailyLimit ? dailyLimit * dailyPctRaw : 0;
+    var monthlyLimit = Number(sub.monthly_limit_usd || sub.amount_total || 0);
+    var monthlyUsed = monthlyLimit ? monthlyLimit * monthlyPct : 0;
+    var dailyPct = dailyPctRaw ? dailyPctRaw * 100 : 0;
     var perCall = '';
     var ticks = '';
     for (var t = 0; t < 12; t++) ticks += '<div class="usage-bar__tick"></div>';
@@ -1186,7 +1186,7 @@ function refreshSubscriptionUser(source) {
       return user;
     });
   }
-  return MexionHttp.get('/user/self').then(function(user) {
+  return MexionHttp.get('/user/profile').then(function(user) {
     syncSubscriptionBalance(user);
     return user;
   });
@@ -1242,15 +1242,27 @@ function startSubscriptionPaymentSync() {
 }
 
 function loadActiveSubscriptions() {
-  return MexionHttp.get('/subscription/self').then(function(data) {
-    var raw = Array.isArray(data) ? data : (data && data.subscriptions) || (data && data.all_subscriptions) || [];
+  return Promise.all([
+    MexionHttp.get('/subscriptions').catch(function() { return []; }),
+    MexionHttp.get('/subscriptions/progress').catch(function() { return []; })
+  ]).then(function(results) {
+    var data = results[0];
+    var progress = Array.isArray(results[1]) ? results[1] : ((results[1] && results[1].items) || []);
+    var progressById = {};
+    progress.forEach(function(p) { if (p && p.id != null) progressById[p.id] = p; });
+    var raw = Array.isArray(data) ? data : (data && data.items) || (data && data.subscriptions) || [];
     var subs = raw.map(function(item) {
       var s = item.subscription || item;
+      var pg = progressById[s.id] || {};
       s._planTitle = '';
       if (s.plan_id) {
         var matched = PLANS.find(function(p) { return p._planId === s.plan_id; });
         if (matched) s._planTitle = matched._displayName;
       }
+      if (!s._planTitle) s._planTitle = s.group_name || s.name || '';
+      if (pg.monthly_progress != null) s._monthlyProgress = Number(pg.monthly_progress) || 0;
+      if (pg.daily_progress != null) s._dailyProgress = Number(pg.daily_progress) || 0;
+      if (pg.days_remaining != null) s.days_remaining = pg.days_remaining;
       return s;
     });
     renderMySubscriptions(subs);
@@ -1269,35 +1281,50 @@ function loadPaymentPlans() {
   };
 
   return Promise.all([
-    MexionHttp.get('/subscription/plans').catch(function() { return []; }),
-    MexionHttp.get('/user/groups').catch(function() { return {}; }),
-    MexionHttp.get('/user/topup/info').catch(function() { return {}; })
+    MexionHttp.get('/payment/checkout-info').catch(function() { return {}; }),
+    MexionHttp.get('/groups/available').catch(function() { return []; }),
+    MexionHttp.get('/subscriptions').catch(function() { return []; })
   ]).then(function(results) {
-    var plansData = results[0];
+    var checkoutInfo = results[0] || {};
+    var plansData = checkoutInfo.plans || [];
     var rawGroups = results[1];
-    var topupInfo = results[2] || {};
+    var activeRaw = results[2];
+    activeSubscriptions = Array.isArray(activeRaw) ? activeRaw : ((activeRaw && activeRaw.items) || (activeRaw && activeRaw.subscriptions) || activeSubscriptions || []);
+    var topupInfo = checkoutInfo || {};
     var groups = [];
     if (rawGroups && typeof rawGroups === 'object' && !Array.isArray(rawGroups)) {
-      Object.keys(rawGroups).forEach(function(slug) {
-        var info = rawGroups[slug] || {};
-        groups.push({ id: slug, name: slug, slug: slug, rate_multiplier: info.ratio || 1, description: info.desc || '' });
-      });
+      if (Array.isArray(rawGroups.items)) {
+        groups = rawGroups.items;
+      } else if (Array.isArray(rawGroups.groups)) {
+        groups = rawGroups.groups;
+      } else {
+        Object.keys(rawGroups).forEach(function(slug) {
+          var info = rawGroups[slug] || {};
+          groups.push({ id: slug, name: slug, slug: slug, rate_multiplier: info.ratio || 1, description: info.desc || '' });
+        });
+      }
     } else if (Array.isArray(rawGroups)) { groups = rawGroups; }
 
     var plans = Array.isArray(plansData) ? plansData : (plansData.plans || []);
-    console.log('[subscription] plans loaded:', plans.length, plans);
     var methods = {};
-    var payMethods = Array.isArray(topupInfo.pay_methods) ? topupInfo.pay_methods : [];
-    payMethods.forEach(function(method) {
-      if (method && method.type) methods[method.type] = method;
-    });
+    if (topupInfo.methods && typeof topupInfo.methods === 'object') {
+      methods = topupInfo.methods;
+    } else {
+      var payMethods = Array.isArray(topupInfo.pay_methods) ? topupInfo.pay_methods : [];
+      payMethods.forEach(function(method) {
+        if (method && method.type) methods[method.type] = method;
+      });
+    }
 
     window.__paymentReady = true;
     window.__paymentMethods = methods;
     window.__checkoutData = topupInfo;
 
     var groupMap = {};
-    groups.forEach(function(g) { groupMap[g.id] = g; });
+    groups.forEach(function(g) {
+      groupMap[g.id] = g;
+      if (g.name != null) groupMap[g.name] = g;
+    });
 
     SERIES = {};
     BILLING = {};
@@ -1312,13 +1339,13 @@ function loadPaymentPlans() {
 
       var groupSlug = p.upgrade_group || p.group_id || '';
       var group = groupMap[groupSlug] || {};
-      var platform = platformFromPlan(p, groupSlug);
+      var platform = p.group_platform || group.platform || platformFromPlan(p, groupSlug || p.group_name);
       var pm = platformMeta(platform);
       if (!SERIES[platform]) {
         SERIES[platform] = { id: platform, color: pm.color, label: pm.label, icon: pm.icon || '', desc: '' };
       }
 
-      var subType = group.subscription_type || 'standard';
+      var subType = group.subscription_type || 'subscription';
 
       var durationMap = { day: 'days', week: 'weeks', month: 'months' };
       var unit = normUnit(durationMap[p.duration_unit] || p.duration_unit || p.validity_unit || 'days');
@@ -1327,7 +1354,7 @@ function loadPaymentPlans() {
         BILLING[unit] = { id: unit, label: bm.label, unitLabel: bm.unitLabel, short: bm.short };
       }
 
-      var isCurrentSub = activeSubscriptions.some(function(s) { return s.group_id === groupSlug; });
+      var isCurrentSub = activeSubscriptions.some(function(s) { return String(s.group_id) === String(groupSlug); });
       var price = p.price_amount || p.price || (p.total_amount ? p.total_amount / 500000 : 0);
       var origPrice = p.original_price || 0;
       var savePct = origPrice > price ? Math.round((1 - price / origPrice) * 100) : 0;
@@ -1339,7 +1366,9 @@ function loadPaymentPlans() {
         features = p.features.slice(0, 4);
       }
 
-      var dailyLimit = p.quota_reset_period === 'daily' ? (p.total_amount || 0) / 500000 : (p.daily_limit_usd || 0);
+      var dailyLimit = p.daily_limit_usd || 0;
+      if (!dailyLimit && p.monthly_limit_usd) dailyLimit = p.monthly_limit_usd / 30;
+      if (!dailyLimit && p.weekly_limit_usd) dailyLimit = p.weekly_limit_usd / 7;
       var perLabel = '';
       if (dailyLimit > 0) {
         perLabel = '$' + dailyLimit.toFixed(0) + '/' + (lang === 'zh' ? '天' : 'day');
@@ -1382,8 +1411,7 @@ function loadPaymentPlans() {
     renderBrowse();
     loadActiveSubscriptions();
 
-  }).catch(function(e) {
-    console.error('loadPaymentPlans failed:', e);
+  }).catch(function() {
     loadActiveSubscriptions();
     var tabCount = $('#tabBrowseCount');
     if (tabCount) tabCount.textContent = '0';
@@ -1533,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }).catch(function(){});
   } else {
-    MexionHttp.get('/user/self').then(function(user) {
+    MexionHttp.get('/user/profile').then(function(user) {
       syncSubscriptionBalance(user);
       if (payStatus === 'success' || payStatus === 'pending') {
         startSubscriptionPaymentSync();
@@ -1596,9 +1624,16 @@ function openPayModal(plan, originEl, clickX, clickY){
   var checkoutD = window.__checkoutData || {};
   var balanceDisabled = checkoutD.balance_disabled === true || checkoutD.payment_compliance_confirmed === false;
 
-  var wechatAvail = !!methods.wxpay;
-  var alipayAvail = !!methods.alipay;
-  var walletAvail = !balanceDisabled;
+  function methodAvailable() {
+    for (var i = 0; i < arguments.length; i++) {
+      var m = methods[arguments[i]];
+      if (m && m.available !== false) return true;
+    }
+    return false;
+  }
+  var wechatAvail = methodAvailable('wxpay', 'wxpay_direct');
+  var alipayAvail = methodAvailable('alipay', 'alipay_direct');
+  var walletAvail = false;
 
   var wechatEl = $('[data-method="wechat"]');
   var alipayEl = $('[data-method="alipay"]');
@@ -1830,17 +1865,34 @@ function wirePayModal(){
       var payType = selectedMethod.dataset.method || 'wallet';
       var typeMap = { wechat: 'wxpay', alipay: 'alipay' };
       var apiPayType = typeMap[payType] || payType;
-      var requestPath = payType === 'wallet' ? '/subscription/balance/pay' : '/subscription/epay/pay';
-      var requestBody = payType === 'wallet'
-        ? { plan_id: payContext.plan._planId }
-        : { plan_id: payContext.plan._planId, payment_method: apiPayType };
+      if (payType === 'wallet') {
+        btn.removeAttribute('disabled');
+        btn.classList.remove('is-processing');
+        foot.classList.remove('is-processing');
+        if (window.MexionToast && window.MexionToast.show) {
+          window.MexionToast.show(lang === 'zh' ? '当前后端不支持余额直接购买订阅，请选择在线支付' : 'Balance subscription purchase is not supported by the backend. Choose online payment.', { tone: 'error' });
+        }
+        return;
+      }
 
-      MexionHttp.post(requestPath, requestBody).then(function(data) {
+      MexionHttp.post('/payment/orders', {
+        amount: priceFor(payContext.plan),
+        payment_type: apiPayType,
+        order_type: 'subscription',
+        plan_id: payContext.plan._planId,
+        return_url: location.origin + '/subscription/?pay=pending',
+        payment_source: 'mexion-static'
+      }).then(function(data) {
         if (payType !== 'wallet') {
-          if (!data || !data.url) {
+          var payUrl = data && (data.pay_url || data.url || (data.oauth && data.oauth.authorize_url) || data.qr_code);
+          if (!payUrl) {
             throw new Error(lang === 'zh' ? '支付网关返回异常' : 'Invalid payment gateway response');
           }
-          submitSubscriptionPaymentForm(data.url, data);
+          if (/^https?:\/\//i.test(payUrl) || payUrl.charAt(0) === '/') {
+            window.open(payUrl, '_blank');
+          } else {
+            submitSubscriptionPaymentForm(payUrl, data);
+          }
           btn.removeAttribute('disabled');
           btn.classList.remove('is-processing');
           foot.classList.remove('is-processing');

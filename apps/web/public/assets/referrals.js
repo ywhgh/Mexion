@@ -176,7 +176,7 @@ function rt(k, vars){
 
 (function(){
   /* ─── State ─── */
-  var INVITE_BASE = location.origin + '/login?ref=';
+  var INVITE_BASE = location.origin + '/sign-in/?aff=';
   var affCode = '';
   var inviteShareState = 'loading'; // loading | ready | locked
   var inviteShareReason = '';
@@ -745,22 +745,28 @@ function rt(k, vars){
     section.appendChild(wrap);
   }
 
-  // 二开：被邀请人列表(匿名:仅 masked_name + 加入时间)来自真相源 /user/invitees(inviter_id)。
+  // 二开：被邀请人列表(匿名:仅 masked_name + 加入时间)来自 sub2api /user/aff。
   function loadInvitees() {
-    return MexionHttp.get('/user/invitees').then(function(data) {
-      return data || null;
+    return MexionHttp.get('/user/aff').then(function(data) {
+      var invitees = (data && Array.isArray(data.invitees)) ? data.invitees : [];
+      return {
+        count: Number((data && data.aff_count) || invitees.length || 0),
+        invitees: invitees,
+        eligibility: { enabled: false, can_invite: true }
+      };
     }).catch(function() { return null; });
   }
 
   /* ─── Transfer handler ─── */
   var transferBtn = document.getElementById('affTransferBtn');
+  var _affQ = 0;
   if (transferBtn) {
     transferBtn.addEventListener('click', function(){
       transferBtn.disabled = true;
-      MexionHttp.post('/user/aff_transfer', {}).then(function(data){
+      MexionHttp.post('/user/aff/transfer', {}).then(function(data){
         var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
-        var transferred = data === undefined ? _affQ : (data && data.quota ? fmt(data.quota / 500000) : fmt(_affQ));
-        showToast(lang === 'zh' ? '已转移 $' + transferred + ' 到余额' : 'Transferred $' + transferred + ' to balance');
+        var transferred = data === undefined ? fmt(_affQ) : (data && data.transferred_quota != null ? fmt(data.transferred_quota) : fmt(_affQ));
+        showToast(lang === 'zh' ? '已转移 ' + transferred + ' 到余额' : 'Transferred ' + transferred + ' to balance');
         // Refresh aff data
         loadAffData();
       }).catch(function(){
@@ -791,15 +797,11 @@ function rt(k, vars){
   }
 
   function loadAffData() {
-    MexionHttp.get('/user/self').then(function(d) {
+    MexionHttp.get('/user/aff').then(function(d) {
       affCode = d.aff_code || '';
       // 二开：返利比例由后端按实际配置下发(停用=0);不再硬兜底 2%
       var rate = (d.effective_rebate_rate_percent != null) ? d.effective_rebate_rate_percent : 0;
       var invitees = d.invitees || d.aff_invitees || d.affiliate_users || d.invited_users || [];
-      var storedUserId = window.MexionAuthStorage && window.MexionAuthStorage.getItem
-        ? window.MexionAuthStorage.getItem('mexion_user_id')
-        : localStorage.getItem('mexion_user_id');
-      var userId = Number(d.id || storedUserId || 0);
 
       // 邀请链接和二维码必须等资格接口返回后再展示，避免未达标用户复制/截图无效链接。
       setInviteShareState('loading');
@@ -820,9 +822,9 @@ function rt(k, vars){
       if (statsBar) {
         statsBar.style.display = history > 0 ? '' : 'none';
         var historyEl = document.getElementById('affHistory');
-        if (historyEl) historyEl.textContent = fmt(history / 500000);
+        if (historyEl) historyEl.textContent = fmt(history);
       }
-      var _affQ = quota / 500000;
+      _affQ = Number(quota) || 0;
       if (transferBtn) {
         transferBtn.style.display = _affQ > 0 ? '' : 'none';
         transferBtn.disabled = false;
@@ -830,23 +832,20 @@ function rt(k, vars){
         if (label) label.textContent = MexionI18n.t('referrals.transfer.btn').replace('{amount}', fmt(_affQ));
       }
 
-      // 二开：被邀请人列表与计数统一以真相源 /user/invitees 为准(匿名)。
-      loadInvitees().then(function(res) {
-        var realCount = Number((res && res.count) || inviteeCount || 0);
-        if (countEl) countEl.textContent = realCount;
-        var listReal = (res && Array.isArray(res.invitees)) ? res.invitees : invitees;
-        renderInvitees(listReal);
-        _inviteEligibility = res && res.eligibility;
-        applyInviteShareGate(_inviteEligibility);
-        renderInviteEligibility(_inviteEligibility); // 二开(req4)：邀请资格状态
-      });
-    }).catch(function(e){ console.error('loadAffData failed:', e); });
+      // sub2api /user/aff 已返回匿名 invitees；暂无资格门槛字段时默认放行邀请链接。
+      renderInvitees(invitees);
+      _inviteEligibility = d.eligibility || { enabled: false, can_invite: true };
+      applyInviteShareGate(_inviteEligibility);
+      renderInviteEligibility(_inviteEligibility);
+    }).catch(function(){
+      setInviteShareState('locked', MexionI18n.t('referrals.toast.locked'));
+    });
   }
 
   /* ─── 等 defer 脚本就绪后再调 API ─── */
   function boot() {
     if (typeof MexionHttp === 'undefined') return;
-    MexionHttp.get('/status').then(function(settings) {
+    MexionHttp.get('/settings/public').then(function(settings) {
       if (settings.affiliate_enabled === false) {
         var el = document.getElementById('affDisabled');
         if (el) el.classList.add('is-show');

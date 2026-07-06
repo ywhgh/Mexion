@@ -256,10 +256,13 @@
   }
   function initInviteCode() {
     var params = new URLSearchParams(location.search);
-    var code = params.get('invite_code') || params.get('invite') || params.get('ref') || params.get('aff') || '';
+    var aff = params.get('aff') || params.get('ref') || '';
+    var invitation = params.get('invitation_code') || params.get('invite_code') || params.get('invite') || '';
+    var code = invitation || aff;
     var input = $('suInviteCode');
     if (!input || !code) return;
     input.value = code;
+    input.dataset.codeType = invitation ? 'invitation' : 'aff';
     var wrap = $('suInviteField');
     if (wrap) wrap.hidden = false;
   }
@@ -345,7 +348,10 @@
       verify_code: trim($('suCode').value)
     };
     var invite = trim($('suInviteCode') && $('suInviteCode').value);
-    if (invite) payload.invite_code = invite;
+    if (invite) {
+      if ($('suInviteCode') && $('suInviteCode').dataset.codeType === 'aff') payload.aff_code = invite;
+      else payload.invitation_code = invite;
+    }
     window.MexionAuth.register(payload).then(function (data) {
       var user = normalizeUser(data && data.user);
       localStorage.setItem('mexion_user_role', user.role);

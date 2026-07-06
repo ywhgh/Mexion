@@ -5,7 +5,7 @@
    指标取最差状态那条模型的代表值。智能展开:有异常(劣化/不可用)的抽屉默认展开,全正常折叠成摘要行。
    顶部 hero 一眼看全站健康(正常/劣化/不可用计数)。
    每行:状态 + 分组 + 对话延迟 / 端点PING / 可用率·近N天 + 近60次迷你曲线 + 最近异常(脱敏)。
-   数据源:公开端点 /api/status/models（后台 45s 缓存快照，零渠道标识）。右上角倒计时「还有 x 秒更新」。
+   数据源:sub2api /api/v1/channel-monitors，缺少监控时回退 /api/v1/channels/available。右上角倒计时「还有 x 秒更新」。
    折叠状态持久化(localStorage):页面每 45s 全量重渲染,用户手动展开/折叠的选择据此重新套用,不被刷新冲掉。
    ────────────────────────────────────────────────────────────────── */
 (function () {
@@ -19,7 +19,7 @@
       'status.crumb.overview': 'Overview',
       'status.crumb.status': 'Status',
       'status.page.title': 'Service <em>Status</em>',
-      'status.page.sub': 'Live availability per provider · public endpoint <code>/api/status/models</code>',
+      'status.page.sub': 'Live availability per provider · endpoint <code>/api/v1/channel-monitors</code>',
       'status.legend.operational': 'Operational',
       'status.legend.degraded': 'Degraded',
       'status.legend.down': 'Down',
@@ -64,7 +64,7 @@
       'status.crumb.overview': '概览',
       'status.crumb.status': '服务状态',
       'status.page.title': '服务 <em>状态</em>',
-      'status.page.sub': '实时按服务商展示可用性 · 公开接口 <code>/api/status/models</code>',
+      'status.page.sub': '实时按服务商展示可用性 · 接口 <code>/api/v1/channel-monitors</code>',
       'status.legend.operational': '正常',
       'status.legend.degraded': '劣化',
       'status.legend.down': '不可用',
@@ -172,7 +172,12 @@
   }
 
   var STATUS_ORDER = { operational: 0, degraded: 1, down: 2 };
-  function normStatus(s) { return STATUS_ORDER.hasOwnProperty(s) ? s : 'operational'; }
+  function normStatus(s) {
+    s = String(s || '').toLowerCase();
+    if (s === 'failed' || s === 'error' || s === 'unavailable') return 'down';
+    if (s === 'healthy' || s === 'success' || s === 'ok') return 'operational';
+    return STATUS_ORDER.hasOwnProperty(s) ? s : 'operational';
+  }
   function worstStatus(a, b) { return STATUS_ORDER[b] > STATUS_ORDER[a] ? b : a; }
 
   function fmtLatency(ms) {
@@ -543,6 +548,123 @@
     if (top) top.textContent = t('status.countdown', { n: refreshSecs() });
   }
 
+  function asArray(data, keys) {
+    if (Array.isArray(data)) return data;
+    data = data || {};
+    for (var i = 0; i < keys.length; i++) {
+      if (Array.isArray(data[keys[i]])) return data[keys[i]];
+    }
+    return [];
+  }
+  function dateToUnixSec(v) {
+    if (!v) return 0;
+    var ts = typeof v === 'number' ? v : Date.parse(v);
+    if (!isFinite(ts)) return 0;
+    return ts > 1e12 ? Math.floor(ts / 1000) : Math.floor(ts);
+  }
+  function normalizeAvailability(v) {
+    if (v == null || v === '') return null;
+    var n = Number(v);
+    if (!isFinite(n)) return null;
+    return n > 1 ? n / 100 : n;
+  }
+  function emptySnapshot() {
+    return { models: [], refresh_second: 45, avail_days: 7, window_minutes: 30 };
+  }
+  function monitorLastError(status, timeline) {
+    if (normStatus(status) !== 'down') return null;
+    var last = Array.isArray(timeline) && timeline.length ? timeline[timeline.length - 1] : null;
+    return { status_code: 0, at: dateToUnixSec(last && last.checked_at) || Math.floor(Date.now() / 1000), count: 1 };
+  }
+  function addStatusRow(modelsByName, modelName, groupName, status, latency, ping, availability7d, history, lastError) {
+    modelName = modelName || 'model';
+    var row = modelsByName[modelName] || (modelsByName[modelName] = { model: modelName, groups: [] });
+    row.groups.push({
+      group: groupName || 'default',
+      status: normStatus(status),
+      degraded_reason: normStatus(status) === 'degraded' ? 'latency' : '',
+      latency_ms: latency == null ? null : Number(latency),
+      ping_ms: ping == null ? null : Number(ping),
+      availability: normalizeAvailability(availability7d),
+      availability_24h: normalizeAvailability(availability7d),
+      availability_7d: normalizeAvailability(availability7d),
+      availability_30d: normalizeAvailability(availability7d),
+      last_error: lastError || null,
+      history: Array.isArray(history) ? history.map(normStatus) : []
+    });
+  }
+  function monitorsToStatusSnapshot(data) {
+    var items = asArray(data, ['items', 'monitors']);
+    var modelsByName = {};
+    items.forEach(function (m) {
+      var timeline = Array.isArray(m.timeline) ? m.timeline : [];
+      var hist = timeline.map(function (p) { return normStatus(p && p.status); });
+      addStatusRow(
+        modelsByName,
+        m.primary_model || m.name || 'model',
+        m.group_name || m.group || 'default',
+        m.primary_status || m.status,
+        m.primary_latency_ms != null ? m.primary_latency_ms : m.latency_ms,
+        m.primary_ping_latency_ms != null ? m.primary_ping_latency_ms : m.ping_latency_ms,
+        m.availability_7d,
+        hist,
+        monitorLastError(m.primary_status || m.status, timeline)
+      );
+      (m.extra_models || []).forEach(function (x) {
+        addStatusRow(
+          modelsByName,
+          x.model || x.name,
+          m.group_name || m.group || 'default',
+          x.status || m.primary_status,
+          x.latency_ms,
+          null,
+          m.availability_7d,
+          hist,
+          monitorLastError(x.status || m.primary_status, timeline)
+        );
+      });
+    });
+    return {
+      models: Object.keys(modelsByName).map(function (k) { return modelsByName[k]; }),
+      refresh_second: 45,
+      avail_days: 7,
+      window_minutes: 30
+    };
+  }
+  function channelsToStatusSnapshot(data) {
+    var channels = asArray(data, ['items', 'channels']);
+    var modelsByName = {};
+    channels.forEach(function (ch) {
+      (ch.platforms || []).forEach(function (sec) {
+        var groups = Array.isArray(sec.groups) ? sec.groups : [];
+        var models = Array.isArray(sec.supported_models) ? sec.supported_models : [];
+        models.forEach(function (sm) {
+          groups.forEach(function (g) {
+            addStatusRow(modelsByName, sm && sm.name, g && g.name, 'operational', null, null, null, [], null);
+          });
+        });
+      });
+    });
+    return {
+      models: Object.keys(modelsByName).map(function (k) { return modelsByName[k]; }),
+      refresh_second: 45,
+      avail_days: 7,
+      window_minutes: 30
+    };
+  }
+  function fetchStatusSnapshot() {
+    if (!(typeof MexionAuth !== 'undefined' && MexionAuth.isLoggedIn && MexionAuth.isLoggedIn())) {
+      return Promise.resolve(emptySnapshot());
+    }
+    return MexionHttp.get('/channel-monitors').then(function (data) {
+      var snap = monitorsToStatusSnapshot(data);
+      if (snap.models.length) return snap;
+      return MexionHttp.get('/channels/available').then(channelsToStatusSnapshot).catch(function () { return snap; });
+    }).catch(function () {
+      return MexionHttp.get('/channels/available').then(channelsToStatusSnapshot);
+    });
+  }
+
   function render(snap) {
     var stream = document.getElementById('statusStream');
     var hero = document.getElementById('statusHero');
@@ -570,7 +692,7 @@
 
   function load() {
     if (typeof MexionHttp === 'undefined') return;
-    MexionHttp.get('/status/models').then(function (data) {
+    fetchStatusSnapshot().then(function (data) {
       lastSnapshot = data || { models: [] };
       var ms = (lastSnapshot.refresh_second ? lastSnapshot.refresh_second * 1000 : REFRESH_MS);
       REFRESH_MS = ms;
