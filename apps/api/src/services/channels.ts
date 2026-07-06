@@ -28,6 +28,7 @@ export type ChannelRecord = {
   latencyMs: number | null;
   lastCheckedAt: string | null;
   errorCount: number;
+  requestsLast24h: number;
   createdAt: string;
 };
 
@@ -115,6 +116,7 @@ export function rowToChannel(row: unknown): ChannelRecord | null {
     latencyMs: value.latencyMs === null || value.latencyMs === undefined ? null : Number(value.latencyMs),
     lastCheckedAt: value.lastCheckedAt === null || value.lastCheckedAt === undefined ? null : String(value.lastCheckedAt),
     errorCount: Number(value.errorCount ?? 0),
+    requestsLast24h: Number(value.requestsLast24h ?? 0),
     createdAt: String(value.createdAt ?? ""),
   };
 }
@@ -199,13 +201,16 @@ export function deleteGroup(db: DbClient, id: number): void {
 }
 
 function getChannel(db: DbClient, id: number): ChannelRecord {
+  const recentCutoff = new Date(Date.now() - 24 * 3_600_000).toISOString();
   const row = db.sqlite
     .prepare(
-      `SELECT id, name, provider, base_url AS baseUrl, model_list AS modelList, group_id AS groupId,
-        priority, status, latency_ms AS latencyMs, last_checked_at AS lastCheckedAt,
-        error_count AS errorCount, created_at AS createdAt FROM channels WHERE id = ?`,
+      `SELECT c.id, c.name, c.provider, c.base_url AS baseUrl, c.model_list AS modelList, c.group_id AS groupId,
+        c.priority, c.status, c.latency_ms AS latencyMs, c.last_checked_at AS lastCheckedAt,
+        c.error_count AS errorCount, c.created_at AS createdAt,
+        (SELECT COUNT(*) FROM usage_events ue WHERE ue.channel_id = c.id AND ue.ts >= ?) AS requestsLast24h
+       FROM channels c WHERE c.id = ?`,
     )
-    .get(id);
+    .get(recentCutoff, id);
   const channel = rowToChannel(row);
   if (!channel) throw new HTTPException(404, { message: "Channel not found" });
   return channel;
@@ -244,13 +249,16 @@ export function createChannel(db: DbClient, input: CreateChannelInput): ChannelR
 }
 
 export function listChannels(db: DbClient): ChannelRecord[] {
+  const recentCutoff = new Date(Date.now() - 24 * 3_600_000).toISOString();
   const rows = db.sqlite
     .prepare(
-      `SELECT id, name, provider, base_url AS baseUrl, model_list AS modelList, group_id AS groupId,
-        priority, status, latency_ms AS latencyMs, last_checked_at AS lastCheckedAt,
-        error_count AS errorCount, created_at AS createdAt FROM channels ORDER BY priority DESC, id ASC`,
+      `SELECT c.id, c.name, c.provider, c.base_url AS baseUrl, c.model_list AS modelList, c.group_id AS groupId,
+        c.priority, c.status, c.latency_ms AS latencyMs, c.last_checked_at AS lastCheckedAt,
+        c.error_count AS errorCount, c.created_at AS createdAt,
+        (SELECT COUNT(*) FROM usage_events ue WHERE ue.channel_id = c.id AND ue.ts >= ?) AS requestsLast24h
+       FROM channels c ORDER BY c.priority DESC, c.id ASC`,
     )
-    .all();
+    .all(recentCutoff);
   return rows.flatMap((row) => {
     const channel = rowToChannel(row);
     return channel ? [channel] : [];

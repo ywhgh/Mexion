@@ -129,6 +129,22 @@
       </div>
     </div>
 
+    <div class="channels-modal-bg" id="editChannelModal" hidden role="dialog" aria-modal="true">
+      <div class="channels-modal">
+        <div class="channels-modal__head"><h2 class="channels-modal__title">编辑渠道</h2><button class="channels-modal__close" id="editChannelClose" type="button">×</button></div>
+        <div class="channels-modal__body">
+          <label class="channels-form-field"><span class="channels-form-label">01 名称</span><input class="channels-form-input" id="editChannelName" type="text"></label>
+          <label class="channels-form-field"><span class="channels-form-label">02 Provider</span><select class="channels-form-input" id="editChannelProvider"><option value="openai">openai</option><option value="anthropic">anthropic</option><option value="gemini">gemini</option><option value="azure">azure</option><option value="custom">custom</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">03 Base URL</span><input class="channels-form-input" id="editChannelBaseUrl" type="url"></label>
+          <label class="channels-form-field"><span class="channels-form-label">04 API Key</span><input class="channels-form-input" id="editChannelSecret" type="password" autocomplete="new-password" placeholder="（留空则不修改）"></label>
+          <label class="channels-form-field"><span class="channels-form-label">05 所属分组</span><select class="channels-form-input" id="editChannelGroup"><option value="">不绑定分组</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">06 模型列表</span><textarea class="channels-form-input" id="editChannelModels" rows="4" placeholder="gpt-4o-mini, gpt-4.1"></textarea></label>
+          <label class="channels-form-field"><span class="channels-form-label">07 优先级</span><input class="channels-form-input" id="editChannelPriority" type="number" value="0"></label>
+        </div>
+        <div class="channels-modal__foot"><button class="btn-secondary" id="editChannelCancel" type="button">取消</button><button class="btn-primary" id="editChannelConfirm" type="button">保存修改</button></div>
+      </div>
+    </div>
+
   </main>
 </div>
 
