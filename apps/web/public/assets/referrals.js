@@ -234,7 +234,7 @@ function rt(k, vars){
       return;
     }
     linkEl.innerHTML = '<span class="prefix">' + escapeHTML(location.protocol) + '//</span>' +
-      escapeHTML(location.host) + '/login?<span class="aff">ref=' + escapeHTML(affCode) + '</span>';
+      escapeHTML(location.host) + '/sign-in/?<span class="aff">ref=' + escapeHTML(affCode) + '</span>';
   }
 
   function updateQrCaption(locked) {

@@ -1220,7 +1220,7 @@
             toast(zh ? '账户已注销 · 即将退出' : 'Account deleted · signing out');
             setTimeout(function () {
               if (typeof MexionAuth !== 'undefined' && MexionAuth.logout) MexionAuth.logout();
-              else location.replace('/login');
+              else location.replace('/sign-in/');
             }, 900);
           }).catch(function (err) {
             go.disabled = false; go.textContent = zh ? '永久注销账户' : 'Permanently delete';

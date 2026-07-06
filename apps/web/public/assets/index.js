@@ -149,7 +149,7 @@ function applyLoggedInHomeState(userOverride) {
     }
   }
 
-  document.querySelectorAll('a[href="/login"]').forEach(function (el) {
+  document.querySelectorAll('a[href="/login"],a[href="/login/"],a[href="/sign-in"],a[href="/sign-in/"]').forEach(function (el) {
     el.setAttribute('href', dashboardUrl);
   });
 }
@@ -234,7 +234,7 @@ bootHomeAuthState();
 ══════════════════════════════════════════════ */
 (function () {
   var diamond = document.querySelector('.nav__brand-mark');
-  var triggers = document.querySelectorAll('a[href="/login"]');
+  var triggers = document.querySelectorAll('a[href="/login"],a[href="/login/"],a[href="/sign-in"],a[href="/sign-in/"]');
   if (!diamond || !triggers.length) return;
   var reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) return;
@@ -339,16 +339,16 @@ window.addEventListener('load', function() { resizeCanvas(); });
   }
 })();
 
-/* Footer: 真实状态 — 仅在 /api/status 异常时翻为"维护中"，健康路径不改 DOM（避免 reflow，原 latency 抓取就是因 reflow 移除的） */
+/* Footer: 真实状态 — 仅在 /api/v1/settings/public 异常时翻为"维护中"，健康路径不改 DOM（避免 reflow，原 latency 抓取就是因 reflow 移除的） */
 (function(){
   try {
-    fetch('/api/status', { cache: 'no-store' })
+    fetch('/api/v1/settings/public', { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : Promise.reject(0); })
-      .then(function(j){ if (!j || j.success === false) return Promise.reject(0); })
+      .then(function(j){ if (!j || (typeof j.code !== 'undefined' && j.code !== 0) || j.success === false) return Promise.reject(0); })
       .catch(function(){
         var dot = document.getElementById('statusDot');
         var val = document.getElementById('statusVal');
-        if (dot) dot.style.background = '#d08700';
+        if (dot) dot.style.background = 'var(--verm)';
         if (val) { val.removeAttribute('data-i18n'); val.textContent = (window.MexionI18n && MexionI18n.lang === 'en') ? 'degraded' : '维护中'; }
       });
   } catch (e) {}

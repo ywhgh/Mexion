@@ -18,13 +18,25 @@
     try { return JSON.parse(localStorage.getItem(READ_KEY)) || []; } catch(e) { return []; }
   }
   function setRead(ids) { localStorage.setItem(READ_KEY, JSON.stringify(ids)); }
+  function hasAuth() {
+    try {
+      return !!(
+        localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+      );
+    } catch (e) { return false; }
+  }
   function markAsRead(id) {
     var r = getRead(); if (r.indexOf(id) === -1) { r.push(id); setRead(r); }
+    var item = announcements.find(function(a) { return a.id === id; });
+    if (item && !item.read_at) item.read_at = new Date().toISOString();
+    if (typeof MexionHttp !== 'undefined' && hasAuth()) {
+      MexionHttp.post('/announcements/' + encodeURIComponent(id) + '/read', {}).catch(function() {});
+    }
   }
 
   function unreadCount() {
     var r = getRead();
-    return announcements.filter(function(a) { return r.indexOf(a.id) === -1; }).length;
+    return announcements.filter(function(a) { return !a.read_at && r.indexOf(a.id) === -1; }).length;
   }
 
   function updateBadge() {
@@ -211,7 +223,7 @@
       return;
     }
     list.innerHTML = announcements.map(function(a) {
-      var isRead = read.indexOf(a.id) !== -1;
+      var isRead = !!a.read_at || read.indexOf(a.id) !== -1;
       var isSel = a.id === selectedId;
       var tag = guessTag(a);
       return '<div class="nr-item' + (isSel ? ' is-sel' : '') + (isRead ? '' : ' is-unread') + '" data-id="' + a.id + '">' +
@@ -317,16 +329,38 @@
   }
 
   /* ── Fetch ── */
+  function normalizeAnnouncement(a, index) {
+    if (!a || typeof a !== 'object') return null;
+    return {
+      id: a.id != null ? a.id : index + 1,
+      title: a.title || a.name || 'Notice',
+      content: a.content || a.body || a.message || '',
+      notify_mode: a.notify_mode || a.notifyMode || 'silent',
+      read_at: a.read_at || a.readAt || null,
+      created_at: a.created_at || a.createdAt || a.starts_at || '',
+      updated_at: a.updated_at || a.updatedAt || a.created_at || a.createdAt || ''
+    };
+  }
+
   function fetchAnnouncements() {
     if (typeof MexionHttp === 'undefined') return;
-    MexionHttp.get('/notice').then(function(raw) {
+    if (!hasAuth()) {
+      announcements = [];
+      updateBadge();
+      return;
+    }
+    MexionHttp.get('/announcements').then(function(raw) {
       var data = [];
       if (typeof raw === 'string' && raw.length > 0) {
-        data = [{ id: 1, title: 'Notice', content: raw, type: 'banner', notify_mode: 'banner' }];
+        data = [{ id: 1, title: 'Notice', content: raw, type: 'banner', notify_mode: 'silent' }];
       } else if (Array.isArray(raw)) {
         data = raw;
+      } else if (raw && Array.isArray(raw.items)) {
+        data = raw.items;
+      } else if (raw && Array.isArray(raw.announcements)) {
+        data = raw.announcements;
       }
-      return data;
+      return data.map(normalizeAnnouncement).filter(Boolean);
     }).then(function(data) {
       var list = Array.isArray(data) ? data : [];
       var prevIds = announcements.map(function(a) { return a.id; });
