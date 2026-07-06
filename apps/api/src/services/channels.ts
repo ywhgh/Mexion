@@ -13,6 +13,8 @@ export type GroupRecord = {
   description: string;
   rateMultiplier: number;
   isDefault: boolean;
+  channelCount: number;
+  keyCount: number;
   createdAt: string;
 };
 
@@ -96,6 +98,8 @@ export function rowToGroup(row: unknown): GroupRecord | null {
     description: String(value.description ?? ""),
     rateMultiplier: Number(value.rateMultiplier ?? 100),
     isDefault: Boolean(value.isDefault),
+    channelCount: Number(value.channelCount ?? 0),
+    keyCount: Number(value.keyCount ?? 0),
     createdAt: String(value.createdAt ?? ""),
   };
 }
@@ -146,7 +150,12 @@ export function validateChannelBaseUrl(baseUrl: string): string {
 
 function getGroup(db: DbClient, id: number): GroupRecord {
   const row = db.sqlite
-    .prepare("SELECT id, name, description, rate_multiplier AS rateMultiplier, is_default AS isDefault, created_at AS createdAt FROM groups WHERE id = ?")
+    .prepare(
+      `SELECT g.id, g.name, g.description, g.rate_multiplier AS rateMultiplier, g.is_default AS isDefault, g.created_at AS createdAt,
+        (SELECT COUNT(*) FROM channels c WHERE c.group_id = g.id) AS channelCount,
+        (SELECT COUNT(*) FROM user_api_keys k WHERE k.group_id = g.id) AS keyCount
+       FROM groups g WHERE g.id = ?`,
+    )
     .get(id);
   const group = rowToGroup(row);
   if (!group) throw new HTTPException(404, { message: "Group not found" });
@@ -165,7 +174,12 @@ export function createGroup(db: DbClient, input: CreateGroupInput): GroupRecord 
 
 export function listGroups(db: DbClient): GroupRecord[] {
   const rows = db.sqlite
-    .prepare("SELECT id, name, description, rate_multiplier AS rateMultiplier, is_default AS isDefault, created_at AS createdAt FROM groups ORDER BY is_default DESC, id ASC")
+    .prepare(
+      `SELECT g.id, g.name, g.description, g.rate_multiplier AS rateMultiplier, g.is_default AS isDefault, g.created_at AS createdAt,
+        (SELECT COUNT(*) FROM channels c WHERE c.group_id = g.id) AS channelCount,
+        (SELECT COUNT(*) FROM user_api_keys k WHERE k.group_id = g.id) AS keyCount
+       FROM groups g ORDER BY g.is_default DESC, g.id ASC`,
+    )
     .all();
   return rows.flatMap((row) => {
     const group = rowToGroup(row);
