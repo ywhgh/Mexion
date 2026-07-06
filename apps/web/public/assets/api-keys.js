@@ -551,7 +551,18 @@ function inviteLockHint(acc) {
 }
 
 function loadKeys(cb) {
-  if (typeof MexionHttp === 'undefined') return;
+  function renderFallback() {
+    KEYS_DATA = [];
+    renderGroupBar();
+    renderKeyList();
+    renderDetail();
+    updatePageStats();
+    if (cb) cb();
+  }
+  if (typeof MexionHttp === 'undefined') {
+    renderFallback();
+    return;
+  }
   MexionHttp.get('/keys?page=1&page_size=100').then(function(data) {
     KEYS_DATA = ((data && (data.keys || data.items)) || (Array.isArray(data) ? data : [])).map(mapApiKey);
     renderGroupBar();
@@ -560,6 +571,7 @@ function loadKeys(cb) {
     updatePageStats();
     if (cb) cb();
   }).catch(function(err) {
+    renderFallback();
     if (window.MexionToast && MexionToast.show) MexionToast.show((err && err.message) || (MexionI18n.lang === 'zh' ? '密钥加载失败' : 'Failed to load keys'), { tone: 'error' });
   });
 }
