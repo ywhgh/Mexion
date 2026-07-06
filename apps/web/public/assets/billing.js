@@ -213,7 +213,8 @@ function refreshBillingUserState(animate, source) {
       return user;
     });
   }
-  return MexionHttp.get('/user/self').then(function(user){
+  return MexionHttp.get('/user/self').then(function(data){
+    var user = data.user || data;
     applyBillingUser(user, animate);
     return user;
   });
@@ -422,9 +423,12 @@ function applyBillingPaymentAvailability(info) {
   });
 
   submitBtn.addEventListener('click', function(){
+    var lang = getBillingLang();
+    if (window.MexionToast && MexionToast.show) MexionToast.show(lang === 'zh' ? '演示版暂不支持充值，请联系管理员' : 'Demo top-up is not available; contact an administrator');
+    if (submitLabel) submitLabel.textContent = lang === 'zh' ? '演示版暂不支持充值' : 'Demo top-up unavailable';
+    return;
     if (submitBtn.disabled) return;
     var amt = parseFloat(amtInput.value);
-    var lang = getBillingLang();
     var minTopup = Number(window.__billingMinTopup) || 1;
     if (!amt || amt < minTopup){
       amtInput.focus();
@@ -457,7 +461,7 @@ function applyBillingPaymentAvailability(info) {
     // 在用户点击手势内同步开支付弹窗(命名窗口)，避免被浏览器拦截；到账后自动关闭，原页面就地刷新余额。
     var payWin = null;
     try { payWin = window.open('about:blank', 'mexionPay', 'width=520,height=760'); } catch (e) { payWin = null; }
-    MexionHttp.post('/user/pay', { amount: amt, payment_method: payMethod }).then(function(data){
+    Promise.reject(new Error('DEMO_TOPUP_DISABLED')).then(function(data){
       submitBtn.classList.remove('is-loading');
       if (data && data.url) {
         submitBillingPaymentForm(data.url, data, 'mexionPay');
@@ -519,9 +523,14 @@ function applyBillingPaymentAvailability(info) {
     var code = input.value.trim().replace(/-/g, '');
     if (!code){ input.focus(); return; }
     if (code.length < 8) { input.focus(); msg.textContent = tt('billing.redeem.error'); msg.className = 'redeem-msg err'; return; }
+    var lang = getBillingLang();
+    msg.textContent = lang === 'zh' ? '演示版暂不支持兑换码' : 'Demo redeem codes are not available';
+    msg.className = 'redeem-msg err';
+    if (window.MexionToast && MexionToast.show) MexionToast.show(msg.textContent);
+    return;
     submitBtn.disabled = true;
     submitBtn.classList.add('is-loading');
-    MexionHttp.post('/user/topup', { key: code }).then(function(data){
+    Promise.reject(new Error('DEMO_REDEEM_DISABLED')).then(function(data){
       submitBtn.classList.remove('is-loading');
       submitBtn.disabled = false;
       submitBtn.classList.add('is-success');
@@ -531,7 +540,8 @@ function applyBillingPaymentAvailability(info) {
           applyBillingUser(user, false);
         }).catch(function(){});
       } else {
-        MexionHttp.get('/user/self').then(function(user){
+        MexionHttp.get('/user/self').then(function(data){
+          var user = data.user || data;
           applyBillingUser(user, false);
         }).catch(function(){});
       }
@@ -750,11 +760,14 @@ function usageCost(record){
   if (!record || typeof record !== 'object') return 0;
   if (record.actual_cost != null) return parseBillingNumber(record.actual_cost);
   if (record.quota != null) return parseBillingNumber(record.quota) / 500000;
-  return parseBillingNumber(record.cost != null ? record.cost : record.total_cost || 0);
+  if (record.cost != null) return parseBillingNumber(record.cost) / 500000;
+  if (record.totalCost != null) return parseBillingNumber(record.totalCost) / 500000;
+  if (record.total_cost != null) return parseBillingNumber(record.total_cost) / 500000;
+  return 0;
 }
 
 function usageCreatedAt(record){
-  return record && (record.created_at || record.date || record.time || '') || '';
+  return record && (record.ts || record.created_at || record.createdAt || record.date || record.time || '') || '';
 }
 
 function formatTxnCurrency(value, signPrefix){
@@ -785,20 +798,8 @@ function csvEscape(value){
 
 function loadBillingUsageRecords() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve([]);
-  return MexionHttp.get('/log/self?p=1&page_size=100').then(function(data) {
-    var items = (data && (data.items || data.logs)) || (Array.isArray(data) ? data : []);
-    var total = (data && (data.total || data.total_count)) || items.length;
-    if (total <= 100) return items;
-    // 二开修复:后端 page_size 硬上限100(common/page_info.go),原 size=200 实回100、又按 /200 算页数+上限20页→漏拉大半历史
-    var pages = Math.min(Math.ceil(total / 100), 40);
-    var reqs = [];
-    for (var p = 2; p <= pages; p++) reqs.push(MexionHttp.get('/log/self?p=' + p + '&page_size=100'));
-    return Promise.all(reqs).then(function(results) {
-      results.forEach(function(pageData) {
-        items = items.concat((pageData && (pageData.items || pageData.logs)) || []);
-      });
-      return items;
-    });
+  return MexionHttp.get('/user/logs?limit=100').then(function(data) {
+    return (data && (data.logs || data.items)) || (Array.isArray(data) ? data : []);
   });
 }
 
@@ -1047,7 +1048,7 @@ function reloadBillingTransactions() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
   var lang = getBillingLang();
   return Promise.all([
-    MexionHttp.get('/user/topup/self').catch(function(){ return { items: [] }; }),
+    MexionHttp.get('/user/billing').catch(function(){ return { items: [], recentUsage: [] }; }),
     loadBillingUsageRecords().catch(function(){ return []; })
   ]).then(function(results){
     var data = results[0] || {};
@@ -1111,9 +1112,9 @@ function reloadBillingTransactions() {
       if (monthKey === thisMonthKey) monthlySpend += Math.abs(amt);
       if (monthKey === lastMonthKey) lastMonthSpend += Math.abs(amt);
 
-      var model = record.model_name || record.model || tt('billing.txn.desc.daily');
-      var group = record.group || record.group_name || '';
-      var tokens = Number(record.total_tokens || ((record.prompt_tokens || record.input_tokens || 0) + (record.completion_tokens || record.output_tokens || 0)) || 0);
+      var model = record.model || record.model_name || tt('billing.txn.desc.daily');
+      var group = record.group || record.group_name || (record.groupId ? ('#' + record.groupId) : '');
+      var tokens = Number(record.total_tokens || ((record.prompt_tokens || record.input_tokens || record.inputTokens || 0) + (record.completion_tokens || record.output_tokens || record.outputTokens || 0)) || 0);
       var subParts = [];
       if (group) subParts.push(group);
       if (tokens > 0) subParts.push(tokens.toLocaleString() + ' tok');
@@ -1263,7 +1264,8 @@ document.addEventListener('DOMContentLoaded', function(){
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
     }).catch(function(){});
   } else {
-    MexionHttp.get('/user/self').then(function(user){
+    MexionHttp.get('/user/self').then(function(data){
+      var user = data.user || data;
       applyBillingUser(user, true);
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
     }).catch(function(){});
@@ -1275,10 +1277,16 @@ document.addEventListener('DOMContentLoaded', function(){
     applyBillingUser(user, false);
   });
 
-  MexionHttp.get('/user/topup/info').then(function(info){
+  Promise.resolve({ enable_online_topup: false, pay_methods: [] }).then(function(info){
     applyBillingPaymentAvailability(info || {});
-  }).catch(function(){});
+    var submitBtn = document.getElementById('topupSubmit');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.dataset.paymentDisabled = 'demo'; submitBtn.style.opacity = ''; submitBtn.style.cursor = ''; }
+  });
 
+  Promise.all([
+    MexionHttp.get('/subscription/plans').catch(function(){ return { plans: [] }; }),
+    MexionHttp.get('/user/subscriptions').catch(function(){ return { subscriptions: [] }; })
+  ]).then(function(){});
   reloadBillingTransactions();
   startBillingPolling();
 
@@ -1318,3 +1326,4 @@ MexionI18n.onChange(function(){ MexionI18n.preserve(function(){
   if (typeof window.__billingUpdateTopupUI === 'function') window.__billingUpdateTopupUI();
   reloadBillingTransactions();
 }); });
+

@@ -41,52 +41,51 @@
       return;
     }
     if (typeof MexionHttp === 'undefined') return;
-    MexionHttp.get('/user/self').then(populatePage).catch(function(){});
+    MexionHttp.get('/user/self').then(function(data){ populatePage(data.user || data); }).catch(function(){});
   }
   // 二开：升级进度 = 三项门槛里"已达比例"的最短板(AND 语义)。无门槛=0(需管理员手动设级)。
-  function tierProgress(u, next) {
-    var rs = [];
-    if (next.req_used_token > 0) rs.push(Math.min(1, (u.used_token || 0) / next.req_used_token));
-    if (next.req_used_quota > 0) rs.push(Math.min(1, (u.used_quota || 0) / next.req_used_quota));
-    if (next.req_total_topup > 0) rs.push(Math.min(1, (u.total_topup || 0) / next.req_total_topup));
-    if (!rs.length) return 0;
-    return Math.min.apply(null, rs);
+  function quotaValue(u, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      var v = u && u[keys[i]];
+      if (v !== undefined && v !== null && v !== '') return Number(v) || 0;
+    }
+    return 0;
   }
-  // 二开：把真实等级接到档案页徽章 + 进度条(取代"筹备中"占位)。
   function populateTier(u) {
-    window.__mexionTierUser = u; // 供权益弹窗读取
+    window.__mexionTierUser = u;
     var lang = (typeof MexionI18n !== 'undefined' && MexionI18n.lang) ? MexionI18n.lang : 'zh';
-    var lvl = u.level || 0;
     var badge = document.querySelector('[data-i18n="profile.idcard.chip.tier"]');
-    if (badge) { badge.removeAttribute('data-i18n'); badge.textContent = (lang === 'zh' ? '等级 ' : 'Lv ') + lvl; }
+    var quotaUsed = quotaValue(u, ['quotaUsed', 'quota_used', 'used_quota']);
+    if (badge) { badge.removeAttribute('data-i18n'); badge.textContent = lang === 'zh' ? '探索者' : 'Explorer'; }
     if (typeof MexionHttp === 'undefined') return;
-    MexionHttp.get('/user/levels').then(function (levels) {
-      if (!Array.isArray(levels) || !levels.length) return;
-      levels = levels.slice().sort(function (a, b) { return a.id - b.id; });
+    MexionHttp.get('/user/levels').then(function (data) {
+      var levels = Array.isArray(data) ? data : (data && data.levels) || [];
+      if (!levels.length) return;
+      levels = levels.slice().sort(function (a, b) { return (a.minQuota || 0) - (b.minQuota || 0); });
       window.__mexionTierLevels = levels;
-      var cur = null, next = null;
+      var cur = (data && data.currentLevel) || levels[0], next = null;
       for (var i = 0; i < levels.length; i++) {
-        if (levels[i].id <= lvl) cur = levels[i];
-        else if (!next) next = levels[i];
+        if (quotaUsed >= (levels[i].minQuota || 0)) cur = levels[i];
+        else { next = levels[i]; break; }
       }
-      var curName = cur ? cur.name : ((lang === 'zh' ? '等级 ' : 'Lv ') + lvl);
-      if (badge) badge.textContent = curName;
+      if (badge) badge.textContent = cur.name || (lang === 'zh' ? '等级 ' + cur.id : 'Lv ' + cur.id);
       var prog = document.querySelector('.id-card__progress');
       if (!prog) return;
       prog.hidden = false;
       prog.classList.remove('id-card__progress--dormant');
-      var fromEl = prog.querySelector('.from'); if (fromEl) { fromEl.removeAttribute('data-i18n'); fromEl.textContent = curName; }
+      var fromEl = prog.querySelector('.from'); if (fromEl) { fromEl.removeAttribute('data-i18n'); fromEl.textContent = cur.name || 'Lv ' + cur.id; }
       var bar = prog.querySelector('.tier-bar'); if (bar) bar.classList.remove('tier-bar--dormant');
       var toEl = prog.querySelector('.to');
       var pctEl = prog.querySelector('.pct');
       var stripes = prog.querySelector('.tier-bar__stripes');
       var hintEl = prog.querySelector('.tier-rail__hint');
       if (next) {
-        var pct = tierProgress(u, next);
+        var span = Math.max(1, (next.minQuota || 0) - (cur.minQuota || 0));
+        var pct = Math.max(0, Math.min(1, (quotaUsed - (cur.minQuota || 0)) / span));
         if (toEl) { toEl.removeAttribute('data-i18n'); toEl.textContent = next.name; }
         if (pctEl) { pctEl.removeAttribute('data-i18n'); pctEl.textContent = Math.floor(pct * 100) + '%'; }
         if (stripes) stripes.style.width = Math.max(4, Math.floor(pct * 100)) + '%';
-        if (hintEl) { hintEl.removeAttribute('data-i18n-html'); hintEl.textContent = lang === 'zh' ? ('持续消费 / 充值即可升至「' + next.name + '」') : ('Keep using to reach ' + next.name); }
+        if (hintEl) { hintEl.removeAttribute('data-i18n-html'); hintEl.textContent = lang === 'zh' ? ('已用配额 ' + quotaUsed.toLocaleString() + ' / ' + (next.minQuota || 0).toLocaleString()) : ('Quota used ' + quotaUsed.toLocaleString() + ' / ' + (next.minQuota || 0).toLocaleString()); }
       } else {
         if (toEl) { toEl.removeAttribute('data-i18n'); toEl.textContent = lang === 'zh' ? '已达最高段位' : 'Top tier'; }
         if (pctEl) { pctEl.removeAttribute('data-i18n'); pctEl.textContent = '100%'; }
@@ -138,8 +137,8 @@
     }
     // 累计调用
     if (typeof MexionHttp !== 'undefined') {
-      MexionHttp.get('/log/self/stat').then(function(stats) {
-        var total = stats.total_requests || stats.request_count || u.request_count || 0;
+      MexionHttp.get('/user/usage').then(function(stats) {
+        var total = stats.totalCalls || stats.total_requests || stats.request_count || u.request_count || 0;
         var callsEl = document.getElementById('plaque-calls');
         if (callsEl) callsEl.textContent = total.toLocaleString();
         var subEl = document.getElementById('plaque-calls-sub');
@@ -491,7 +490,7 @@
         const payload = buildNotifyPayload();
         saveBtn.disabled = true;
         setNotifyStatus(t('profile.notify.status.saving','正在保存...'), 'saving');
-        MexionHttp.put('/user/setting', payload).then(function () {
+        MexionHttp.patch('/user/setting', payload).then(function () {
           setNotifyStatus(t('profile.notify.status.saved','通知设置已保存'), 'saved');
           toast(t('profile.notify.toast.saved','通知设置已保存'));
           if (typeof MexionAuth !== 'undefined' && MexionAuth.refreshUser) {
@@ -715,7 +714,10 @@
 
     /* 从 API 加载签到历史 → 填充统计 */
     if (typeof MexionHttp !== 'undefined') {
-      MexionHttp.get('/user/checkin').then(function(data) {
+      MexionHttp.get('/user/self').then(function(data) {
+        var user = data.user || data || {};
+        var todayKey = new Date().toISOString().slice(0, 10);
+        data = { stats: { checked_in_today: !!(user.lastCheckinAt && String(user.lastCheckinAt).slice(0, 10) === todayKey), records: user.lastCheckinAt ? [{ checkin_date: String(user.lastCheckinAt).slice(0, 10), quota_awarded: 0 }] : [] } };
         var stats = data.stats || {};
         data.checked_today = stats.checked_in_today || stats.checked_today || false;
         var rawList = stats.records || data.records || [];
@@ -960,15 +962,16 @@
       // 调真实签到 API
       if (typeof MexionHttp !== 'undefined') {
         MexionHttp.post('/user/checkin', {}).then(function(data) {
-          var amt = (data.quota_awarded || 0) / 500000;
+          var amt = ((data.granted != null ? data.granted : data.quota_awarded) || 0) / 500000;
           revealWithFreshBalance(amt);
         }).catch(function(err) {
           claimBtn.disabled = false;
           var msg = (err && err.message) || '';
           if (msg.indexOf('已签到') !== -1 || msg.indexOf('already') !== -1) {
             claimBtn.disabled = true;
-            MexionHttp.get('/user/checkin').then(function(info) {
-              var st = info.stats || {};
+            MexionHttp.get('/user/self').then(function(info) {
+              var user = info.user || info || {};
+              var st = { records: user.lastCheckinAt ? [{ checkin_date: String(user.lastCheckinAt).slice(0, 10), quota_awarded: 0 }] : [] };
               var recs = st.records || [];
               var now = new Date(); var utc = now.getTime() + now.getTimezoneOffset() * 60000; var cn = new Date(utc + 8 * 3600000);
               var todayKey = cn.getFullYear() + '-' + String(cn.getMonth()+1).padStart(2,'0') + '-' + String(cn.getDate()).padStart(2,'0');
@@ -1271,7 +1274,7 @@
         go.addEventListener('click', function () {
           if (go.disabled) return;
           go.disabled = true; go.textContent = zh ? '注销中…' : 'Deleting…';
-          MexionHttp.delete('/user/self').then(function () {
+          Promise.reject(new Error(zh ? '演示版暂不支持注销账户' : 'Account deletion is not available in this demo')).then(function () {
             toast(zh ? '账户已注销 · 即将退出' : 'Account deleted · signing out');
             setTimeout(function () {
               if (typeof MexionAuth !== 'undefined' && MexionAuth.logout) MexionAuth.logout();
@@ -1345,7 +1348,7 @@
           if (typeof MexionHttp === 'undefined') return;
           // 等后端确认再落值 + 回写缓存,避免"先变后弹回":成功才改 DOM、刷新 mexion_user(让顶栏/首页/其它页同步)、弹成功;
           // 失败保留原值 + 如实报错(不再用空 catch 吞错 + 无条件谎报成功)。
-          MexionHttp.put('/user/self', { display_name: v }).then(function() {
+          Promise.reject(new Error(t('toast.name.unsupported','演示版暂不支持修改昵称'))).then(function() {
             valEl.textContent = v;
             document.querySelectorAll('[data-mexion-user="name"]').forEach(function(el) { el.textContent = v; });
             document.querySelectorAll('[data-field="name"]').forEach(function(el) { el.textContent = v; });
@@ -1466,7 +1469,7 @@
           // 真实 API 调用（仅 login 密码）
           if (!isApi && typeof MexionHttp !== 'undefined') {
             primary.disabled = true;
-            MexionHttp.put('/user/self', { password: newIn.value }).then(function() {
+            Promise.reject(new Error(t('toast.pw.unsupported','演示版暂不支持修改密码'))).then(function() {
               var changedEl = document.querySelector('[data-field="password-changed"]');
               if (changedEl) changedEl.textContent = t('pw.justnow','刚刚修改');
               toast(t('toast.pw.changed','登录密码已更新 · 其他会话已退出'));
@@ -1666,7 +1669,7 @@
       onConfirm: () => {
         row.classList.add('is-changing');
         // 真实解绑：调用后端自助解绑端点（带「解绑后须仍有登录方式」守卫，失败把后端提示弹回）
-        MexionHttp.delete('/user/oauth/builtin/' + encodeURIComponent(provider)).then(function () {
+        Promise.reject(new Error(t('binding.unlink.unsupported','演示版暂不支持解绑第三方账号'))).then(function () {
           const btn = row.querySelector('.bind__act');
           const sub = row.querySelector('.bind__sub');
           if (btn) {
@@ -1701,40 +1704,8 @@
           toast(t('binding.connect.unsupported','该登录方式暂不支持自助绑定'));
           return;
         }
-        toast(`${t('toast.binding.connecting','正在跳转 ')}${name}...`);
-        // 真实 OAuth 绑定：复用登录的 OAuth 流，但【不登出】——保留会话，
-        // newapi 的 /api/oauth/:provider 检测到已登录 → 走 handleOAuthBind 绑到当前账户。
-        // mode=bind 让 oauth-callback 处理完后返回 /profile（而非 /dashboard）。
-        sessionStorage.setItem('mexion_oauth_provider', provider);
-        sessionStorage.setItem('mexion_oauth_mode', 'bind');
-        sessionStorage.removeItem('mexion_oauth_ref');
-        Promise.all([
-          fetch('/api/oauth/state', { credentials: 'same-origin' }).then(function (r) { return r.json(); }),
-          fetch('/api/status', { credentials: 'same-origin' }).then(function (r) { return r.json(); })
-        ]).then(function (results) {
-          const stateJson = results[0], statusResp = results[1];
-          if (!stateJson.success || !stateJson.data) throw new Error('state');
-          const state = stateJson.data;
-          const s = statusResp.data || statusResp;
-          let url;
-          if (provider === 'github') {
-            const clientId = s.github_client_id;
-            if (!clientId) throw new Error('GitHub OAuth not configured');
-            url = 'https://github.com/login/oauth/authorize?client_id=' + encodeURIComponent(clientId) +
-              '&scope=user%3Aemail&state=' + encodeURIComponent(state);
-          } else {
-            const authEndpoint = s.oidc_authorization_endpoint, oidcClientId = s.oidc_client_id;
-            if (!authEndpoint || !oidcClientId) throw new Error('OIDC not configured');
-            const redirectUri = window.location.origin + '/oauth/oidc';
-            url = authEndpoint + '?client_id=' + encodeURIComponent(oidcClientId) +
-              '&redirect_uri=' + encodeURIComponent(redirectUri) +
-              '&response_type=code&scope=openid+email+profile&state=' + encodeURIComponent(state);
-          }
-          window.location.href = url;
-        }).catch(function () {
-          sessionStorage.removeItem('mexion_oauth_mode');
-          toast(t('binding.connect.failed','发起绑定失败，请稍后重试'));
-        });
+        toast(t('binding.connect.unsupported','该登录方式暂不支持自助绑定'));
+        return;
       }
     });
   }
@@ -1782,3 +1753,4 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
+
