@@ -189,9 +189,13 @@ var BILLING_POLL_INFLIGHT = false;
 var BILLING_POLL_DEBOUNCE_TIMER = null;
 
 function setBalanceFromUser(user) {
+  if (user && user.balance != null && isFinite(Number(user.balance))) {
+    BALANCE = Number(user.balance);
+    return;
+  }
   BALANCE = typeof window.MexionQuota !== 'undefined'
     ? window.MexionQuota.getUserBalance(user)
-    : ((Number(user && user.quota) || 0) / 500000);
+    : 0;
 }
 
 function applyBillingUser(user, animate) {
@@ -253,18 +257,21 @@ function renderSubscriptionProgress(progressData, summaryData) {
   var list = document.getElementById('subProgressList');
   var progress = Array.isArray(progressData) ? progressData : [];
   var summary = summaryData || {};
+  var activeCount = Number(summary.active_count != null ? summary.active_count : progress.length) || 0;
 
   if (title) title.textContent = lang === 'zh' ? '§ 订阅进度' : '§ Subscription progress';
-  if (meta) meta.textContent = progress.length + (lang === 'zh' ? ' 个活跃套餐' : ' active plan' + (progress.length === 1 ? '' : 's'));
+  if (meta) meta.textContent = activeCount + (lang === 'zh' ? ' 个活跃套餐' : ' active plan' + (activeCount === 1 ? '' : 's'));
 
   if (summaryGrid) {
-    var pct = Math.round(Number(summary.overallPercent || 0));
+    var subs = Array.isArray(summary.subscriptions) ? summary.subscriptions : [];
+    var nearExpiry = progress.concat(subs).filter(function(item){ return item && item.days_remaining != null; })
+      .sort(function(a,b){ return Number(a.days_remaining) - Number(b.days_remaining); })[0];
+    var avg = progress.length ? progress.reduce(function(sum,item){ return sum + Number(item.monthly_progress || 0); }, 0) / progress.length : 0;
     summaryGrid.innerHTML =
-      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '总额度' : 'Total quota') + '</span><b>' + formatQuotaUnits(summary.totalQuota) + '</b></div>' +
-      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '已用' : 'Used') + '</span><b>' + formatQuotaUnits(summary.totalUsed) + '</b></div>' +
-      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '剩余' : 'Remaining') + '</span><b>' + formatQuotaUnits(summary.totalRemaining) + '</b></div>' +
-      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '总体进度' : 'Overall') + '</span><b>' + pct + '%</b></div>' +
-      '<div class="sub-summary-cell sub-summary-cell--wide"><span>' + (lang === 'zh' ? '最早到期' : 'Earliest expiry') + '</span><b>' + formatSubscriptionDate(summary.earliestExpiry) + '</b></div>';
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '活跃订阅' : 'Active') + '</span><b>' + activeCount + '</b></div>' +
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '月度进度' : 'Monthly') + '</span><b>' + Math.round(avg * 100) + '%</b></div>' +
+      '<div class="sub-summary-cell"><span>' + (lang === 'zh' ? '今日进度' : 'Daily') + '</span><b>' + Math.round((progress[0] ? Number(progress[0].daily_progress || 0) : 0) * 100) + '%</b></div>' +
+      '<div class="sub-summary-cell sub-summary-cell--wide"><span>' + (lang === 'zh' ? '最近到期' : 'Nearest expiry') + '</span><b>' + (nearExpiry ? formatSubscriptionDate(nearExpiry.expires_at) : '—') + '</b></div>';
   }
 
   if (!list) return;
@@ -274,19 +281,20 @@ function renderSubscriptionProgress(progressData, summaryData) {
     return;
   }
   list.innerHTML = progress.map(function(item) {
-    var used = Math.max(0, Math.min(100, Number(item.usedPercent || 0)));
-    var pctLabel = Math.round(used) + '%';
-    var name = billingEsc(item.planName || ('Plan #' + item.planId));
-    var days = Number(item.daysLeft || 0);
-    var metaText = lang === 'zh'
-      ? '剩余 ' + formatQuotaUnits(item.remainingQuota) + ' quota · 还有 ' + days + ' 天到期'
-      : formatQuotaUnits(item.remainingQuota) + ' quota left · expires in ' + days + ' day' + (days === 1 ? '' : 's');
-    return '<div class="sub-progress-item' + (item.isLow ? ' is-low' : '') + '">' +
+    var ratio = Math.max(0, Math.min(1, Number(item.monthly_progress || 0)));
+    var pct = ratio * 100;
+    var days = item.days_remaining == null ? null : Number(item.days_remaining);
+    var risky = pct >= 90 || (days != null && days <= 3);
+    var name = billingEsc(item.group_name || ('Subscription #' + item.id));
+    var daysText = days == null ? (lang === 'zh' ? '永久' : 'Permanent') : (lang === 'zh' ? '剩余 ' + days + ' 天' : days + ' day' + (days === 1 ? '' : 's') + ' left');
+    var status = item.status || 'active';
+    var metaText = daysText + ' · ' + (lang === 'zh' ? '状态 ' : 'status ') + status;
+    return '<div class="sub-progress-item' + (risky ? ' is-low' : '') + '">' +
       '<div class="sub-progress-header">' +
         '<span class="sub-plan-name">' + name + '</span>' +
-        '<span class="sub-progress-pct">' + pctLabel + '</span>' +
+        '<span class="sub-progress-pct">' + Math.round(pct) + '%</span>' +
       '</div>' +
-      '<div class="sub-progress-bar" aria-hidden="true"><div class="sub-progress-fill" style="width:' + used.toFixed(2) + '%"></div></div>' +
+      '<div class="sub-progress-bar" aria-hidden="true"><div class="sub-progress-fill" style="width:' + pct.toFixed(2) + '%;background:' + (risky ? 'var(--verm)' : 'var(--green)') + '"></div></div>' +
       '<div class="sub-progress-meta">' + billingEsc(metaText) + '</div>' +
     '</div>';
   }).join('');
@@ -295,11 +303,16 @@ function renderSubscriptionProgress(progressData, summaryData) {
 function loadSubscriptionProgress() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
   return Promise.all([
-    MexionHttp.get('/user/subscriptions/progress').catch(function(){ return { progress: [] }; }),
-    MexionHttp.get('/user/subscriptions/summary').catch(function(){ return { summary: {} }; })
+    MexionHttp.get('/subscriptions/progress').catch(function(){ return []; }),
+    MexionHttp.get('/subscriptions/summary').catch(function(){ return {}; }),
+    MexionHttp.get('/subscriptions').catch(function(){ return []; })
   ]).then(function(results) {
-    var progress = results[0] && (results[0].progress || results[0].items || results[0]);
-    var summary = results[1] && (results[1].summary || results[1]);
+    var progress = Array.isArray(results[0]) ? results[0] : (results[0] && (results[0].progress || results[0].items)) || [];
+    var summary = results[1] && (results[1].summary || results[1]) || {};
+    if (!Array.isArray(progress) || !progress.length) {
+      var subs = Array.isArray(results[2]) ? results[2] : (results[2] && (results[2].subscriptions || results[2].items)) || [];
+      progress = subs.map(function(s){ return { id:s.id, group_name:s.group_name, status:s.status, monthly_progress:null, daily_progress:null, expires_at:s.expires_at, days_remaining:s.days_remaining }; });
+    }
     renderSubscriptionProgress(progress, summary);
   });
 }
@@ -311,7 +324,7 @@ function refreshBillingUserState(animate, source) {
       return user;
     });
   }
-  return MexionHttp.get('/user/self').then(function(data){
+  return MexionHttp.get('/user/profile').then(function(data){
     var user = data.user || data;
     applyBillingUser(user, animate);
     return user;
@@ -523,8 +536,8 @@ function applyBillingPaymentAvailability(info) {
 
   submitBtn.addEventListener('click', function(){
     var lang = getBillingLang();
-    if (window.MexionToast && MexionToast.show) MexionToast.show(lang === 'zh' ? '演示版暂不支持充值，请联系管理员' : 'Demo top-up is not available; contact an administrator');
-    if (submitLabel) submitLabel.textContent = lang === 'zh' ? '演示版暂不支持充值' : 'Demo top-up unavailable';
+    if (window.MexionToast && MexionToast.show) MexionToast.show(lang === 'zh' ? '请联系管理员充值或使用兑换码' : 'Contact an administrator to top up, or use a redeem code');
+    if (submitLabel) submitLabel.textContent = lang === 'zh' ? '请联系管理员充值' : 'Contact admin to top up';
     return;
     if (submitBtn.disabled) return;
     var amt = parseFloat(amtInput.value);
@@ -619,17 +632,14 @@ function applyBillingPaymentAvailability(info) {
   });
 
   submitBtn.addEventListener('click', function(){
-    var code = input.value.trim().replace(/-/g, '');
+    var code = input.value.trim();
+    var normalized = code.replace(/-/g, '');
     if (!code){ input.focus(); return; }
-    if (code.length < 8) { input.focus(); msg.textContent = tt('billing.redeem.error'); msg.className = 'redeem-msg err'; return; }
+    if (normalized.length < 8) { input.focus(); msg.textContent = tt('billing.redeem.error'); msg.className = 'redeem-msg err'; return; }
     var lang = getBillingLang();
-    msg.textContent = lang === 'zh' ? '演示版暂不支持兑换码' : 'Demo redeem codes are not available';
-    msg.className = 'redeem-msg err';
-    if (window.MexionToast && MexionToast.show) MexionToast.show(msg.textContent);
-    return;
     submitBtn.disabled = true;
     submitBtn.classList.add('is-loading');
-    Promise.reject(new Error('DEMO_REDEEM_DISABLED')).then(function(data){
+    MexionHttp.post('/redeem', { code: code }).then(function(data){
       submitBtn.classList.remove('is-loading');
       submitBtn.disabled = false;
       submitBtn.classList.add('is-success');
@@ -639,7 +649,7 @@ function applyBillingPaymentAvailability(info) {
           applyBillingUser(user, false);
         }).catch(function(){});
       } else {
-        MexionHttp.get('/user/self').then(function(data){
+        MexionHttp.get('/user/profile').then(function(data){
           var user = data.user || data;
           applyBillingUser(user, false);
         }).catch(function(){});
@@ -649,17 +659,20 @@ function applyBillingPaymentAvailability(info) {
         var gName = data.group_name || data.subscription_group_name || 'Plan';
         var days = data.validity_days || data.days || 1;
         msg.textContent = tt('billing.redeem.success.sub', { name: gName, days: days });
-        typeof loadActiveSubscriptions === "function" && loadActiveSubscriptions();
+        loadSubscriptionProgress();
+        reloadBillingTransactions().catch(function(){});
       } else if (typeof data === 'number') {
         var amt = data / 500000;
         msg.textContent = tt('billing.redeem.success', { n: amt > 0 ? '$' + amt.toFixed(2) : '0' });
       } else {
         var amt = data.value || data.amount || 0;
-        msg.textContent = tt('billing.redeem.success', { n: amt > 0 ? amt + '$' : '0' });
+        msg.textContent = tt('billing.redeem.success', { n: amt > 0 ? '$' + Number(amt).toFixed(2) : '0' });
       }
       msg.className = 'redeem-msg ok';
+      if (window.MexionToast && MexionToast.show) MexionToast.show(lang === 'zh' ? '兑换成功' : 'Redeemed successfully', { tone: 'success' });
       input.value = '';
       clearBtn.classList.remove('is-visible');
+      reloadBillingTransactions().catch(function(){});
       setTimeout(function(){ submitBtn.classList.remove('is-success'); }, 2500);
     }).catch(function(err){
       submitBtn.classList.remove('is-loading');
@@ -667,6 +680,7 @@ function applyBillingPaymentAvailability(info) {
       submitBtn.classList.add('is-error');
       msg.textContent = err && err.message ? err.message : tt('billing.redeem.error');
       msg.className = 'redeem-msg err';
+      if (window.MexionToast && MexionToast.show) MexionToast.show(msg.textContent, { tone: 'error' });
       setTimeout(function(){ submitBtn.classList.remove('is-error'); }, 1000);
     });
   });
@@ -762,6 +776,7 @@ function fmtMonthLabel(key){
 
 /* Determine order type: topup, redeem, or usage */
 function orderType(order){
+  if (order && (order.used_at || order.code) && (order.value != null || order.type)) return 'redeem';
   var t = (order.type || order.order_type || '').toLowerCase();
   if (t === 'redeem' || t === 'redemption') return 'redeem';
   if (t === 'topup' || t === 'top_up' || t === 'top-up' || t === 'recharge') return 'topup';
@@ -859,9 +874,9 @@ function usageCost(record){
   if (!record || typeof record !== 'object') return 0;
   if (record.actual_cost != null) return parseBillingNumber(record.actual_cost);
   if (record.quota != null) return parseBillingNumber(record.quota) / 500000;
-  if (record.cost != null) return parseBillingNumber(record.cost) / 500000;
-  if (record.totalCost != null) return parseBillingNumber(record.totalCost) / 500000;
-  if (record.total_cost != null) return parseBillingNumber(record.total_cost) / 500000;
+  if (record.cost != null) return parseBillingNumber(record.cost);
+  if (record.totalCost != null) return parseBillingNumber(record.totalCost);
+  if (record.total_cost != null) return parseBillingNumber(record.total_cost);
   return 0;
 }
 
@@ -897,7 +912,7 @@ function csvEscape(value){
 
 function loadBillingUsageRecords() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve([]);
-  return MexionHttp.get('/user/logs?limit=100').then(function(data) {
+  return MexionHttp.get('/usage?page=1&page_size=100').then(function(data) {
     return (data && (data.logs || data.items)) || (Array.isArray(data) ? data : []);
   });
 }
@@ -1147,12 +1162,12 @@ function reloadBillingTransactions() {
   if (typeof MexionHttp === 'undefined') return Promise.resolve();
   var lang = getBillingLang();
   return Promise.all([
-    MexionHttp.get('/user/billing').catch(function(){ return { items: [], recentUsage: [] }; }),
+    MexionHttp.get('/redeem/history').catch(function(){ return []; }),
     loadBillingUsageRecords().catch(function(){ return []; })
   ]).then(function(results){
     var data = results[0] || {};
     var usageRecords = Array.isArray(results[1]) ? results[1] : [];
-    var items = data.items || [];
+    var items = Array.isArray(data) ? data : (data.items || data.history || []);
     var now = new Date();
     var thisMonthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
     var lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -1166,8 +1181,8 @@ function reloadBillingTransactions() {
 
     var topupItems = items.map(function(order){
       var type = orderType(order);
-      var amt = parseBillingNumber(order.money != null ? order.money : (order.amount || 0)); // 二开:money=USD口径(amount是quota,rate≠1会金额错)
-      var createdAt = order.created_at || order.create_time || order.date || ''; // 二开:后端 TopUp 时间字段是 create_time(epoch),原缺它→本月充值恒$0/0笔
+      var amt = parseBillingNumber(order.money != null ? order.money : (order.amount != null ? order.amount : (order.value || 0))); // 二开:money=USD口径(amount是quota,rate≠1会金额错)
+      var createdAt = order.used_at || order.created_at || order.create_time || order.date || ''; // 二开:后端 TopUp 时间字段是 create_time(epoch),原缺它→本月充值恒$0/0笔
       var monthKey = fmtMonthKey(createdAt);
       var settled = type === 'topup' ? isSettledTopup(order) : true;
       if (monthKey === thisMonthKey) {
@@ -1197,8 +1212,8 @@ function reloadBillingTransactions() {
         _time: fmtTime(createdAt),
         _monthKey: monthKey,
         _settled: settled,
-        _desc: order.description || order.desc || order.title || '—',
-        _sub: order.subtitle || order.method || order.payment_method || '',
+        _desc: order.description || order.desc || order.title || (type === 'redeem' ? tt('billing.txn.desc.redeem') : '—'),
+        _sub: order.subtitle || order.method || order.payment_method || order.type || '',
         _balance: order.balance != null ? parseBillingNumber(order.balance) : null,
         _created: createdAt
       };
@@ -1363,7 +1378,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
     }).catch(function(){});
   } else {
-    MexionHttp.get('/user/self').then(function(data){
+    MexionHttp.get('/user/profile').then(function(data){
       var user = data.user || data;
       applyBillingUser(user, true);
       if (payStatus === 'success' || payStatus === 'pending') startBillingTopupSync(BALANCE);
@@ -1383,8 +1398,7 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   Promise.all([
-    MexionHttp.get('/subscription/plans').catch(function(){ return { plans: [] }; }),
-    MexionHttp.get('/user/subscriptions').catch(function(){ return { subscriptions: [] }; })
+    MexionHttp.get('/subscriptions').catch(function(){ return []; })
   ]).then(function(){ loadSubscriptionProgress(); });
   reloadBillingTransactions();
   startBillingPolling();
