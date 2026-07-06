@@ -5,6 +5,7 @@
   var groups = [];
   var selected = null;
   var filter = 'all';
+  var viewMode = 'list';
   var checkedIds = new Set();
   var testResults = Object.create(null);
 
@@ -129,6 +130,13 @@
     if (batch) batch.hidden = total === 0;
     if (count) count.textContent = '已选 ' + total;
   }
+  function renderViewTabs() {
+    var tabs = $('channelViewTabs');
+    if (!tabs) return;
+    tabs.querySelectorAll('[data-view]').forEach(function(button) {
+      button.setAttribute('aria-pressed', button.dataset.view === viewMode ? 'true' : 'false');
+    });
+  }
   function renderFilter() {
     var box = $('providerFilter');
     if (!box) return;
@@ -149,6 +157,27 @@
       '<button class="channels-menu" type="button" aria-label="选择">›</button>' +
     '</div>';
   }
+  function renderGroupedList(list, items) {
+    if (!items.length) {
+      list.innerHTML = '<div class="channels-empty">暂无匹配渠道</div>';
+      return;
+    }
+    var buckets = [];
+    groups.forEach(function(group) {
+      var rows = items.filter(function(channel) { return channel.groupId === group.id; });
+      if (rows.length) buckets.push({ id: group.id, name: group.name, rows: rows });
+    });
+    var unbound = items.filter(function(channel) { return channel.groupId == null || !groups.some(function(group) { return group.id === channel.groupId; }); });
+    if (unbound.length) buckets.push({ id: 'none', name: '未绑定分组', rows: unbound });
+    list.innerHTML = buckets.map(function(bucket) {
+      var latencies = bucket.rows.map(function(channel) { return Number(channel.latencyMs); }).filter(function(value) { return Number.isFinite(value) && value > 0; });
+      var avg = latencies.length ? Math.round(latencies.reduce(function(sum, value) { return sum + value; }, 0) / latencies.length) + 'ms' : '—';
+      return '<div class="channels-group-section" data-group="' + esc(bucket.id) + '">' +
+        '<div class="channels-group-header"><span class="channels-group-name">' + esc(bucket.name) + '</span><span class="pill pill--ok">' + bucket.rows.length + ' 个渠道</span><span class="channels-mono">' + avg + ' 均值</span></div>' +
+        '<div class="channels-group-rows">' + bucket.rows.map(channelRow).join('') + '</div>' +
+      '</div>';
+    }).join('');
+  }
   function renderList() {
     var list = $('channelList');
     var count = $('channelCount');
@@ -159,6 +188,10 @@
     renderHealth();
     renderBatch();
     if (!list) return;
+    if (viewMode === 'group') {
+      renderGroupedList(list, items);
+      return;
+    }
     if (!items.length) {
       list.innerHTML = '<div class="channels-empty">暂无匹配渠道</div>';
       return;
@@ -208,6 +241,7 @@
   }
   function render() {
     syncCheckedIds();
+    renderViewTabs();
     renderFilter();
     renderList();
     renderDetail();
@@ -379,6 +413,14 @@
       if (button.dataset.batch === 'enable') batchUpdate('active');
       if (button.dataset.batch === 'disable') batchUpdate('disabled');
       if (button.dataset.batch === 'delete') batchDelete();
+    });
+
+    var viewTabs = $('channelViewTabs');
+    if (viewTabs) viewTabs.addEventListener('click', function(event) {
+      var button = event.target.closest('[data-view]');
+      if (!button) return;
+      viewMode = button.dataset.view === 'group' ? 'group' : 'list';
+      render();
     });
 
     var list = $('channelList');

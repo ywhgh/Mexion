@@ -151,3 +151,57 @@
 .channel-test-result.is-idle {
   color: var(--mute-2);
 }
+
+/* M9 — group view for channels */
+.channels-view-tabs {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  flex-shrink: 0;
+}
+.channels-view-tabs .tab {
+  min-height: 32px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  padding: 0 11px;
+  font: 600 11px/1 var(--f-mono);
+  cursor: pointer;
+}
+.channels-view-tabs .tab:last-child {
+  border-right: 0;
+}
+.channels-view-tabs .tab[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+}
+.channels-view-tabs .tab:hover {
+  color: var(--verm);
+}
+.channels-group-section {
+  border-bottom: 1px solid var(--border-2);
+}
+.channels-group-section:last-child {
+  border-bottom: 0;
+}
+.channels-group-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border-2);
+}
+.channels-group-name {
+  flex: 1;
+  font: 700 12px/1.2 var(--f-mono);
+  color: var(--ink);
+}
+.channels-group-rows .channels-row:last-child {
+  border-bottom: 0;
+}
+@media(max-width:768px){
+  .channels-view-tabs { order: 2; }
+}
