@@ -2,6 +2,7 @@ import type { ChannelRecord } from "../services/channels.js";
 import { getChannelSecret } from "../services/channels.js";
 import type { DbClient } from "../db/client.js";
 import { safeFetch } from "../lib/safe-http.js";
+import { anthropicResponseToSse, anthropicToResponsesRequest, responsesToAnthropicResponse, type AnthropicMessagesRequest, type OpenAIResponsesResponse } from "./anthropic-compat.js";
 
 export type GatewayProtocol = "openai-chat" | "openai-responses" | "anthropic" | "gemini" | "codex" | "embeddings";
 
@@ -39,8 +40,47 @@ function withGeminiKey(url: string, secret: string): string {
   return parsed.toString();
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+async function relayAnthropicViaResponses(input: RelayProviderInput, secret: string): Promise<Response> {
+  const anthropicBody = isRecord(input.requestBody) ? (input.requestBody as AnthropicMessagesRequest) : {};
+  const wantsStream = anthropicBody.stream === true;
+  const responsesBody = anthropicToResponsesRequest({ ...anthropicBody, stream: false });
+  const rawBody = new TextEncoder().encode(JSON.stringify(responsesBody));
+  const url = `${trimSlash(input.channel.baseUrl)}/v1/responses`;
+  const upstream = await safeFetch(url, {
+    method: "POST",
+    headers: new Headers({ "content-type": "application/json", authorization: `Bearer ${secret}` }),
+    body: bodyBuffer(rawBody),
+  });
+  const text = await upstream.text();
+  if (!upstream.ok) return new Response(text, { status: upstream.status, headers: upstream.headers });
+  let parsed: OpenAIResponsesResponse = {};
+  try {
+    parsed = JSON.parse(text) as OpenAIResponsesResponse;
+  } catch {
+    parsed = { output_text: text };
+  }
+  const anthropicResponse = responsesToAnthropicResponse(parsed, input.model);
+  if (wantsStream) {
+    return new Response(anthropicResponseToSse(anthropicResponse), {
+      status: upstream.status,
+      headers: { "content-type": "text/event-stream; charset=utf-8" },
+    });
+  }
+  return new Response(JSON.stringify(anthropicResponse), {
+    status: upstream.status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 export async function relayToProvider(input: RelayProviderInput): Promise<Response> {
   const secret = getChannelSecret(input.db, input.channel.id);
+  if (input.protocol === "anthropic" && input.channel.provider === "openai") {
+    return relayAnthropicViaResponses(input, secret);
+  }
   const headers = new Headers({ "content-type": "application/json" });
   let url = input.channel.provider === "custom"
     ? `${trimSlash(input.channel.baseUrl)}${input.path}`

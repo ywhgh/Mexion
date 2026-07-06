@@ -117,6 +117,46 @@ describe("gateway handler", () => {
     expect(messages[0]?.content[0]?.cache_control).toEqual({ type: "ephemeral" });
   });
 
+  it("bridges Anthropic messages to OpenAI Responses channels", async () => {
+    const { app, secret } = await fixture();
+    let upstreamUrl = "";
+    let forwarded: unknown = null;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+        upstreamUrl = String(url);
+        if (init?.body instanceof ArrayBuffer) forwarded = JSON.parse(new TextDecoder().decode(init.body)) as Record<string, unknown>;
+        return new Response(JSON.stringify({
+          id: "resp_bridge",
+          output: [{ type: "message", content: [{ type: "output_text", text: "hello from responses" }] }],
+          usage: { input_tokens: 8, output_tokens: 4 },
+        }), { status: 200, headers: { "content-type": "application/json" } });
+      }),
+    );
+
+    const res = await app.request("/v1/messages", {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        max_tokens: 64,
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(upstreamUrl).toBe("https://api.openai.com/v1/responses");
+    const sent = forwarded as Record<string, unknown>;
+    expect(sent.input).toEqual([{ type: "message", role: "user", content: [{ type: "input_text", text: "hi" }] }]);
+    expect(sent.max_output_tokens).toBe(64);
+    await expect(res.json()).resolves.toMatchObject({
+      type: "message",
+      role: "assistant",
+      model: "gpt-4o",
+      content: [{ type: "text", text: "hello from responses" }],
+      usage: { input_tokens: 8, output_tokens: 4 },
+    });
+  });
+
   it("captures streaming usage when settling", async () => {
     const { app, db, secret, user } = await fixture();
     const encoder = new TextEncoder();
