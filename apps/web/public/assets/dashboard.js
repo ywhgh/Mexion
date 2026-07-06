@@ -1129,12 +1129,10 @@ function initDashboardData() {
     }
   }
 
-  MexionHttp.get('/status').then(function(settings) {
+  (function initEndpointUrl(){
     var epUrl = document.querySelector('.creds__endpoint-url');
-    var base = (settings.api_base_url || window.location.origin).replace(/\/+$/, '');
-    window.__mexionApiBase = base; // 供「复制连接信息 / cURL」复用
-    // 二开：base_url 格式切换 —— OpenAI(带 /v1) vs Claude Code(不带 /v1)。
-    // 选择持久化到 localStorage('mexion_api_fmt')，api-keys 的「复制连接信息」同步该格式。
+    var base = window.location.origin.replace(//+$/, '');
+    window.__mexionApiBase = base;
     function urlFor(fmt){ return fmt === 'claude' ? base : base + '/v1'; }
     function applyFmt(fmt){
       try { localStorage.setItem('mexion_api_fmt', fmt); } catch(e){}
@@ -1152,11 +1150,11 @@ function initDashboardData() {
     var saved = 'openai';
     try { if (localStorage.getItem('mexion_api_fmt') === 'claude') saved = 'claude'; } catch(e){}
     applyFmt(saved);
-  }).catch(function(){ window.__mexionApiBase = window.location.origin; });
+  })();
 
-  // ── 5. Keys → credential card：多 key 快速获取(从用户视角:这张卡是快速拿到自己每个 key 的地方) ──
-  MexionHttp.get('/token/?p=0&size=50').then(function(data) {
-    var keys = (data.items || []).filter(function(k){ return k && k.id != null; }).map(function(k){ k.id = String(k.id); return k; });
+  // ── 5. Keys → credential card：Mexion 明文密钥只在创建时展示一次，这里只展示 prefix ──
+  MexionHttp.get('/user/keys').then(function(data) {
+    var keys = (data.keys || data.items || (Array.isArray(data) ? data : [])).filter(function(k){ return k && k.id != null; }).map(function(k){ k.id = String(k.id); return k; });
     var keyValEl = document.getElementById('keyVal');
     var keyGroupEl = document.getElementById('keyGroup');
     var selEl = document.getElementById('keySelector');
@@ -1165,76 +1163,57 @@ function initDashboardData() {
     var lastEl = document.getElementById('credsLastUsed');
     var statusEl = document.getElementById('credsStatus');
     if (!keyValEl) return;
+    function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function unavailable(){ if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'完整密钥仅创建时显示一次':'Full secret is only shown when created'); }
     if (keys.length === 0) {
       keyValEl.innerHTML = '<span style="color:var(--muted)">' + (lang()==='zh'?'尚无 API Key':'No keys yet') + '</span>';
-      // 无 key 时仍给反馈（原先按钮无 handler、点了完全没反应）
-      var _noKey = function(){ if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'请先创建 API 密钥':'Create an API key first'); };
-      if (revealBtn) revealBtn.onclick = _noKey;
-      if (copyBtn) copyBtn.onclick = _noKey;
+      if (revealBtn) revealBtn.onclick = unavailable;
+      if (copyBtn) copyBtn.onclick = unavailable;
       if (selEl) selEl.hidden = true;
       return;
     }
-
-    function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function ensureSkPrefix(key){ key = String(key || '').trim(); return (!key || key.indexOf('sk-') === 0) ? key : 'sk-' + key; }
-    // 列表接口的 key 是后端打码值(如 IRc6****vjVA);真实密钥按需请求 /token/:id/key,按 id 缓存。
-    var fullKeyCache = {}, pending = {};
-    function fetchFullKey(id, cb){
-      if (fullKeyCache[id]) { cb(fullKeyCache[id]); return; }
-      if (pending[id]) { pending[id].push(cb); return; } // 在途请求:回调排队,避免重复 POST / 丢动作
-      pending[id] = [cb];
-      MexionHttp.post('/token/' + id + '/key', {}).then(function(keyData){
-        var fk = ensureSkPrefix((typeof keyData === 'string') ? keyData : (keyData && keyData.key) || '');
-        if (fk) fullKeyCache[id] = fk; // 只缓存成功取到的真实密钥
-        var cbs = pending[id] || []; delete pending[id];
-        cbs.forEach(function(f){ f(fk); });
-      }).catch(function(){ var cbs = pending[id] || []; delete pending[id]; cbs.forEach(function(f){ f(''); }); });
-    }
     function maskOf(k){
-      var mk = String((k && k.key) || '');
-      var prefix = esc(mk.substring(0, 8));
-      var suffix = esc(mk.length > 4 ? mk.substring(mk.length - 4) : mk);
-      return prefix + '<span class="mask">••••••••••••••••••••••</span>' + suffix;
+      var prefix = String(k.prefix || k.keyPrefix || k.key || '').trim();
+      return esc(prefix || 'mx_') + '<span class="mask">••••••••••••</span><span style="color:var(--muted)">(' + (lang()==='zh'?'仅创建时可见':'create-time only') + ')</span>';
     }
     function fmtAgo(ts){
+      if (!ts) return '—';
       var diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+      if (!isFinite(diff) || diff < 0) return '—';
       if (diff < 60) return diff + (lang()==='zh'?' 秒前':'s ago');
       if (diff < 3600) return Math.floor(diff/60) + (lang()==='zh'?' 分钟前':'m ago');
       if (diff < 86400) return Math.floor(diff/3600) + (lang()==='zh'?' 小时前':'h ago');
       return Math.floor(diff/86400) + (lang()==='zh'?' 天前':'d ago');
     }
-
-    var current = null, revealed = false;
+    var current = null;
     function selectKey(k){
-      current = k; revealed = false;
+      current = k;
       if (revealBtn) revealBtn.setAttribute('aria-pressed', 'false');
       keyValEl.innerHTML = maskOf(k);
       if (keyGroupEl) {
-        keyGroupEl.textContent = k.group || k.group_name || (lang()==='zh' ? '默认分组' : 'default');
+        keyGroupEl.textContent = k.groupName || k.group || (k.groupId ? ('#' + k.groupId) : (lang()==='zh' ? '默认分组' : 'default'));
         keyGroupEl.hidden = false;
       }
       if (selEl) selEl.querySelectorAll('.creds__keychip').forEach(function(c){
         c.classList.toggle('is-on', c.dataset.id === String(k.id));
       });
-      if (lastEl) lastEl.textContent = k.last_used_at ? fmtAgo(k.last_used_at) : '—';
+      if (lastEl) lastEl.textContent = fmtAgo(k.lastUsedAt || k.last_used_at);
       if (statusEl) {
-        var on = (k.status == null || k.status === 1);
+        var on = (k.status == null || k.status === 'active' || k.status === 1);
         statusEl.innerHTML = '<span class="creds__meta-dot" style="background:' + (on ? 'var(--green)' : 'var(--muted)') + '"></span><span>' +
           (on ? (lang()==='zh'?'活跃':'Active') : (lang()==='zh'?'已禁用':'Disabled')) + '</span>';
       }
     }
-
-    // 渲染 key 选择器(每个 key 一颗 chip:标签=名称,无名则分组+尾巴;chip 上带一键复制图标);单 key 时不显示
     var copySvg = '<svg width="11" height="11" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M9 4V2.3c0-.3-.3-.6-.6-.6H2.3c-.4 0-.6.3-.6.6V8.6c0 .3.2.6.6.6H4" stroke="currentColor" stroke-width="1.3"/></svg>';
     if (selEl) {
       selEl.hidden = keys.length <= 1;
       selEl.innerHTML = keys.map(function(k){
-        var suffix = String(k.key || '').slice(-4);
-        var label = k.name || ((k.group || k.group_name || (lang()==='zh'?'默认':'default')) + (suffix ? ' ·' + suffix : ''));
-        var title = (k.name ? k.name + ' · ' : '') + (k.group || k.group_name || 'default') + (suffix ? ' · ' + suffix : '');
+        var prefix = String(k.prefix || k.keyPrefix || '').slice(0, 10);
+        var label = k.name || prefix || (lang()==='zh'?'未命名':'Untitled');
+        var title = label + (prefix ? ' · ' + prefix : '');
         return '<button type="button" class="creds__keychip" data-id="' + esc(k.id) + '" title="' + esc(title) + '">' +
           '<span class="creds__keychip-label">' + esc(label) + '</span>' +
-          '<span class="creds__keychip-copy" data-copy-id="' + esc(k.id) + '" role="button" tabindex="0" aria-label="' + esc(lang()==='zh'?'复制此密钥':'Copy key') + '" title="' + esc(lang()==='zh'?'复制此密钥':'Copy key') + '">' + copySvg + '</span>' +
+          '<span class="creds__keychip-copy" data-copy-id="' + esc(k.id) + '" role="button" tabindex="0" aria-label="' + esc(lang()==='zh'?'复制前缀':'Copy prefix') + '" title="' + esc(lang()==='zh'?'复制前缀':'Copy prefix') + '">' + copySvg + '</span>' +
         '</button>';
       }).join('');
       selEl.querySelectorAll('.creds__keychip').forEach(function(c){
@@ -1243,202 +1222,140 @@ function initDashboardData() {
           if (k) selectKey(k);
         };
       });
-      // 每 key 一键复制(不必先选中) —— 阻止冒泡避免触发切换
       selEl.querySelectorAll('.creds__keychip-copy').forEach(function(cp){
         cp.onclick = function(e){
           e.stopPropagation();
-          fetchFullKey(cp.dataset.copyId, function(fk){
-            if (fk) window.MexionCopy(fk, cp);
-            else if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
-          });
+          var k = keys.filter(function(x){ return String(x.id) === cp.dataset.copyId; })[0];
+          var prefix = k && (k.prefix || k.keyPrefix);
+          if (prefix) window.MexionCopy(prefix, cp); else unavailable();
         };
       });
-      // 横向溢出时右侧渐隐提示(滚到底则隐藏)
-      var wrap = selEl.parentElement;
-      var updFade = function(){
-        if (!wrap || !wrap.classList) return;
-        var overflow = selEl.scrollWidth - selEl.clientWidth > 2;
-        var atEnd = selEl.scrollLeft + selEl.clientWidth >= selEl.scrollWidth - 2;
-        wrap.classList.toggle('has-overflow', overflow && !atEnd);
-      };
-      selEl.addEventListener('scroll', updFade);
-      window.addEventListener('resize', updFade);
-      setTimeout(updFade, 60);
     }
-
-    if (revealBtn) revealBtn.onclick = function(){
-      if (!current) return;
-      revealed = !revealed;
-      revealBtn.setAttribute('aria-pressed', String(revealed));
-      var c = current;
-      if (revealed) {
-        if (!fullKeyCache[c.id]) keyValEl.innerHTML = '<span class="mask">' + (lang()==='zh'?'获取中…':'Loading…') + '</span>';
-        fetchFullKey(c.id, function(fk){
-          // 异步返回前用户可能已切换 key —— 只在仍是同一 key 且仍处于展开态时写入
-          if (current && current.id === c.id && revealed) keyValEl.innerHTML = fk ? esc(fk) : maskOf(c);
-        });
-      } else {
-        keyValEl.innerHTML = maskOf(c);
-      }
-    };
+    if (revealBtn) revealBtn.onclick = unavailable;
     if (copyBtn) copyBtn.onclick = function(){
-      if (!current) return;
-      var c = current;
-      fetchFullKey(c.id, function(fk){
-        if (fk) { window.MexionCopy(fk, copyBtn); }   // 失败时别把打码值当真实 key 复制走 —— 提示重试
-        else if (window.MexionToast) window.MexionToast.show(lang()==='zh' ? '获取密钥失败，请重试' : 'Failed to fetch key');
-      });
+      if (!current) return unavailable();
+      var prefix = current.prefix || current.keyPrefix;
+      if (prefix) window.MexionCopy(prefix, copyBtn); else unavailable();
     };
-
-    // 复制连接信息 / cURL —— 随当前选中 key + base_url 格式(OpenAI/Claude)生成,失败给提示
-    function apiBase(){ return (window.__mexionApiBase || window.location.origin).replace(/\/+$/, ''); }
+    function apiBase(){ return (window.__mexionApiBase || window.location.origin).replace(//+$/, ''); }
     function curFmt(){ try { return localStorage.getItem('mexion_api_fmt') === 'claude' ? 'claude' : 'openai'; } catch(e){ return 'openai'; } }
-    function connStr(fk){
-      var base = apiBase();
-      return curFmt() === 'claude'
-        ? 'ANTHROPIC_BASE_URL=' + base + '\nANTHROPIC_AUTH_TOKEN=' + fk
-        : 'OPENAI_BASE_URL=' + base + '/v1\nOPENAI_API_KEY=' + fk;
-    }
-    function curlStr(fk){
-      var base = apiBase();
-      if (curFmt() === 'claude') {
-        return 'curl ' + base + '/v1/messages \\\n' +
-          '  -H "x-api-key: ' + fk + '" \\\n' +
-          '  -H "anthropic-version: 2023-06-01" \\\n' +
-          '  -H "content-type: application/json" \\\n' +
-          "  -d '{\"model\":\"claude-3-5-sonnet-20241022\",\"max_tokens\":256,\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}'";
-      }
-      return 'curl ' + base + '/v1/chat/completions \\\n' +
-        '  -H "Authorization: Bearer ' + fk + '" \\\n' +
-        '  -H "Content-Type: application/json" \\\n' +
-        "  -d '{\"model\":\"gpt-4o-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}'";
-    }
-    function copySnippet(btn, build){
-      if (!current) return;
-      var c = current;
-      fetchFullKey(c.id, function(fk){
-        // 仅接受形如 sk-xxx 的纯密钥(字母/数字/_/-),杜绝异常字符注入到 shell/env 片段
-        if (fk && /^[\w-]+$/.test(fk)) window.MexionCopy(build(fk), btn);
-        else if (window.MexionToast) window.MexionToast.show(lang()==='zh'?'获取密钥失败，请重试':'Failed to fetch key');
-      });
-    }
+    function copySnippet(){ unavailable(); }
     var copyConnBtn = document.getElementById('copyConnBtn');
     var copyCurlBtn = document.getElementById('copyCurlBtn');
-    if (copyConnBtn) copyConnBtn.onclick = function(){ copySnippet(copyConnBtn, connStr); };
-    if (copyCurlBtn) copyCurlBtn.onclick = function(){ copySnippet(copyCurlBtn, curlStr); };
-
-    // 切语言后重渲本卡(分组/状态/最近使用文案随语言);离开页面清空内存里的明文密钥缓存
+    if (copyConnBtn) copyConnBtn.onclick = copySnippet;
+    if (copyCurlBtn) copyCurlBtn.onclick = copySnippet;
     window.__credsReRender = function(){ if (current) selectKey(current); };
-    document.addEventListener('visibilitychange', function(){ if (document.hidden) fullKeyCache = {}; });
     selectKey(keys[0]);
   }).catch(function(){});
 
   // ── 6. Usage records → heatmap, model mix, live feed, chart ──
+  function usageDayKey(row) {
+    return row.date || row.day || row.ts || '';
+  }
+  function toDailyMap(dailyStats) {
+    var daily = {};
+    (dailyStats || []).forEach(function(row){
+      var key = String(usageDayKey(row)).slice(0, 10);
+      if (!key) return;
+      daily[key] = {
+        calls: Number(row.calls || 0),
+        tokens: Number(row.tokens || 0),
+        cost: Number(row.cost || 0),
+        latency_sum: Number(row.avgLatency || row.avg_latency || 0) * Number(row.calls || 0),
+        latency_count: Number(row.avgLatency || row.avg_latency || 0) > 0 ? Number(row.calls || 0) : 0,
+        ttfb_sum: 0,
+        ttfb_count: 0
+      };
+    });
+    return daily;
+  }
+  function logTokens(r) {
+    return Number(r.totalTokens || r.total_tokens || 0) || (Number(r.inputTokens || r.input_tokens || 0) + Number(r.outputTokens || r.output_tokens || 0));
+  }
+  function logTs(r) { return r.ts || r.createdAt || logTs(r) || ''; }
+  function logStatus(r) { return Number(r.status || r.code || 0); }
+  function logCost(r) { return Number(r.cost || r.actual_cost || 0); }
   function loadAllUsage() {
-    return MexionHttp.get('/log/self?p=1&page_size=100').then(function(data) {
-      var items = (data && (data.items || data.logs)) || (Array.isArray(data) ? data : []);
-      var total = (data && (data.total || data.total_count)) || items.length;
-      if (total <= 100) return items;
-      // 二开修复:后端 page_size 硬上限100(common/page_info.go),原 size=200 实回100、又按 /200 算页数+上限20页→漏拉大半历史→热力图缺天
-      var pages = Math.min(Math.ceil(total / 100), 40);
-      var reqs = [];
-      for (var p = 2; p <= pages; p++) reqs.push(MexionHttp.get('/log/self?p=' + p + '&page_size=100'));
-      return Promise.all(reqs).then(function(results) {
-        results.forEach(function(r) { items = items.concat((r && (r.items || r.logs)) || []); });
-        return items;
-      });
+    return Promise.all([
+      MexionHttp.get('/user/usage'),
+      MexionHttp.get('/user/logs?limit=100').catch(function(){ return { logs: [] }; })
+    ]).then(function(results) {
+      return { usage: results[0] || {}, records: (results[1] && (results[1].logs || results[1].items)) || [] };
     });
   }
 
-  loadAllUsage().then(function(records) {
-    if (!records.length) {
-      __dashState.daily = {};
-      __dashState.hasRecords = false;
-      if (window.__hmSetData) window.__hmSetData({});
-      if (window.__liveFeedSet) window.__liveFeedSet([]);
-      buildEmptyChart();
-      buildEmptyMix();
-      updateSparklines({});
-      if (window.__liveSetCount) window.__liveSetCount(0);
-      return;
+  loadAllUsage().then(function(payload) {
+    var usage = payload.usage || {};
+    var records = payload.records || [];
+    renderDashboardSummary({
+      request_count: usage.totalCalls || 0,
+      used_token: usage.totalTokens || 0,
+      used_quota: usage.totalCost || 0,
+      avg_latency: usage.avgLatency || 0
+    }, true);
+
+    var daily = toDailyMap(usage.dailyStats || []);
+    if (!Object.keys(daily).length && records.length) {
+      records.forEach(function(r) {
+        var rawTs = logTs(r);
+        var d = rawTs ? new Date(rawTs) : null;
+        if (!d || isNaN(d.getTime())) return;
+        var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        if (!daily[key]) daily[key] = { calls: 0, tokens: 0, cost: 0, latency_sum: 0, latency_count: 0, ttfb_sum: 0, ttfb_count: 0 };
+        daily[key].calls += 1;
+        daily[key].tokens += logTokens(r);
+        daily[key].cost += logCost(r);
+        var lms = Number(r.durationMs || r.duration_ms || 0);
+        if (lms > 0) { daily[key].latency_sum += lms; daily[key].latency_count++; }
+        var ft = Number(r.ttftMs || r.ttft_ms || 0);
+        if (ft > 0) { daily[key].ttfb_sum += ft; daily[key].ttfb_count++; }
+      });
     }
 
-    // ── Aggregate by day ──
-    var daily = {};
     var modelAgg = {};
-    var filteredCount = 0;
-    records.forEach(function(r) {
-      var rawTs = r.created_at;
-      var d = (typeof rawTs === 'number' && rawTs > 1e9) ? new Date(rawTs * 1000) : (rawTs ? new Date(rawTs) : null);
-      if (!d || isNaN(d.getTime())) return;
-      filteredCount++;
-      var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-      if (!daily[key]) daily[key] = { calls: 0, tokens: 0, cost: 0, latency_sum: 0, latency_count: 0, ttfb_sum: 0, ttfb_count: 0 };
-      daily[key].calls += 1;
-      daily[key].tokens += (r.total_tokens || r.prompt_tokens || r.input_tokens || 0) + (r.completion_tokens || r.output_tokens || 0);
-      daily[key].cost += r.actual_cost != null ? r.actual_cost : (r.quota != null ? r.quota / 500000 : (r.cost || 0));
-      var lms = r.duration_ms || (r.use_time ? r.use_time * 1000 : 0) || r.duration || 0;
-      daily[key].latency_sum += lms;
-      if (lms > 0) daily[key].latency_count++; // 二开:记延迟样本数,供时延卡用 use_time 算均值(后端无 first_token_ms)
-      var ft = r.first_token_ms || 0;
-      if (ft > 0) { daily[key].ttfb_sum += ft; daily[key].ttfb_count++; }
-      var model = r.model_name || r.model || 'unknown';
-      if (!modelAgg[model]) modelAgg[model] = { calls: 0, tokens: 0, cost: 0 };
-      modelAgg[model].calls += 1;
-      modelAgg[model].tokens += (r.total_tokens || (r.prompt_tokens||0) + (r.completion_tokens||0) || 0);
-      modelAgg[model].cost += r.actual_cost != null ? r.actual_cost : (r.quota != null ? r.quota / 500000 : (r.cost || 0));
+    (usage.modelStats || []).forEach(function(m){
+      var name = m.model || 'unknown';
+      modelAgg[name] = { calls: Number(m.calls || 0), tokens: Number(m.tokens || 0), cost: Number(m.cost || 0) };
     });
+    if (!Object.keys(modelAgg).length) {
+      records.forEach(function(r){
+        var model = r.model || r.model_name || 'unknown';
+        if (!modelAgg[model]) modelAgg[model] = { calls: 0, tokens: 0, cost: 0 };
+        modelAgg[model].calls += 1;
+        modelAgg[model].tokens += logTokens(r);
+        modelAgg[model].cost += logCost(r);
+      });
+    }
 
     __dashState.daily = daily;
-    __dashState.hasRecords = true;
-
-    // ── Feed heatmap ──
+    __dashState.hasRecords = records.length > 0 || Object.keys(daily).some(function(k){ return daily[k].calls > 0; });
     if (window.__hmSetData) window.__hmSetData(daily);
 
-    // ── Feed live feed ──
     if (window.__liveFeedSet) {
-      var sorted = records.slice().sort(function(a,b){ return (b.created_at||'') > (a.created_at||'') ? 1 : -1; });
+      var sorted = records.slice().sort(function(a,b){ return String(logTs(b)).localeCompare(String(logTs(a))); });
       var feedRows = sorted.slice(0, 8).map(function(r) {
-        var model = r.model_name || r.model || 'unknown';
-        var vendor = gp(model) || 'api';
+        var model = r.model || r.model_name || 'unknown';
+        var vendor = r.provider || gp(model) || 'api';
         var letter = model.charAt(0).toUpperCase();
-        var rawTs = r.created_at;
-        var d = (typeof rawTs === 'number' && rawTs > 1e9) ? new Date(rawTs * 1000) : (rawTs ? new Date(rawTs) : new Date());
+        var d = logTs(r) ? new Date(logTs(r)) : new Date();
         var t = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
-        var status = (r.type === 5 || r.status === 'error' || r.code >= 400) ? 'err' : 'ok';
-        var costVal = r.actual_cost != null ? r.actual_cost : (r.quota != null ? r.quota / 500000 : (r.cost || 0));
-        return { t:t, model:model, vendor:vendor, icon:'', let:letter, tot:(r.prompt_tokens||0)+(r.completion_tokens||0), cost:costVal, status:status, err: r.content||r.error_message||'error' };
+        var status = logStatus(r) >= 400 ? 'err' : 'ok';
+        return { t:t, model:model, vendor:vendor, icon:'', let:letter, tot:logTokens(r), cost:logCost(r), status:status, err:r.errorCode||r.error_code||'' };
       });
       window.__liveFeedSet(feedRows);
     }
 
-    // ── Feed chart ──
     buildChartFromDaily(daily);
+    buildMixFromModels(modelAgg, Number(usage.totalCalls || records.length || 0));
 
-    // ── Feed model mix ──
-    buildMixFromModels(modelAgg, filteredCount);
-
-    // ── Update live counter ──
     var today = new Date();
     var todayKey = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
     var todayCalls = daily[todayKey] ? daily[todayKey].calls : 0;
     if (window.__liveSetCount) window.__liveSetCount(todayCalls);
-
-    // ── Hero sparklines from daily data ──
     updateSparklines(daily);
 
-    // ── Token + latency aggregation from daily data ──
-    var totalTok = 0, totalLat = 0, latCount = 0;
-    Object.keys(daily).forEach(function(k) {
-      totalTok += daily[k].tokens || 0;
-      // 二开修复:延迟优先用 ttfb(后端原生无 first_token_ms→恒空),回退到 use_time 累加的 latency 桶,否则时延卡永远 0/暂无
-      if (daily[k].ttfb_count > 0) { totalLat += daily[k].ttfb_sum; latCount += daily[k].ttfb_count; }
-      else if (daily[k].latency_count > 0) { totalLat += daily[k].latency_sum; latCount += daily[k].latency_count; }
-    });
     var hstats = document.querySelectorAll('.hstat__val');
-    // TOKEN 大数字由 renderDashboardSummary 用 u.used_token 写(累计口径,与"调用"一致);此处不再写,避免双 writer 抢写
-    if (hstats[2] && latCount > 0) hstats[2].innerHTML = fmtLat(Math.round(totalLat / latCount));
-
+    if (hstats[2] && usage.avgLatency > 0) hstats[2].innerHTML = fmtLat(Math.round(usage.avgLatency));
   }).catch(function(err) {
     console.warn('Usage load failed:', err);
     if (window.__hmSetData) window.__hmSetData({});
@@ -1664,18 +1581,18 @@ function initDashboardData() {
 
   // ── Auto-refresh live feed every 30s ──
   setInterval(function() {
-    MexionHttp.get('/log/self?p=1&size=8').then(function(data) {
-      var items = data.items || [];
+    MexionHttp.get('/user/logs?limit=8').then(function(data) {
+      var items = data.logs || data.items || [];
       if (!items.length || !window.__liveFeedSet) return;
       var feedRows = items.map(function(r) {
-        var model = r.model_name || r.model || 'unknown';
+        var model = r.model || r.model_name || 'unknown';
         var vendor = gp(model) || 'api';
         var letter = model.charAt(0).toUpperCase();
-        var rawTs = r.created_at;
+        var rawTs = logTs(r);
         var d = (typeof rawTs === 'number' && rawTs > 1e9) ? new Date(rawTs * 1000) : (rawTs ? new Date(rawTs) : new Date());
         var t = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
-        var costVal = r.actual_cost != null ? r.actual_cost : (r.quota != null ? r.quota / 500000 : (r.cost || 0));
-        return { t:t, model:model, vendor:vendor, icon:'', let:letter, tot:(r.prompt_tokens||0)+(r.completion_tokens||0)||r.total_tokens||0, cost:costVal, status:'ok' };
+        var costVal = logCost(r);
+        return { t:t, model:model, vendor:vendor, icon:'', let:letter, tot:logTokens(r), cost:costVal, status:'ok' };
       });
       window.__liveFeedSet(feedRows);
     }).catch(function(){});

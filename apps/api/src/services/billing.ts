@@ -180,10 +180,10 @@ export function getBillingSummary(db: DbClient, userId: number): Record<string, 
 
 export function getUsageSummary(db: DbClient, userId: number): Record<string, unknown> {
   const totals = db.sqlite
-    .prepare("SELECT COUNT(*) AS totalCalls, COALESCE(SUM(input_tokens + output_tokens),0) AS totalTokens, COALESCE(SUM(cost),0) AS totalCost FROM usage_events WHERE user_id = ?")
-    .get(userId) as { totalCalls: number; totalTokens: number; totalCost: number };
+    .prepare("SELECT COUNT(*) AS totalCalls, COALESCE(SUM(input_tokens + output_tokens),0) AS totalTokens, COALESCE(SUM(cost),0) AS totalCost, COALESCE(AVG(NULLIF(duration_ms,0)),0) AS avgLatency FROM usage_events WHERE user_id = ?")
+    .get(userId) as { totalCalls: number; totalTokens: number; totalCost: number; avgLatency: number };
   const dailyStats = db.sqlite
-    .prepare("SELECT substr(ts,1,10) AS day, COUNT(*) AS calls, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COALESCE(SUM(cost),0) AS cost FROM usage_events WHERE user_id = ? AND ts >= datetime('now','-30 days') GROUP BY day ORDER BY day")
+    .prepare("SELECT substr(ts,1,10) AS day, COUNT(*) AS calls, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COALESCE(SUM(cost),0) AS cost, COALESCE(AVG(NULLIF(duration_ms,0)),0) AS avgLatency FROM usage_events WHERE user_id = ? AND ts >= datetime('now','-91 days') GROUP BY day ORDER BY day")
     .all(userId);
   const modelStats = db.sqlite
     .prepare("SELECT model, COUNT(*) AS calls, COALESCE(SUM(input_tokens + output_tokens),0) AS tokens, COALESCE(SUM(cost),0) AS cost FROM usage_events WHERE user_id = ? GROUP BY model ORDER BY calls DESC LIMIT 20")
