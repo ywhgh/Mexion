@@ -39,7 +39,7 @@ function webDistRoot(): string {
 }
 
 function isApiPath(pathname: string): boolean {
-  return pathname.startsWith("/api") || pathname.startsWith("/v1");
+  return pathname === "/api" || pathname.startsWith("/api/") || pathname === "/v1" || pathname.startsWith("/v1/");
 }
 export type AppBindings = {
   Variables: {
