@@ -8,6 +8,7 @@
   var viewMode = 'list';
   var checkedIds = new Set();
   var testResults = Object.create(null);
+  var monitors = [];
 
   function $(id) { return document.getElementById(id); }
   function esc(value) {
@@ -136,6 +137,62 @@
       requestsLast24h: channel.requests_last_24h || 0,
       raw: channel
     };
+  }
+  function normalizeMonitor(monitor) {
+    monitor = monitor || {};
+    var extraModels = Array.isArray(monitor.extra_models) ? monitor.extra_models : (Array.isArray(monitor.extraModels) ? monitor.extraModels : []);
+    var latency = monitor.primary_latency_ms != null ? monitor.primary_latency_ms : (monitor.primaryLatencyMs != null ? monitor.primaryLatencyMs : monitor.latency_ms);
+    return {
+      id: monitor.id,
+      name: monitor.name || '',
+      provider: normalizeProvider(monitor.provider || monitor.platform),
+      endpoint: monitor.endpoint || monitor.base_url || monitor.baseUrl || '',
+      groupName: monitor.group_name || monitor.groupName || '',
+      primaryModel: monitor.primary_model || monitor.primaryModel || '',
+      extraModels: extraModels,
+      status: monitor.primary_status || monitor.status || '',
+      latencyMs: latency,
+      lastCheckedAt: monitor.last_checked_at || monitor.lastCheckedAt || monitor.updated_at || '',
+      raw: monitor
+    };
+  }
+  function monitorStatusToChannel(status) {
+    status = String(status || '').toLowerCase();
+    if (status === 'ok' || status === 'success' || status === 'healthy' || status === 'up') return 'active';
+    if (status === 'error' || status === 'failed' || status === 'down' || status === 'timeout') return 'error';
+    return '';
+  }
+  function monitorFor(channel) {
+    if (!channel) return null;
+    var raw = channel.raw || {};
+    var explicitId = raw.monitor_id || raw.monitorId || raw.channel_monitor_id || raw.channelMonitorId;
+    if (explicitId != null) {
+      var explicit = monitors.find(function(monitor) { return String(monitor.id) === String(explicitId); });
+      if (explicit) return explicit;
+    }
+    var name = String(channel.name || '').toLowerCase();
+    var base = String(channel.baseUrl || '').replace(/\/+$/, '').toLowerCase();
+    var models = Array.isArray(channel.modelList) ? channel.modelList.map(function(model) { return String(model).toLowerCase(); }) : [];
+    return monitors.find(function(monitor) {
+      var monitorName = String(monitor.name || '').toLowerCase();
+      var endpoint = String(monitor.endpoint || '').replace(/\/+$/, '').toLowerCase();
+      var primary = String(monitor.primaryModel || '').toLowerCase();
+      if (name && monitorName && name === monitorName) return true;
+      if (base && endpoint && (base === endpoint || base.indexOf(endpoint) === 0 || endpoint.indexOf(base) === 0)) return true;
+      if (channel.provider === monitor.provider && primary && models.indexOf(primary) >= 0) return true;
+      return false;
+    }) || null;
+  }
+  function mergeMonitorState() {
+    channels.forEach(function(channel) {
+      var monitor = monitorFor(channel);
+      if (!monitor) return;
+      channel.monitorId = monitor.id;
+      if (monitor.latencyMs != null) channel.latencyMs = monitor.latencyMs;
+      if (monitor.lastCheckedAt) channel.lastCheckedAt = monitor.lastCheckedAt;
+      var status = monitorStatusToChannel(monitor.status);
+      if (status) channel.status = status;
+    });
   }
   function channelPayloadFromForm(prefix) {
     var groupEl = prefix === 'edit' ? $('editChannelGroup') : $('channelGroup');
@@ -381,9 +438,15 @@
     fillGroups('editChannelGroup', selected && selected.groupId);
   }
   function load() {
-    return Promise.all([api('/admin/channels?page=1&page_size=100'), api('/admin/groups?page=1&page_size=100')]).then(function(results) {
+    return Promise.all([
+      api('/admin/channels?page=1&page_size=100'),
+      api('/admin/groups?page=1&page_size=100'),
+      api('/admin/channel-monitors?page=1&page_size=100').catch(function() { return { items: [] }; })
+    ]).then(function(results) {
       channels = ((results[0] && (results[0].items || results[0].channels)) || (Array.isArray(results[0]) ? results[0] : [])).map(normalizeChannel);
       groups = ((results[1] && (results[1].items || results[1].groups)) || (Array.isArray(results[1]) ? results[1] : [])).map(normalizeGroup);
+      monitors = ((results[2] && (results[2].items || results[2].monitors)) || (Array.isArray(results[2]) ? results[2] : [])).map(normalizeMonitor);
+      mergeMonitorState();
       if (selected) selected = channels.find(function(channel) { return channel.id === selected.id; }) || null;
       render();
     }).catch(function(error) { toast(error.message, 'error'); });
@@ -471,6 +534,28 @@
   }
   function runSerial(ids, task) {
     return ids.reduce(function(promise, id) { return promise.then(function() { return task(id); }); }, Promise.resolve());
+  }
+  function runMonitor(channel) {
+    var monitor = monitorFor(channel);
+    if (!monitor) {
+      return Promise.reject(new Error('未找到同名渠道监控项，无法直接测速'));
+    }
+    return api('/admin/channel-monitors/' + monitor.id + '/run', { method: 'POST' }).then(function(result) {
+      var rows = (result && (result.results || result.items)) || (Array.isArray(result) ? result : []);
+      var first = rows[0] || {};
+      var ok = rows.length ? rows.some(function(row) {
+        var status = String(row.status || '').toLowerCase();
+        return status === 'ok' || status === 'success' || status === 'healthy' || status === 'up';
+      }) : true;
+      var latency = first.latency_ms != null ? first.latency_ms : (first.latencyMs != null ? first.latencyMs : first.ping_latency_ms);
+      return {
+        ok: ok,
+        status: first.status || (ok ? 'ok' : 'error'),
+        durationMs: latency != null ? latency : 0,
+        message: first.message || '',
+        raw: result
+      };
+    });
   }
   function batchUpdate(status) {
     var ids = checkedArray();
@@ -592,8 +677,9 @@
       if (act === 'probe') {
         button.disabled = true;
         button.textContent = '测速中…';
-        api('/admin/channels/' + selected.id, { method: 'PUT', body: { status: 'active' } }).then(function(result) {
-          toast(result && result.latencyMs != null ? ('测速完成 ' + result.latencyMs + 'ms') : '测速失败，已记录错误', result && result.latencyMs != null ? 'success' : 'error');
+        runMonitor(selected).then(function(result) {
+          testResults[selected.id] = result;
+          toast(result.ok ? ('测速完成 ' + result.durationMs + 'ms') : (result.message || '测速未通过'), result.ok ? 'success' : 'error');
           return load();
         }).catch(function(error) { toast(error.message || '测速失败', 'error'); })
           .finally(function() { button.disabled = false; button.textContent = '测速'; });
@@ -602,13 +688,8 @@
       if (act === 'test') {
         testResults[selected.id] = { loading: true };
         renderDetail();
-        api('/admin/channels/' + selected.id, { method: 'PUT', body: { status: selected.status || 'active' } }).then(function(result) {
-          testResults[selected.id] = {
-            ok: !!(result && result.ok),
-            status: result && result.status,
-            durationMs: result && result.durationMs,
-            message: result && (result.message || result.body)
-          };
+        runMonitor(selected).then(function(result) {
+          testResults[selected.id] = result;
           renderDetail();
         }).catch(function(error) {
           testResults[selected.id] = { ok: false, status: 0, durationMs: 0, message: error.message || '连接失败' };
