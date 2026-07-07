@@ -2267,6 +2267,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 (function(){
+  function endpointUrl(url){
+    url = String(url || '').trim();
+    if (!url) return '';
+    try {
+      return new URL(url, window.location.origin).href;
+    } catch(e) {
+      return url;
+    }
+  }
+
+  function hydrateEndpointLabels(){
+    document.querySelectorAll('.ep-item').forEach(function(item){
+      var raw = item.dataset.url || '';
+      var full = endpointUrl(raw);
+      if (full && raw.charAt(0) === '/') item.dataset.url = full;
+      var code = item.querySelector('.ep-item__url');
+      if (code && full && /当前域名\s*\/v1|current origin\s*\/v1/i.test(code.textContent || '')) {
+        code.textContent = full.replace(/^https?:\/\//, '');
+      }
+    });
+  }
+
   function pingOnce(url){
     return new Promise(function(resolve){
       var start = performance.now();
@@ -2397,6 +2419,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   document.addEventListener('DOMContentLoaded', function(){
+    hydrateEndpointLabels();
     document.querySelectorAll('.ep-ping-btn').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
@@ -2407,7 +2430,7 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         var item = btn.closest('.ep-item');
-        var url = item ? item.dataset.url : '';
+        var url = item ? endpointUrl(item.dataset.url) : '';
         if(!url) return;
         function flash(){ btn.classList.add('is-copied'); setTimeout(function(){ btn.classList.remove('is-copied'); }, 1200); }
         if(navigator.clipboard && navigator.clipboard.writeText){
@@ -2419,4 +2442,3 @@ document.addEventListener('DOMContentLoaded', function() {
     if(allBtn) allBtn.addEventListener('click', testAll);
   });
 })();
-
