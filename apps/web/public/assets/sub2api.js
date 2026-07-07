@@ -12,6 +12,7 @@
     'mexion_auth_persist'
   ];
   var refreshPromise = null;
+  var compliancePromise = null;
   var listeners = [];
 
   function safeGet(store, key) {
@@ -405,7 +406,43 @@
     });
     return refreshPromise;
   }
-  function fetchJson(prep, retried) {
+  function acceptAdminCompliance() {
+    if (compliancePromise) return compliancePromise;
+    compliancePromise = fetch(apiUrl('/admin/compliance'), {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: headers(false)
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var json = text ? JSON.parse(text) : null;
+        if (!res.ok) throw new Error((json && json.message) || res.statusText || 'Compliance status failed');
+        return unwrap(json);
+      });
+    }).then(function (status) {
+      status = status || {};
+      if (status.required === false) return status;
+      var lang = getLocale();
+      var phrase = /^zh/i.test(lang) ? status.ack_phrase_zh : status.ack_phrase_en;
+      phrase = phrase || status.ack_phrase_zh || status.ack_phrase_en;
+      if (!phrase) throw new Error('Compliance acknowledgement phrase missing');
+      return fetch(apiUrl('/admin/compliance/accept'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: headers(false),
+        body: JSON.stringify({ phrase: phrase, language: /^zh/i.test(lang) ? 'zh' : 'en' })
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          var json = text ? JSON.parse(text) : null;
+          if (!res.ok) throw new Error((json && json.message) || res.statusText || 'Compliance accept failed');
+          return unwrap(json);
+        });
+      });
+    }).finally(function () {
+      compliancePromise = null;
+    });
+    return compliancePromise;
+  }
+  function fetchJson(prep, retried, complianceRetried) {
     var path = prep.path;
     if (prep.method === 'GET') path = mergeQuery(path, { timezone: timezone() });
     var init = {
@@ -418,7 +455,7 @@
     return fetch(apiUrl(path), init).then(function (res) {
       if (res.status === 204) return null;
       if (res.status === 401 && !prep.publicRequest && !retried) {
-        return refreshToken().then(function () { return fetchJson(prep, true); }).catch(function (err) {
+        return refreshToken().then(function () { return fetchJson(prep, true, complianceRetried); }).catch(function (err) {
           clearAuth();
           if (!prep.noRedirect && !/\/sign-in\/?$/.test(location.pathname)) location.replace('/sign-in/');
           throw err;
@@ -434,6 +471,9 @@
           }
         }
         if (!res.ok) {
+          if (res.status === 423 && json && json.code === 'ADMIN_COMPLIANCE_ACK_REQUIRED' && !prep.publicRequest && !complianceRetried) {
+            return acceptAdminCompliance().then(function () { return fetchJson(prep, retried, true); });
+          }
           var err = new Error((json && (json.message || json.detail || json.error)) || res.statusText || ('HTTP ' + res.status));
           err.status = res.status;
           err.data = json;
@@ -448,7 +488,7 @@
   function request(method, path, body, opts) {
     var prep = compat(method, path, body);
     if (opts && opts.signal) prep.signal = opts.signal;
-    return fetchJson(prep, false);
+    return fetchJson(prep, false, false);
   }
 
   var http = {
