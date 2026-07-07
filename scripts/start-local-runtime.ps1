@@ -165,6 +165,39 @@ where email = '$emailSql' and deleted_at is null;
   & $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -c $sql | Write-Host
 }
 
+function Ensure-AdminCompliance {
+  $psql = Join-Path $PgRoot 'bin\psql.exe'
+  $emailSql = $AdminEmail.Replace("'", "''")
+  $env:PGPASSWORD = $DatabasePassword
+  $sql = @"
+with admin_user as (
+  select id
+  from users
+  where email = '$emailSql' and role = 'admin' and deleted_at is null
+  order by id
+  limit 1
+),
+ack as (
+  select
+    'admin_compliance_acknowledgement:' || id::text as key,
+    jsonb_build_object(
+      'version', 'v2026.06.10',
+      'document_zh', 'docs/legal/admin-compliance.zh.md',
+      'document_en', 'docs/legal/admin-compliance.en.md',
+      'admin_user_id', id,
+      'ip_address', '127.0.0.1',
+      'user_agent', 'Mexion local runtime bootstrap',
+      'accepted_at', now()
+    )::text as value
+  from admin_user
+)
+insert into settings (key, value, updated_at)
+select key, value, now() from ack
+on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at;
+"@
+  & $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -c $sql | Write-Host
+}
+
 function Start-Sub2Api {
   if (Test-PortListening $ApiPort) {
     Write-Host "sub2api already listening on 127.0.0.1:$ApiPort"
@@ -207,6 +240,7 @@ Start-Postgres
 Ensure-Database
 Start-Redis
 Ensure-AdminUser
+Ensure-AdminCompliance
 Start-Sub2Api
 Start-Web
 
