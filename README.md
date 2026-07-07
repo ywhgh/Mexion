@@ -1,117 +1,73 @@
 # Mexion
 
-Mexion 是本地优先的 AI API 中转站与管理控制台。当前版本包含：
+Mexion 现在只作为 **sub2api 的 HTML/CSS 皮肤层**：前端静态页面位于 `apps/web/public`，所有业务数据、鉴权、网关、管理员接口均来自 sub2api。
 
-- Vanilla HTML/CSS/JS MPA 前端，由 Hono 在生产模式单端口托管。
-- Hono + SQLite/better-sqlite3 后端主程序。
-- 多用户注册/登录、用户 API Key、渠道/分组/模型别名、计费/订阅配额、请求日志。
-- OpenAI Chat/Responses/Embeddings、Anthropic Messages、Gemini、Codex CLI 兼容路由。
-- SSRF 防护、敏感日志脱敏、请求 body 限制、渠道密钥 AES-256-GCM 加密存储。
+## 架构
 
-## 技术栈
-
-| 层 | 选型 |
+| 层 | 当前职责 |
 |---|---|
-| 包管理 | pnpm workspace |
 | 前端 | Vanilla HTML/CSS/JS MPA + Vite |
-| 后端 | Hono + `@hono/node-server` |
-| 数据 | SQLite + better-sqlite3 + Drizzle schema |
-| 鉴权 | 管理员 JWT cookie + 用户 session cookie + 用户 API key |
-| 安全 | SafeHTTPClient、AES-256-GCM、body limit、redaction |
-| 测试 | Vitest + v8 coverage |
+| API 数据层 | 外部 sub2api Go 后端，默认 `http://localhost:8080` |
+| 鉴权 | sub2api `Authorization: Bearer {auth_token}` |
+| API 基础路径 | `/api/v1` |
+| 网关路径 | `/v1` 代理到 sub2api |
 
-## 环境变量
-
-```bash
-# 必需：32 字节 hex。生成方式：
-# node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-MEXION_SECRET_KEY=<32-byte-hex>
-
-# 推荐：管理员 JWT 签名密钥
-MEXION_JWT_SECRET=<long-random-string>
-
-# 可选
-PORT=8787
-HOST=127.0.0.1
-MEXION_DB_PATH=./data/mexion.db
-```
-
-开发模式未设置 `MEXION_SECRET_KEY` 时会使用固定 dev key 并打印警告；生产环境应显式设置。
+旧的 Mexion Hono/SQLite 后端不再参与启动、构建、测试或代理链路。
 
 ## 启动
 
-```bash
+先启动 sub2api 后端，源码默认位置：
+
+```powershell
+cd D:\midstation-relay-analysis\worktrees\A\sub2api\backend
+go run ./cmd/server
+```
+
+也可以使用仓库脚本检查配置并启动：
+
+```powershell
+cd D:\Mexion
+pnpm sub2api:dev
+```
+
+再启动 Mexion 皮肤层：
+
+```powershell
 cd D:\Mexion
 pnpm install
 pnpm dev
 ```
 
-- API: `http://127.0.0.1:8787`
-- Web dev: `http://127.0.0.1:5173`
+访问：
 
-生产单命令：
+- Mexion UI: `http://127.0.0.1:5173`
+- sub2api: `http://127.0.0.1:8080`
 
-```bash
-cd D:\Mexion
-pnpm build
-pnpm start
-```
+Vite 已把 `/api` 和 `/v1` 代理到 `localhost:8080`。
 
-生产单端口：`http://127.0.0.1:8787`。
+## 主要页面映射
 
-## 核心 API
-
-### 用户
-
-- `POST /api/user/register`
-- `POST /api/user/login`
-- `POST /api/user/logout`
-- `GET /api/user/self`
-- `POST /api/user/checkin`
-- `GET/PATCH /api/user/setting`
-- `GET/POST/PATCH/DELETE /api/user/keys`
-- `GET /api/user/billing`
-- `GET /api/user/usage`
-- `GET/POST /api/user/subscriptions`
-
-### 管理
-
-- `GET/POST/PATCH/DELETE /api/admin/channels`
-- `GET/POST/PATCH/DELETE /api/admin/groups`
-- `GET/POST/DELETE /api/admin/model-aliases`
-- `GET /api/stats`
-- `GET /api/stats/overview`
-
-### AI 网关
-
-- `POST /v1/chat/completions`
-- `POST /v1/responses`
-- `POST /v1/messages`
-- `POST /v1/embeddings`
-- `GET /v1/models`
-- `POST /v1beta/models/:model/:action`
-- `POST /backend-api/codex/responses`
-- `GET /healthz`
-- `GET /version`
+| Mexion 页面 | sub2api 功能 |
+|---|---|
+| `/sign-in/` | `/api/v1/auth/*` 登录注册 |
+| `/dashboard/` | 用户 dashboard stats/trend/usage |
+| `/api-keys/`, `/tokens/`, `/keys/` | `/api/v1/keys` |
+| `/logs/`, `/usage/` | `/api/v1/usage` |
+| `/billing/`, `/redeem/` | 余额、兑换码、订阅进度 |
+| `/models/`, `/available-channels/` | 可用分组、可用渠道 |
+| `/status/`, `/monitor/` | channel monitors |
+| `/channels/` | `/api/v1/admin/channels` + channel monitors |
+| `/groups/` | `/api/v1/admin/groups` |
+| `/model-aliases/`, `/admin/accounts/` | `/api/v1/admin/accounts` |
+| `/admin-users/`, `/admin/users/` | `/api/v1/admin/users` |
 
 ## 验收命令
 
-```bash
-pnpm install
+```powershell
 pnpm typecheck
 pnpm lint
 pnpm test
 pnpm build
 ```
 
-当前覆盖率：Statements 70.66%，Lines 76.82%，Functions 65.57%，Branches 56.11%。
-
-## 已知限制
-
-- 订阅购买是演示版即时激活，未接入真实支付网关。
-- Gateway 流式响应当前以非流式聚合转发为主；接口形态兼容主流 SDK/CLI，后续可增强 token 级流式统计。
-- 未内置真实 provider 凭据；需要管理员创建渠道并配置 API key。
-
-## License
-
-MIT
+`8080` 必须有 sub2api 后端监听，页面中的真实数据和写操作才会可用。
