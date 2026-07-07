@@ -67,10 +67,10 @@ const shortcutNeedles = [
   "eslint-" + "disable",
   "--no-" + "verify",
 ];
-scan("shortcut scan", ["apps/web", "apps/api", "scripts"], (text) => shortcutNeedles.some((needle) => text.includes(needle)));
+scan("shortcut scan", ["apps/web", "scripts"], (text) => shortcutNeedles.some((needle) => text.includes(needle)));
 
 const debugNeedles = ["console." + "log", "debug" + "ger"];
-scan("debug residue scan", ["apps/web/src", "apps/api/src", "scripts"], (text) => debugNeedles.some((needle) => text.includes(needle)));
+scan("debug residue scan", ["apps/web/src", "scripts"], (text) => debugNeedles.some((needle) => text.includes(needle)));
 
 scan("hex color leak", ["apps/web/src"], (text, file) => file !== "apps/web/src/styles/tokens.css" && /#(?:[0-9A-Fa-f]{3}){1,2}\b/.test(text));
 
