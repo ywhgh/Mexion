@@ -47,15 +47,66 @@
     return String(value || '').split(/[\n,]+/).map(function(item) { return item.trim(); }).filter(Boolean);
   }
 
+  function uniqueList(list) {
+    var seen = Object.create(null);
+    return (Array.isArray(list) ? list : []).map(function(item) {
+      return String(item == null ? '' : item).trim();
+    }).filter(function(item) {
+      if (!item || seen[item]) return false;
+      seen[item] = true;
+      return true;
+    });
+  }
+  function normalizeModelValue(item) {
+    if (typeof item === 'string') return item;
+    if (!item || typeof item !== 'object') return '';
+    return item.id || item.name || item.model || item.model_name || item.value || '';
+  }
+  function normalizeModelArray(value) {
+    if (Array.isArray(value)) return uniqueList(value.map(normalizeModelValue));
+    if (typeof value === 'string') return parseModelList(value);
+    return [];
+  }
+  function readConfig(value) {
+    if (!value) return {};
+    if (typeof value === 'string') {
+      try { return JSON.parse(value) || {}; } catch (e) { return {}; }
+    }
+    return typeof value === 'object' ? value : {};
+  }
+  function pricingEntries(channel) {
+    if (!channel) return [];
+    if (Array.isArray(channel.model_pricing)) return channel.model_pricing;
+    if (Array.isArray(channel.modelPricing)) return channel.modelPricing;
+    return [];
+  }
+  function modelsFromPricing(pricing) {
+    var out = [];
+    (Array.isArray(pricing) ? pricing : []).forEach(function(item) {
+      if (!item) return;
+      if (Array.isArray(item.models)) out = out.concat(item.models);
+      else out.push(item.model || item.model_name || item.name || '');
+    });
+    return uniqueList(out);
+  }
+  function normalizeProvider(value) {
+    if (value === 1 || value === '1' || value === 'openai') return 'openai';
+    if (value === 3 || value === '3' || value === 'azure') return 'azure';
+    if (value === 36 || value === '36' || value === 'anthropic') return 'anthropic';
+    if (value === 40 || value === '40' || value === 'gemini' || value === 'google') return 'gemini';
+    if (value === 'custom' || value === 0 || value === '0') return 'custom';
+    return value ? String(value) : 'custom';
+  }
+  function providerPlatform(provider) {
+    provider = normalizeProvider(provider);
+    if (provider === 'custom' || provider === 'azure') return 'openai';
+    return provider;
+  }
   function providerToType(provider) {
     return { custom: 0, openai: 1, azure: 3, anthropic: 36, gemini: 40 }[provider] || 0;
   }
   function typeToProvider(value) {
-    if (value === 1 || value === 'openai') return 'openai';
-    if (value === 3 || value === 'azure') return 'azure';
-    if (value === 36 || value === 'anthropic') return 'anthropic';
-    if (value === 40 || value === 'gemini') return 'gemini';
-    return value ? String(value) : 'custom';
+    return normalizeProvider(value);
   }
   function normalizeGroup(group) {
     group = group || {};
@@ -63,17 +114,18 @@
   }
   function normalizeChannel(channel) {
     channel = channel || {};
-    var feature = channel.features_config || {};
+    var feature = readConfig(channel.features_config || channel.featuresConfig);
     var groupIds = Array.isArray(channel.group_ids) ? channel.group_ids : [];
-    var models = channel.models || channel.modelList || feature.models || [];
-    if (!Array.isArray(models) && Array.isArray(channel.model_pricing)) {
-      models = channel.model_pricing.map(function(item){ return item && (item.model || item.model_name || item.name); }).filter(Boolean);
-    }
+    var pricing = pricingEntries(channel);
+    var directModels = normalizeModelArray(channel.models || channel.modelList || feature.models);
+    var models = directModels.length ? directModels : modelsFromPricing(pricing);
+    var firstPricing = pricing[0] || {};
+    var provider = normalizeProvider(feature.provider || channel.provider || channel.platform || firstPricing.platform || channel.type);
     return {
       id: channel.id,
       name: channel.name || ('channel_' + channel.id),
-      provider: typeToProvider(channel.type != null ? channel.type : (feature.provider || channel.provider || channel.platform || channel.billing_model_source)),
-      baseUrl: channel.base_url || channel.baseUrl || feature.base_url || channel.description || '—',
+      provider: provider,
+      baseUrl: channel.base_url || channel.baseUrl || feature.base_url || feature.baseUrl || feature.endpoint || channel.endpoint || channel.description || '—',
       groupId: channel.group_id != null ? channel.group_id : (groupIds.length ? groupIds[0] : null),
       modelList: models,
       status: channel.status === 'inactive' ? 'disabled' : (channel.status || 'active'),
@@ -97,20 +149,33 @@
     var providerValue = providerEl ? providerEl.value : 'custom';
     var baseUrl = baseEl ? baseEl.value.trim() : '';
     var models = parseModelList(modelsEl ? modelsEl.value : '');
+    var platform = providerPlatform(providerValue);
+    var priority = Number(priorityEl && priorityEl.value || 0);
     var body = {
       name: nameEl ? nameEl.value.trim() : '',
       description: baseUrl,
       status: 'active',
       group_ids: groupValue ? [Number(groupValue)] : [],
       restrict_models: models.length > 0,
-      features_config: { provider: providerValue, base_url: baseUrl, models: models },
+      billing_model_source: 'upstream',
+      features_config: { provider: providerValue, platform: platform, base_url: baseUrl, models: models, priority: priority },
       type: providerToType(providerValue),
       base_url: baseUrl,
       models: models,
       group_id: groupValue ? Number(groupValue) : null,
-      priority: Number(priorityEl && priorityEl.value || 0)
+      priority: priority
     };
-    if (secretEl && secretEl.value.trim()) body.key = secretEl.value.trim();
+    if (models.length) {
+      body.model_pricing = [{
+        platform: platform,
+        models: models,
+        billing_mode: 'token'
+      }];
+    }
+    if (secretEl && secretEl.value.trim()) {
+      body.key = secretEl.value.trim();
+      body.features_config.api_key_masked = secretEl.value.trim().slice(0, 4) + '***';
+    }
     return body;
   }
   function modelText(value) {
@@ -342,8 +407,8 @@
     }
     if (button) { button.disabled = true; button.textContent = '探测中…'; }
     setFetchHint('正在请求上游模型列表…', '');
-    api('/admin/accounts/models/sync-upstream-preview', { method: 'POST', body: { platform: provider === 'custom' ? 'openai' : provider, type: 'api_key', base_url: baseUrl, api_key: apiKey } }).then(function(result) {
-      var models = result.models || [];
+    api('/admin/accounts/models/sync-upstream-preview', { method: 'POST', body: { platform: providerPlatform(provider), type: 'apikey', base_url: baseUrl, api_key: apiKey } }).then(function(result) {
+      var models = normalizeModelArray((result && (result.models || result.items)) || result || []);
       if (!models.length) {
         setFetchHint('上游返回成功，但没有发现模型', 'error');
         toast('未发现模型', 'error');
