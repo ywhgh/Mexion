@@ -10,122 +10,84 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="status.tab.title">Mexion — 服务状态</title>
+<title>Mexion — 运维监控</title>
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="preload" href="/assets/common.css" as="style">
 <link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/assets/api-keys.css">
 <script src="/assets/i18n.js"></script>
 <script src="/assets/core.js" defer></script>
 <script src="/assets/sub2api.js" defer></script>
-<link rel="stylesheet" href="/assets/status.css">
 </head>
 <body>
 <script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
-<script>/* 公开状态页:不强制登录。未登录(无 user_id 且无持久 uid cookie)→ 早加 .mexion-anon 隐藏需登录 chrome,避免 FOUC。init() 再以真实登录态校正。 */(function(){try{var s=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');var c=/(?:^|;\s*)mexion_uid=[^;]/.test(document.cookie);if(!s&&!c)document.documentElement.classList.add('mexion-anon')}catch(e){document.documentElement.classList.add('mexion-anon')}})();</script>
-
 <div class="app">
-
-<!-- ══ SIDEBAR ══ -->
   <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
-<script src="/assets/sidebar.js" defer></script>
-
-<!-- ══ MAIN ══ -->
-<main class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar__spacer"></div>
-    <div class="topbar__sep" aria-hidden="true"></div>
-    <div class="lang-toggle" role="group">
-      <button data-lang="zh" aria-pressed="true">中</button>
-      <button data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <a class="iconbtn iconbtn--labeled status-login" href="/sign-in/">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.5 3.5h-2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9 5.5L11.5 8 9 10.5M5.5 8H11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span data-i18n="status.login">登录</span>
-    </a>
-    <div class="notif-bell-wrap" style="position:relative">
-      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span data-i18n="topbar.notify.label">通知</span>
-      </button>
-    </div>
-    <div class="user-menu">
-      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
-        <span class="user__avatar" data-mexion-avatar>A</span>
-        <span class="user__name" data-mexion-user="name">—</span>
-        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      </button>
-      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
-        <div class="user-menu__head">
-          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
-          <div class="user-menu__id">
-            <div class="user-menu__name" data-mexion-user="name">—</div>
-            <div class="user-menu__email" data-mexion-user="email">—</div>
-          </div>
-        </div>
-        <div class="user-menu__list">
-          <a class="user-menu__item" href="/profile/" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>个人资料</span>
-          </a>
-          <a class="user-menu__item" href="/api-keys/" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>API 密钥</span>
-          </a>
-          <div class="user-menu__sep" role="none"></div>
-          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>退出登录</span>
-          </button>
+  <script src="/assets/sidebar.js" defer></script>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle" role="group"><button data-lang="zh" aria-pressed="true">中</button><button data-lang="en" aria-pressed="false">EN</button></div>
+      <div class="notif-bell-wrap" style="position:relative"><button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-i18n="topbar.notify.label">通知</span></button></div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel"><span class="user__avatar" data-mexion-avatar>A</span><span class="user__name" data-mexion-user="name">—</span><svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head"><div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div><div class="user-menu__id"><div class="user-menu__name" data-mexion-user="name">—</div><div class="user-menu__email" data-mexion-user="email">—</div></div></div>
+          <div class="user-menu__list"><a class="user-menu__item" href="/profile/" role="menuitem"><span>个人资料</span></a><a class="user-menu__item" href="/api-keys/" role="menuitem"><span>API 密钥</span></a><div class="user-menu__sep" role="none"></div><button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout"><span>退出登录</span></button></div>
         </div>
       </div>
+    </header>
+
+    <div class="page-head fade-in fade-in--1">
+      <div class="page-head__left">
+        <nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">运维监控</span></nav>
+        <div class="page-head__title">运维监控</div>
+        <div class="page-head__sub" id="resourceSubtitle">读取 sub2api 运维快照</div>
+      </div>
+      <div class="page-head__actions">
+        <button class="btn-secondary" id="resourceRefresh" type="button">刷新</button>
+        <button class="btn-primary" id="resourceCreate" type="button" hidden>新建</button>
+      </div>
     </div>
-  </header>
 
-  <!-- PAGE HEAD -->
-  <div class="page-head fade-in fade-in--1">
-    <div>
-      <nav class="page-head__crumb">
-        <a href="/dashboard/" data-i18n="status.crumb.overview">概览</a>
-        <span class="sep">/</span>
-        <span style="color:var(--ink)" data-i18n="status.crumb.status">服务状态</span>
-      </nav>
-      <h1 class="page-head__title" data-i18n-html="status.page.title">服务 <em>状态</em></h1>
-      <p class="page-head__sub" data-i18n-html="status.page.sub">实时按服务商展示可用性 · 公开接口 <code>/api/v1/channel-monitors</code></p>
-    </div>
-    <div class="page-head__actions">
-      <span class="st-updated" id="stUpdated" aria-live="polite"></span>
-    </div>
-  </div>
+    <section class="card fade-in fade-in--2">
+      <div class="card__head"><span class="card__title">§ 运维监控</span><span class="card__title-meta" id="resourceMeta">sub2api</span></div>
+      <div style="padding:16px 18px;border-top:1px solid var(--border);display:grid;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input id="resourceSearch" class="form-input" placeholder="搜索当前数据…" style="max-width:360px">
+          <span class="pill" id="resourceCount"><span class="pill__dot"></span>—</span>
+        </div>
+        <div id="resourceStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border)"></div>
+        <div id="resourceList" style="overflow:auto;border:1px solid var(--border)"></div>
+      </div>
+    </section>
 
-  <!-- ANNOUNCEMENT / MAINTENANCE -->
-  <div id="statusAnnounce" class="fade-in fade-in--2" aria-live="polite"></div>
-
-  <!-- OVERALL STATUS HERO -->
-  <div id="statusHero" class="fade-in fade-in--2" aria-live="polite"></div>
-
-  <!-- LEGEND + WINDOW SELECTOR -->
-  <div class="st-legend fade-in fade-in--3" id="stLegend">
-    <span class="st-leg"><span class="st-dot st-dot--operational"></span><span data-i18n="status.legend.operational">正常</span></span>
-    <span class="st-leg"><span class="st-dot st-dot--degraded"></span><span data-i18n="status.legend.degraded">劣化</span></span>
-    <span class="st-leg"><span class="st-dot st-dot--down"></span><span data-i18n="status.legend.down">不可用</span></span>
-    <span class="st-leg-hint" data-i18n="status.legend.hint">劣化 = 延迟偏高 或 错误率偏高</span>
-    <span class="st-winsel" id="stWindowSel" role="group" aria-label="可用率时间窗"></span>
-  </div>
-
-  <!-- STATUS STREAM -->
-  <div id="statusStream" class="st-stream fade-in fade-in--4" aria-busy="true"></div>
-
-</main>
+    <section class="card fade-in fade-in--3" style="margin-top:18px">
+      <div class="card__head"><span class="card__title">§ 详情</span><span class="card__title-meta" id="detailMeta">选择一行查看 JSON</span></div>
+      <pre id="resourceDetail" style="margin:0;padding:18px;overflow:auto;max-height:420px;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:12px;line-height:1.55;background:var(--surface-2);color:var(--ink)">等待数据…</pre>
+      <div style="display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <button class="btn-secondary" id="resourceCopy" type="button">复制 JSON</button>
+        <button class="btn-secondary" id="resourceEdit" type="button" hidden>编辑 JSON</button>
+        <button class="btn-secondary" id="resourceRun" type="button" hidden>执行测试</button>
+        <button class="btn-primary btn-primary--danger" id="resourceDelete" type="button" hidden>删除</button>
+      </div>
+    </section>
+  </main>
 </div>
 
+<div class="modal-bg" id="resourceModal" hidden>
+  <div class="modal" style="width:min(720px,calc(100vw - 24px))">
+    <div class="modal__head"><div><div class="modal__title" id="resourceModalTitle">编辑</div><div class="modal__sub" id="resourceModalSub">直接编辑 sub2api 请求 JSON</div></div><button class="modal__close" id="resourceModalClose" type="button">×</button></div>
+    <div class="modal__body"><textarea class="form-input" id="resourceJson" rows="14" style="font-family:var(--f-mono);line-height:1.55;resize:vertical"></textarea></div>
+    <div class="modal__foot"><button class="btn-secondary" id="resourceModalCancel" type="button">取消</button><button class="btn-primary" id="resourceModalConfirm" type="button">提交</button></div>
+  </div>
+</div>
+
+<script>window.MexionResourceConfig={"dir":"admin/ops","title":"运维监控","endpoint":"/admin/ops/dashboard/snapshot-v2","objectMode":true,"create":false,"update":false,"delete":false,"subtitle":"读取 sub2api 运维快照"};</script>
+<script src="app.js" defer></script>
 <script src="/assets/user-menu.js" defer></script>
 <script src="/assets/notification.js" defer></script>
 <script src="/assets/prefetch.js" defer></script>
-<script src="/assets/status.js" defer></script>
 </body>
 </html>
-
-
-

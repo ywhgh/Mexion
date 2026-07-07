@@ -10,276 +10,84 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="subscription.tab.title">Mexion — 订阅套餐</title>
+<title>Mexion — 订阅管理</title>
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="preload" href="/assets/common.css" as="style">
 <link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/assets/api-keys.css">
 <script src="/assets/i18n.js"></script>
 <script src="/assets/core.js" defer></script>
 <script src="/assets/sub2api.js" defer></script>
-<link rel="preload" href="/assets/notification.js" as="script">
-<link rel="preload" href="/assets/sidebar.js" as="script">
-<link rel="stylesheet" href="/assets/subscription.css">
 </head>
 <body>
 <script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
-
 <div class="app">
-
-<!-- ── SIDEBAR ── -->
-<aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
-
-<!-- ── MAIN ── -->
-<main class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar__spacer"></div>
-    <div class="topbar__sep"></div>
-    <div class="lang-toggle">
-      <button data-lang="zh" aria-pressed="true">中</button>
-      <button data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="notif-bell-wrap" style="position:relative">
-      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span data-i18n="topbar.notify.label">通知</span>
-      </button>
-    </div>
-    <div class="user-menu">
-      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
-        <span class="user__avatar" data-mexion-avatar>A</span>
-        <span class="user__name" data-mexion-user="name">--</span>
-        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
-        <div class="user-menu__head">
-          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
-          <div class="user-menu__id">
-            <div class="user-menu__name" data-mexion-user="name">--</div>
-            <div class="umh__mail" data-mexion-user="email">--</div>
-          </div>
-        </div>
-        <div class="user-menu__list">
-          <a class="user-menu__item" href="/profile/" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>个人资料</span>
-          </a>
-          <a class="user-menu__item" href="/api-keys/" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>API 密钥</span>
-          </a>
-          <div class="user-menu__sep" role="none"></div>
-          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>退出登录</span>
-          </button>
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+  <script src="/assets/sidebar.js" defer></script>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle" role="group"><button data-lang="zh" aria-pressed="true">中</button><button data-lang="en" aria-pressed="false">EN</button></div>
+      <div class="notif-bell-wrap" style="position:relative"><button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-i18n="topbar.notify.label">通知</span></button></div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel"><span class="user__avatar" data-mexion-avatar>A</span><span class="user__name" data-mexion-user="name">—</span><svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head"><div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div><div class="user-menu__id"><div class="user-menu__name" data-mexion-user="name">—</div><div class="user-menu__email" data-mexion-user="email">—</div></div></div>
+          <div class="user-menu__list"><a class="user-menu__item" href="/profile/" role="menuitem"><span>个人资料</span></a><a class="user-menu__item" href="/api-keys/" role="menuitem"><span>API 密钥</span></a><div class="user-menu__sep" role="none"></div><button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout"><span>退出登录</span></button></div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- HERO -->
-  <section class="sub-hero fade-in fade-in--1">
-    <div class="sub-hero__crumb">
-      <a href="/dashboard/" data-i18n="subscription.crumb.overview">概览</a>
-      <span class="sep">/</span>
-      <span style="color:var(--ink)" data-i18n="subscription.crumb.plans">订阅套餐</span>
-    </div>
-    <div class="sub-hero__row">
-      <div>
-        <h1 data-i18n-html="subscription.hero.title">订阅 <em>套餐</em></h1>
-        <p class="sub-hero__sub" data-i18n-html="subscription.hero.sub">按日、按周、按月或一次性充值订阅模型配额。所有套餐均与你的 API 密钥直接绑定，无需切换。订阅即生效，<strong>同一密钥可绑定多个套餐</strong>。</p>
+    <div class="page-head fade-in fade-in--1">
+      <div class="page-head__left">
+        <nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">订阅管理</span></nav>
+        <div class="page-head__title">订阅<em>管理</em></div>
+        <div class="page-head__sub" id="resourceSubtitle">加载 sub2api 实时数据…</div>
       </div>
-      <div class="sub-hero__quick" id="heroQuick">
-        <span class="sub-hero__quick-label" data-i18n="subscription.hero.quick.label">本月已订阅</span>
-        <div class="sub-hero__quick-stats">
-          <span><b id="heroSubCount">0</b> <span data-i18n="subscription.hero.quick.plans">个套餐</span></span>
+      <div class="page-head__actions">
+        <button class="btn-secondary" id="resourceRefresh" type="button">刷新</button>
+        <button class="btn-primary" id="resourceCreate" type="button" hidden>新建</button>
+      </div>
+    </div>
+
+    <section class="card fade-in fade-in--2">
+      <div class="card__head"><span class="card__title">§ 订阅管理</span><span class="card__title-meta" id="resourceMeta">sub2api</span></div>
+      <div style="padding:16px 18px;border-top:1px solid var(--border);display:grid;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input id="resourceSearch" class="form-input" placeholder="搜索当前数据…" style="max-width:360px">
+          <span class="pill" id="resourceCount"><span class="pill__dot"></span>—</span>
         </div>
+        <div id="resourceStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border)"></div>
+        <div id="resourceList" style="overflow:auto;border:1px solid var(--border)"></div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- TAB STRIP -->
-  <div class="tabstrip" id="tabstrip">
-    <button class="tabstrip__btn" id="tab-my-btn" aria-selected="true" data-tab="my">
-      <span data-i18n="subscription.tab.my">我的订阅</span>
-      <span class="tabstrip__btn-count"><span id="tabMyCount">0</span></span>
-    </button>
-    <button class="tabstrip__btn" id="tab-browse-btn" aria-selected="false" data-tab="browse">
-      <span data-i18n="subscription.tab.browse">浏览全部</span>
-      <span class="tabstrip__btn-count"><span id="tabBrowseCount">--</span></span>
-    </button>
-    <div class="tabstrip__right" data-i18n="subscription.tab.right">购买后即可享受模型权益 · 全部按 UTC+8 重置</div>
-    <span class="tabstrip__indicator" id="tabIndicator" aria-hidden="true"></span>
-  </div>
-
-  <!-- TAB 1: 我的订阅 -->
-  <section id="panel-my" class="fade-in fade-in--2">
-    <div id="mySubsBody"><div class="skel-block skel" style="height:140px"></div></div>
-  </section>
-
-  <!-- TAB 2: 浏览全部 -->
-  <section id="panel-browse" hidden>
-
-    <!-- CONTROL BAR -->
-    <div class="ctrl-bar fade-in fade-in--1">
-      <!-- Series chips -->
-      <div class="ctrl-bar__group">
-        <span class="ctrl-label" data-i18n="subscription.ctrl.series">系列</span>
-        <div class="ctrl-chips is-init" id="seriesChips">
-          <span class="ctrl-chip-pill" aria-hidden="true"></span>
-          <span class="ctrl-chips__list" id="seriesChipsList">
-            <button class="ctrl-chip" data-series="all" aria-pressed="true"><span data-i18n="subscription.ctrl.all">全部</span> <span class="ctrl-chip__count">—</span></button>
-          </span>
-        </div>
+    <section class="card fade-in fade-in--3" style="margin-top:18px">
+      <div class="card__head"><span class="card__title">§ 详情</span><span class="card__title-meta" id="detailMeta">选择一行查看 JSON</span></div>
+      <pre id="resourceDetail" style="margin:0;padding:18px;overflow:auto;max-height:420px;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:12px;line-height:1.55;background:var(--surface-2);color:var(--ink)">等待数据…</pre>
+      <div style="display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <button class="btn-secondary" id="resourceCopy" type="button">复制 JSON</button>
+        <button class="btn-secondary" id="resourceEdit" type="button" hidden>编辑 JSON</button>
+        <button class="btn-secondary" id="resourceRun" type="button" hidden>执行测试</button>
+        <button class="btn-primary btn-primary--danger" id="resourceDelete" type="button" >删除</button>
       </div>
-      <div class="ctrl-bar__sep"></div>
-      <!-- Billing chips -->
-      <div class="ctrl-bar__group">
-        <span class="ctrl-label" data-i18n="subscription.ctrl.billing">计费</span>
-        <div class="ctrl-chips is-init" id="billingChips">
-          <span class="ctrl-chip-pill" aria-hidden="true"></span>
-          <span class="ctrl-chips__list" id="billingChipsList">
-            <button class="ctrl-chip" data-billing="all" aria-pressed="true"><span data-i18n="subscription.ctrl.allbilling">全部计费</span> <span class="ctrl-chip__count">—</span></button>
-          </span>
-        </div>
-      </div>
-      <!-- View toggle -->
-      <div class="view-toggle" id="viewToggle">
-        <button data-view="cards" aria-pressed="true" data-i18n-title="subscription.view.cards.title" title="卡片视图">
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.2" y="1.2" width="3.8" height="3.8" rx=".5" stroke="currentColor" stroke-width="1.1"/><rect x="6" y="1.2" width="3.8" height="3.8" rx=".5" stroke="currentColor" stroke-width="1.1"/><rect x="1.2" y="6" width="3.8" height="3.8" rx=".5" stroke="currentColor" stroke-width="1.1"/><rect x="6" y="6" width="3.8" height="3.8" rx=".5" stroke="currentColor" stroke-width="1.1"/></svg>
-          <span data-i18n="subscription.view.cards">卡片</span>
-        </button>
-        <button data-view="ladder" aria-pressed="false" data-i18n-title="subscription.view.ladder.title" title="阶梯对比视图">
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 9.5h2V7.5h0M3 7.5V5.5h2V3.5h0M5 3.5V2.5h2v3h0M7 5.5v3h2v-2h0M9 6.5h.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span data-i18n="subscription.view.ladder">阶梯</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="ctrl-result">
-      <span><span data-i18n="subscription.result.show">显示</span> <b id="resultCount">—</b> <span data-i18n="subscription.result.plans">个套餐</span></span>
-      <span>·</span>
-      <span><span data-i18n="subscription.result.range">价格区间</span> <b id="resultRange">—</b></span>
-      <span>·</span>
-      <span class="ctrl-result__hint" data-i18n="subscription.result.hint">订阅即生效 · 同一密钥可绑定多个套餐</span>
-    </div>
-
-    <!-- Result body: cards or ladder rendered here -->
-    <div id="browseBody"><div class="skel-row"><div class="skel-card"></div><div class="skel-card"></div><div class="skel-card"></div></div></div>
-
-    <!-- Footer note -->
-    <div class="note-row" style="grid-template-columns:1fr 1fr">
-      <div class="note-row__cell">
-        <div class="note-row__label" data-i18n="subscription.note.billing.label">计费</div>
-        <div class="note-row__title" data-i18n="subscription.note.billing.title">按量计费 · 余额扣除</div>
-        <div class="note-row__desc" data-i18n="subscription.note.billing.desc">调用按模型路由匹配最优套餐，费用从余额实时扣除。同一密钥可绑定多个套餐，配额叠加使用。</div>
-      </div>
-      <div class="note-row__cell">
-        <div class="note-row__label" data-i18n="subscription.note.pay.label">支付</div>
-        <div class="note-row__title" data-i18n="subscription.note.pay.title">即时到账 · 即刻生效</div>
-        <div class="note-row__desc" data-i18n-html="subscription.note.pay.desc">支持钱包余额与兑换码结算，确认后配额立即注入对应密钥，无需等待。<a href="/billing/">查看账单</a></div>
-      </div>
-    </div>
-
-  </section>
-
-</main>
+    </section>
+  </main>
 </div>
 
-<!-- ── PAYMENT MODAL ───────────────────────────── -->
-<div class="pay-mask" id="payMask" role="dialog" aria-modal="true" aria-labelledby="payTitle">
-  <div class="pay-modal" id="payModal">
-    <button class="pay-modal__close" id="payClose" type="button" aria-label="Close">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    </button>
-
-    <div class="pay-modal__scroll">
-    <div class="pay-modal__head">
-      <span class="pay-modal__eyebrow" data-i18n="subscription.pay.eyebrow">确认订阅</span>
-      <h2 class="pay-modal__title" id="payTitle" data-i18n="subscription.pay.title">下单订阅</h2>
-      <p class="pay-modal__sub" data-i18n="subscription.pay.sub">支付完成后，配额立即注入对应密钥，无需手动激活。</p>
-    </div>
-
-    <div class="pay-modal__body">
-      <div class="pay-summary">
-        <div>
-          <div class="pay-summary__name" id="payPlanName">—</div>
-          <div class="pay-summary__meta" id="payPlanMeta">—</div>
-        </div>
-        <div class="pay-summary__amt" id="payAmount">$0.00</div>
-      </div>
-
-      <div class="pay-methods">
-        <div class="pay-methods__label" data-i18n="subscription.pay.method">支付方式</div>
-
-        <label class="pay-method" data-method="wechat">
-          <input type="radio" name="payMethod" value="wechat" checked>
-          <span class="pay-method__radio"></span>
-          <span class="pay-method__icon pay-method__icon--wechat">微</span>
-          <span class="pay-method__info">
-            <span class="pay-method__name" data-i18n="subscription.pay.wechat.name">微信支付</span>
-            <span class="pay-method__meta" data-i18n="subscription.pay.wechat.meta">扫码完成 · 秒级到账</span>
-          </span>
-        </label>
-
-        <label class="pay-method" data-method="alipay">
-          <input type="radio" name="payMethod" value="alipay">
-          <span class="pay-method__radio"></span>
-          <span class="pay-method__icon pay-method__icon--alipay">支</span>
-          <span class="pay-method__info">
-            <span class="pay-method__name" data-i18n="subscription.pay.alipay.name">支付宝</span>
-            <span class="pay-method__meta" data-i18n="subscription.pay.alipay.meta">扫码或免密支付</span>
-          </span>
-        </label>
-
-        <label class="pay-method" data-method="wallet" id="payMethodWallet">
-          <input type="radio" name="payMethod" value="wallet">
-          <span class="pay-method__radio"></span>
-          <span class="pay-method__icon pay-method__icon--wallet">$</span>
-          <span class="pay-method__info">
-            <span class="pay-method__name" data-i18n="subscription.pay.wallet.name">钱包余额</span>
-            <span class="pay-method__meta" id="walletBalanceLabel">$—</span>
-          </span>
-        </label>
-      </div>
-
-      <div class="pay-modal__terms">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;margin-top:1px;color:var(--mute-2)"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5v3.5M7 9.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span data-i18n-html="subscription.pay.terms">支付即视为同意 <b>《服务协议》</b>，费用从钱包余额扣除，配额即时生效。</span>
-      </div>
-    </div>
-
-    <div class="pay-modal__foot" id="payFoot">
-      <button class="pay-btn-cancel" id="payCancel" type="button" data-i18n="subscription.pay.cancel">取消</button>
-      <button class="pay-btn-confirm" id="payConfirmBtn" type="button">
-        <span class="pay-spinner"></span>
-        <span class="pay-label"><span data-i18n="subscription.pay.confirm">确认支付</span> <span id="payConfirmAmt">$0.00</span></span>
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5h8M6 2l3.5 3.5L6 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
-    </div><!-- /pay-modal__scroll -->
-
-    <!-- Success state overlay -->
-    <div class="pay-success">
-      <div class="pay-confetti" id="payConfetti" aria-hidden="true"></div>
-      <div class="pay-success__ring">
-        <svg class="pay-success__check" viewBox="0 0 30 30" fill="none"><path d="M7 15.5l5 5L23 9.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="pay-success__title" data-i18n="subscription.pay.success.title">订阅成功</div>
-      <p class="pay-success__sub" data-i18n="subscription.pay.success.sub">配额已注入你的 API 密钥，调用立即生效。</p>
-      <div class="pay-success__meta" id="paySuccessId">#—</div>
-      <button class="pay-success__close" id="paySuccessClose" type="button" data-i18n="subscription.pay.success.cta">完成</button>
-    </div>
+<div class="modal-bg" id="resourceModal" hidden>
+  <div class="modal" style="width:min(720px,calc(100vw - 24px))">
+    <div class="modal__head"><div><div class="modal__title" id="resourceModalTitle">编辑</div><div class="modal__sub" id="resourceModalSub">直接编辑 sub2api 请求 JSON</div></div><button class="modal__close" id="resourceModalClose" type="button">×</button></div>
+    <div class="modal__body"><textarea class="form-input" id="resourceJson" rows="14" style="font-family:var(--f-mono);line-height:1.55;resize:vertical"></textarea></div>
+    <div class="modal__foot"><button class="btn-secondary" id="resourceModalCancel" type="button">取消</button><button class="btn-primary" id="resourceModalConfirm" type="button">提交</button></div>
   </div>
 </div>
 
-<script src="/assets/sidebar.js" defer></script>
+<script>window.MexionResourceConfig={"dir":"admin/subscriptions","title":"订阅管理","endpoint":"/admin/subscriptions?page=1&page_size=100","columns":[{"key":"id","label":"ID"},{"key":"user_id","label":"用户"},{"key":"group_id","label":"分组"},{"key":"status","label":"状态"},{"key":"expires_at","label":"到期"}],"create":false,"update":false,"arrayKeys":["items","subscriptions"]};</script>
+<script src="app.js" defer></script>
 <script src="/assets/user-menu.js" defer></script>
 <script src="/assets/notification.js" defer></script>
 <script src="/assets/prefetch.js" defer></script>
-<script src="/assets/subscription.js" defer></script>
 </body>
 </html>
-

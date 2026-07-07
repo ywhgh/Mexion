@@ -10,541 +10,84 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="profile.tab.title">Mexion — 个人资料</title>
+<title>Mexion — 风控中心</title>
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="preload" href="/assets/common.css" as="style">
 <link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/assets/api-keys.css">
 <script src="/assets/i18n.js"></script>
 <script src="/assets/core.js" defer></script>
 <script src="/assets/sub2api.js" defer></script>
-<link rel="stylesheet" href="/assets/profile.css">
 </head>
 <body>
 <script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
 <div class="app">
-
-<!-- ── SIDEBAR ── -->
-<aside class="side" id="mexion-sidebar">
-</aside>
-
-<!-- ── MAIN ── -->
-<main class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar__spacer"></div>
-    <div class="topbar__sep"></div>
-    <div class="lang-toggle">
-      <button data-lang="zh" aria-pressed="true">中</button>
-      <button data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="notif-bell-wrap" style="position:relative">
-      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span data-i18n="topbar.notify.label">通知</span>
-      </button>
-    </div>
-    <div class="user-menu">
-      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
-        <span class="user__avatar" data-mexion-avatar>A</span>
-        <span class="user__name" data-mexion-user="name">--</span>
-        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" data-i18n-aria="user.menu.aria" hidden>
-        <div class="user-menu__head">
-          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
-          <div class="user-menu__id">
-            <div class="user-menu__name" data-mexion-user="name">--</div>
-            <div class="user-menu__email" data-mexion-user="email">--</div>
-          </div>
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+  <script src="/assets/sidebar.js" defer></script>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle" role="group"><button data-lang="zh" aria-pressed="true">中</button><button data-lang="en" aria-pressed="false">EN</button></div>
+      <div class="notif-bell-wrap" style="position:relative"><button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-i18n="topbar.notify.label">通知</span></button></div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel"><span class="user__avatar" data-mexion-avatar>A</span><span class="user__name" data-mexion-user="name">—</span><svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head"><div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div><div class="user-menu__id"><div class="user-menu__name" data-mexion-user="name">—</div><div class="user-menu__email" data-mexion-user="email">—</div></div></div>
+          <div class="user-menu__list"><a class="user-menu__item" href="/profile/" role="menuitem"><span>个人资料</span></a><a class="user-menu__item" href="/api-keys/" role="menuitem"><span>API 密钥</span></a><div class="user-menu__sep" role="none"></div><button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout"><span>退出登录</span></button></div>
         </div>
-        <div class="user-menu__list">
-          <a class="user-menu__item" href="/profile/index.html" role="menuitem" aria-current="page">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span data-i18n="user.menu.profile">个人资料</span>
-          </a>
-          <a class="user-menu__item" href="/api-keys/index.html" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span data-i18n="user.menu.api-keys">API 密钥</span>
-          </a>
-          <div class="user-menu__sep" role="none"></div>
-          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span data-i18n="user.menu.signout">退出登录</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="p-hero fade-in fade-in--1">
-    <div class="p-hero__crumb">
-      <a href="/dashboard/index.html" data-i18n="nav.dashboard">概览</a>
-      <span class="sep">/</span>
-      <span style="color:var(--ink)" data-i18n="profile.crumb.current">个人资料</span>
-    </div>
-    <h1 data-i18n-html="profile.hero.title">会员 <em>档案</em></h1>
-    <p class="p-hero__sub" data-i18n="profile.hero.sub">你的身份证明、安全设置与日常偏好。账户余额、订阅状态与调用统计请前往对应栏目查阅。</p>
-  </section>
-
-  <!-- ── IDENTITY CARD (membership-card feel) ── -->
-  <section class="id-card fade-in fade-in--2">
-    <!-- left: identity -->
-    <div class="id-card__left">
-      <div class="id-card__avatar">
-        <!-- 头像更换原为纯前端假上传(FileReader 预览，无后端保存)，已移除；newapi 无原生头像上传，保留首字母字母头像 -->
-        <span class="id-card__avatar-letter" data-mexion-avatar>A</span>
-      </div>
-      <div class="id-card__id">
-        <div class="id-card__role"><span class="dot"></span><span data-field="role" data-i18n="profile.idcard.role">注册会员 · CHINA</span></div>
-        <div class="id-card__name" data-field="name" data-mexion-user="name">--</div>
-        <div class="id-card__handle">
-          
-          <span style="color:var(--mute-3)">·</span>
-        </div>
-        <div class="id-card__chips">
-          <span class="chip chip--tier">
-            <svg class="star" width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><path d="M5 .8 6.2 3.6 9.2 4l-2.2 2.1.5 3L5 7.8 2.5 9.1l.5-3L.8 4l3-.4L5 .8Z"/></svg>
-            <span data-i18n="profile.idcard.chip.tier">等级 0</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- right: membership plaque -->
-    <div class="id-card__right">
-      <div class="plaque-grid">
-        <div class="plaque">
-          <div class="plaque__label" data-i18n="profile.plaque.id.label">会员编号</div>
-          <div class="plaque__val" style="font-family:var(--f-mono);font-size:18px;letter-spacing:0.02em">--</div>
-          <div class="plaque__sub" data-i18n="profile.plaque.id.sub">不可修改 · 用于客服查询</div>
-        </div>
-        <div class="plaque">
-          <div class="plaque__label" data-i18n="profile.plaque.joined.label">加入时间</div>
-          <div class="plaque__val"><span id="plaque-joined-days">--</span><span class="u" data-i18n="profile.plaque.joined.unit">天</span></div>
-          <div class="plaque__sub" id="plaque-joined-date">--</div>
-        </div>
-        <div class="plaque">
-          <div class="plaque__label" data-i18n="profile.plaque.calls.label">累计调用</div>
-          <div class="plaque__val" id="plaque-calls">--</div>
-          <div class="plaque__sub" id="plaque-calls-sub">--</div>
-        </div>
-        <div class="plaque">
-          <div class="plaque__label" data-i18n="profile.plaque.concurrency.label">并发限制</div>
-          <div class="plaque__val" id="plaque-concurrency">--</div>
-          <div class="plaque__sub" data-i18n="profile.plaque.concurrency.sub">同时请求上限</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- tier progress — hidden until tier system launches -->
-    <div class="id-card__progress id-card__progress--dormant" hidden>
-      <div class="tier-rail">
-        <div class="tier-rail__row">
-          <span class="from" data-i18n="profile.tier.from">等级 0</span>
-          <span class="tier-rail__sep" aria-hidden="true">·</span>
-          <span class="to" data-i18n="profile.tier.to">等级体系筹备中</span>
-          <span class="pct" data-i18n="profile.tier.pct">—</span>
-        </div>
-        <div class="tier-bar tier-bar--dormant" aria-hidden="true">
-          <div class="tier-bar__stripes"></div>
-        </div>
-        <div class="tier-rail__hint" data-i18n-html="profile.tier.hint">
-          段位越高省更多 · 按消费 / 充值 / 用量达标自动晋级,保级不降级
-        </div>
-      </div>
-      <button class="btn btn--ghost btn--sm" type="button" data-action="tier-benefits" style="white-space:nowrap">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2v8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/></svg>
-        <span data-i18n="profile.tier.btn">查看等级权益</span>
-      </button>
-    </div>
-  </section>
-
-  <!-- ── DAILY DEPOSIT ── -->
-  <section class="checkin fade-in fade-in--2" id="checkin">
-    <header class="checkin__head">
-      <div class="checkin__title-wrap">
-        <h2 class="checkin__title" data-i18n-html="profile.checkin.title">每日 <em>入账</em></h2>
-        <span class="checkin__title-sub" data-i18n="profile.checkin.sub">SIGN-IN · 微额随机到账</span>
-      </div>
-      <div class="checkin__tags">
-        <span class="streak-pill" title="连续签到天数" data-i18n-title="profile.checkin.streak.title">
-          <svg class="streak-pill__flame" viewBox="0 0 14 14" fill="currentColor">
-            <path d="M7 1.2c.4 1.8-1.6 2.6-1.6 4.4 0 .9.5 1.5 1.1 1.8-.2-.4-.3-.8-.3-1.2 0-1.4 1.6-1.9 1.4-3.6 1.6.7 2.6 2.3 2.6 4 0 2.4-1.9 4.2-4.2 4.2S1.8 9 1.8 6.6c0-2.5 1.6-3.6 2.5-4.5.8-.8 1.7-1.5 2.7-.9z"/>
-          </svg>
-          <span data-i18n-html="profile.checkin.streak.text">连续 <b id="streak-num">0</b> 天</span>
-        </span>
-        <span class="month-pill">
-          <span class="month-pill__dot"></span>
-          <span data-i18n="profile.checkin.month.lbl">本月已入账</span>
-          <b id="month-total">--</b>
-        </span>
       </div>
     </header>
 
-    <div class="checkin__body">
-      <!-- HERO TICKET -->
-      <article class="ticket" id="ticket" data-state="ready" data-balance="0">
-        <span class="ticket__foil" aria-hidden="true"></span>
-        <header class="ticket__head">
-          <span class="ticket__mark" data-i18n="profile.checkin.ticket.mark">DEPOSIT TICKET</span>
-          <span class="ticket__no">NO. <b id="ticket-no">02948</b></span>
-        </header>
-
-        <!-- READY face -->
-        <div class="ticket__face ticket__face--ready">
-          <span class="ticket__date" data-i18n="profile.checkin.ticket.date">2026 · 05 · 16 · SAT</span>
-          <span class="ticket__big" aria-live="polite">
-            <span class="yen">$</span><span class="num">?·??</span>
-          </span>
-          <span class="ticket__hint" data-i18n="profile.checkin.ticket.hint">轻触揭晓今日随机入账</span>
-          <button class="ticket__btn" id="claim-btn" type="button"
-                  data-i18n-aria="profile.checkin.claim.aria" aria-label="开启今日入账">
-            <span data-i18n="profile.checkin.claim.label">开启今日入账</span>
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-
-        <!-- REVEALED face -->
-        <div class="ticket__face ticket__face--revealed">
-          <span class="ticket__date" data-i18n="profile.checkin.ticket.date">2026 · 05 · 16 · SAT</span>
-          <span class="ticket__big" aria-live="polite">
-            <span class="yen">$</span><span class="num" id="rev-num">0.00</span>
-          </span>
-          <span class="ticket__stamp" data-i18n="profile.checkin.ticket.credited">CREDITED</span>
-        </div>
-
-        <div class="ticket__perf" aria-hidden="true"></div>
-
-        <!-- READY footer -->
-        <footer class="ticket__foot ticket__foot--ready">
-          <span class="ticket__range" data-i18n-html="profile.checkin.ticket.range">随机区间 · <b>$0.05</b> — <b>$0.50</b></span>
-          <span class="ticket__lucky-hint" data-i18n="profile.checkin.ticket.lucky">幸运日 · 最高 $2.00</span>
-        </footer>
-
-        <!-- REVEALED footer -->
-        <footer class="ticket__foot ticket__foot--revealed">
-          <span class="ticket__meta"><span data-i18n="profile.checkin.ticket.streakL">连击</span> <b id="rev-streak">4</b> <span data-i18n="profile.checkin.ticket.days">天</span></span>
-          <span class="ticket__meta-sep">·</span>
-          <span class="ticket__meta"><span data-i18n="profile.checkin.ticket.balance">账户余额</span> <b id="rev-balance">--</b></span>
-          <span class="ticket__meta-spacer"></span>
-          <span class="ticket__meta-sub" data-i18n="profile.checkin.ticket.next">明日再开</span>
-        </footer>
-      </article>
-
-      <!-- WEEKLY LEDGER -->
-      <aside class="ledger" aria-label="本周入账明细" data-i18n-aria="profile.checkin.ledger.aria">
-        <header class="ledger__head">
-          <span class="ledger__title" data-i18n="profile.checkin.ledger.title">本周入账</span>
-          <span class="ledger__week">WEEK 20 · MAY</span>
-        </header>
-        <ul class="ledger__list" id="ledger-list"></ul>
-        <footer class="ledger__foot">
-          <span data-i18n="profile.checkin.ledger.week">本周合计</span>
-          <span class="ledger__sum-amt" id="week-total">--</span>
-        </footer>
-      </aside>
-    </div>
-
-    <footer class="checkin__foot">
-      <div class="foot-stat">
-        <span data-i18n="profile.checkin.foot.month">本月累计</span>
-        <b id="month-total-2">--</b>
+    <div class="page-head fade-in fade-in--1">
+      <div class="page-head__left">
+        <nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">风控中心</span></nav>
+        <div class="page-head__title">风控中心</div>
+        <div class="page-head__sub" id="resourceSubtitle">GET/PUT /api/v1/admin/risk-control/config</div>
       </div>
-      <span class="foot-sep" aria-hidden="true"></span>
-      <div class="foot-stat">
-        <span data-i18n="profile.checkin.foot.days">已签到</span>
-        <b id="month-days">0</b><span class="foot-stat__unit" id="month-days-total">/ -- 天</span>
-      </div>
-      <span class="foot-sep" aria-hidden="true"></span>
-      <div class="foot-stat">
-        <span data-i18n="profile.checkin.foot.best">最长连击</span>
-        <b id="best-streak">0</b><span class="foot-stat__unit" data-i18n="profile.checkin.foot.unit"> 天</span>
-      </div>
-      <a class="foot-link" href="/billing/index.html" data-i18n="profile.checkin.foot.link">查看入账明细 →</a>
-    </footer>
-  </section>
-
-  <!-- ── LOWER: account + bindings ── -->
-  <section class="lower fade-in fade-in--3">
-
-    <!-- LEFT: account + security + danger（注销卡并入左列，填补空白、不再全宽铺开） -->
-    <div style="display:flex;flex-direction:column;gap:20px">
-    <div class="panel">
-      <div class="panel__head">
-        <h3>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5l5.5 2v4.2c0 3.5-2.4 6.2-5.5 7-3.1-.8-5.5-3.5-5.5-7V3.5L8 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 8L7 9.5l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span data-i18n="profile.account.h">账户 &amp; 安全</span>
-        </h3>
-        <span class="meta" data-i18n="profile.account.meta">最后修改 5 天前</span>
-      </div>
-
-      <div class="kv-list">
-        <div class="kv" data-row="display-name">
-          <span class="kv__k" data-i18n="profile.account.row.display.k">显示名</span>
-          <span class="kv__v" data-field="display-name">--</span>
-          <button class="kv__action" type="button" data-action="edit-name">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 9.5L9.2 2.3a1.1 1.1 0 0 1 1.5 1.5L3.5 11H2v-1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-            <span data-i18n="profile.action.edit">编辑</span>
-          </button>
-        </div>
-        <div class="kv" data-row="email">
-          <span class="kv__k" data-i18n="profile.account.row.email.k">登录邮箱</span>
-          <span class="kv__v">
-            <span data-field="email">--</span>
-            <span class="verify">
-              <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5 4.2 7l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span data-i18n="profile.account.row.email.verified">已验证</span>
-            </span>
-          </span>
-        </div>
-        <div class="kv" data-row="password">
-          <span class="kv__k" data-i18n="profile.account.row.password.k">登录密码</span>
-          <span class="kv__v">
-            <span class="mono">••••••••••</span>
-          </span>
-          <button class="kv__action" type="button" data-action="change-password" data-i18n="profile.action.update">修改</button>
-        </div>
-        <!-- 邮箱变更 / 手机号绑定 / 两步验证(TOTP) / API 二级密码：原为纯前端演示(无后端、会误导用户"已开启/已更换/已提交")，已于 2026-06-14 移除。
-             待 newapi 后端提供真实接口后，按上方"显示名/登录密码"行同样的 MexionHttp.put('/user/self', {...}) 模式在此重新接入即可。 -->
-      </div>
-
-      <!-- "当前会话"列表原为写死的假设备数据 + 纯前端"退出"(无真实会话撤销接口)，会误导用户，已于 2026-06-14 移除。
-           newapi 暂无 per-device 会话列表/撤销端点；后端提供后再按真实数据接入。 -->
-    </div>
-
-      <!-- 注销账户：接后端 DELETE /api/user/self,见 profile.js deleteAccountFlow。描述+按钮同行紧凑 -->
-      <div class="panel panel--danger">
-        <div class="panel__head">
-          <h3 style="color:var(--verm-2)">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2.2l6 11H2l6-11z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 6.4v3.3M8 11.7v.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            <span data-i18n="profile.danger.title">注销账户</span>
-          </h3>
-        </div>
-        <div class="danger-body">
-          <p class="danger-body__sub" data-i18n="profile.danger.sub">永久删除账户与所有密钥；当前余额将自动失效，不可恢复。</p>
-          <button class="btn btn--danger btn--sm" type="button" data-action="delete-account" data-i18n="profile.danger.btn">注销账户</button>
-        </div>
+      <div class="page-head__actions">
+        <button class="btn-secondary" id="resourceRefresh" type="button">刷新</button>
+        <button class="btn-primary" id="resourceCreate" type="button" hidden>新建</button>
       </div>
     </div>
 
-    <!-- RIGHT: bindings + prefs -->
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="panel">
-        <div class="panel__head">
-          <h3>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5L9.5 6.5M4.7 11.3a2.5 2.5 0 0 1 0-3.6L6.8 5.6a2.5 2.5 0 0 1 3.6 3.6M11.3 4.7a2.5 2.5 0 0 1 0 3.6L9.2 10.4a2.5 2.5 0 0 1-3.6-3.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span data-i18n="profile.bindings.h">认证来源</span>
-          </h3>
-          <span class="meta" id="bindings-meta">2 / 3 已绑定</span>
+    <section class="card fade-in fade-in--2">
+      <div class="card__head"><span class="card__title">§ 风控中心</span><span class="card__title-meta" id="resourceMeta">sub2api</span></div>
+      <div style="padding:16px 18px;border-top:1px solid var(--border);display:grid;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input id="resourceSearch" class="form-input" placeholder="搜索当前数据…" style="max-width:360px">
+          <span class="pill" id="resourceCount"><span class="pill__dot"></span>—</span>
         </div>
-        <div class="bindings" id="bind-grid">
-          <div class="bind">
-            <div class="bind__logo" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.13c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.67 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.18-1.49 3.14-1.18 3.14-1.18.63 1.58.24 2.75.12 3.04.74.8 1.18 1.82 1.18 3.07 0 4.4-2.69 5.37-5.26 5.66.41.36.78 1.06.78 2.14v3.17c0 .31.21.66.8.55C20.21 21.38 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
-            </div>
-            <div class="bind__info">
-              <div class="bind__name">GitHub</div>
-              <div class="bind__sub">@shinianzhiyue · 已连接</div>
-            </div>
-            <button class="bind__act bind__act--disconnect" type="button">断开</button>
-          </div>
-          <div class="bind">
-            <div class="bind__logo" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M21.6 12.23c0-.69-.06-1.36-.18-2H12v3.79h5.4a4.63 4.63 0 0 1-2 3.03v2.51h3.24c1.9-1.74 2.96-4.32 2.96-7.33z" fill="#4285F4"/><path d="M12 22c2.7 0 4.97-.9 6.62-2.44l-3.24-2.51c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.58-4.12H3.07v2.59A10 10 0 0 0 12 22z" fill="#34A853"/><path d="M6.42 13.89A6.01 6.01 0 0 1 6.1 12c0-.66.12-1.3.32-1.89V7.52H3.07A10 10 0 0 0 2 12c0 1.61.39 3.13 1.07 4.48l3.35-2.59z" fill="#FBBC05"/><path d="M12 5.98c1.47 0 2.78.5 3.82 1.5l2.87-2.87C16.96 2.99 14.7 2 12 2A10 10 0 0 0 3.07 7.52l3.35 2.59C7.2 7.74 9.4 5.98 12 5.98z" fill="#EA4335"/></svg>
-            </div>
-            <div class="bind__info">
-              <div class="bind__name">Google</div>
-              <div class="bind__sub">shinianzhiyue1@gmail.com</div>
-            </div>
-            <button class="bind__act bind__act--disconnect" type="button">断开</button>
-          </div>
-          <div class="bind">
-            <div class="bind__logo" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#07C160"><path d="M8.69 4C4.66 4 1.4 6.76 1.4 10.16c0 1.96 1.1 3.7 2.79 4.84l-.7 2.1 2.45-1.23c.88.18 1.78.27 2.74.27.23 0 .46-.01.68-.03a4.96 4.96 0 0 1-.23-1.5c0-3.08 2.97-5.6 6.62-5.6.22 0 .44.01.66.04C16.04 6.05 12.7 4 8.69 4zm-2.43 3.7a.83.83 0 1 1 0 1.66.83.83 0 0 1 0-1.66zm4.86 0a.83.83 0 1 1 0 1.66.83.83 0 0 1 0-1.66z"/><path d="M22.6 14.56c0-2.79-2.79-5.06-6.22-5.06s-6.21 2.27-6.21 5.06c0 2.8 2.78 5.06 6.21 5.06.75 0 1.46-.1 2.11-.27l1.95.99-.55-1.69a4.97 4.97 0 0 0 2.71-4.09zm-8.41-1.21a.69.69 0 1 1 0-1.38.69.69 0 0 1 0 1.38zm4.16 0a.69.69 0 1 1 0-1.38.69.69 0 0 1 0 1.38z"/></svg>
-            </div>
-            <div class="bind__info">
-              <div class="bind__name">微信</div>
-              <div class="bind__sub">未连接</div>
-            </div>
-            <button class="bind__act bind__act--connect" type="button">连接</button>
-          </div>
-        </div>
+        <div id="resourceStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border)"></div>
+        <div id="resourceList" style="overflow:auto;border:1px solid var(--border)"></div>
       </div>
+    </section>
 
-      <div class="panel panel--collapsible is-collapsed" data-collapsible>
-        <div class="panel__head panel__head--toggle" role="button" tabindex="0" aria-expanded="false" data-collapse-toggle>
-          <h3>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5v1.4M8 13.1v1.4M14.5 8h-1.4M2.9 8H1.5M12.6 3.4l-1 1M4.4 11.6l-1 1M12.6 12.6l-1-1M4.4 4.4l-1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span data-i18n="profile.prefs.h">偏好设置</span>
-          </h3>
-          <svg class="panel__chev" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="panel__fold"><div class="panel__fold-inner">
-        <div class="prefs">
-          <div class="pref">
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.prefs.lang.label">界面语言</span>
-              <span class="pref__hint" data-i18n="profile.prefs.lang.hint">影响所有页面文案</span>
-            </div>
-            <div class="pref__ctrl">
-              <div class="select-wrap" data-select="lang">
-                <button class="select" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="lang-label">
-                  <span class="select__flag" aria-hidden="true">ZH</span>
-                  <span class="select__value" id="lang-label" data-i18n="profile.prefs.lang.opt.zh">简体中文</span>
-                  <svg class="select__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-                <div class="select__menu" role="listbox" aria-label="界面语言" data-i18n-aria="profile.prefs.lang.label">
-                  <button class="select__opt" type="button" role="option" aria-selected="true" data-value="zh" data-flag="ZH">
-                    <span class="select__flag" aria-hidden="true">ZH</span>
-                    <span data-i18n="profile.prefs.lang.opt.zh">简体中文</span>
-                    <span class="select__opt-meta">zh-CN</span>
-                    <svg class="select__opt-check" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 4.6 9l5.4-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                  <button class="select__opt" type="button" role="option" aria-selected="false" data-value="zhhant" data-flag="繁">
-                    <span class="select__flag" aria-hidden="true">繁</span>
-                    <span data-i18n="profile.prefs.lang.opt.zhhant">繁體中文</span>
-                    <span class="select__opt-meta">zh-Hant</span>
-                    <svg class="select__opt-check" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 4.6 9l5.4-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                  <button class="select__opt" type="button" role="option" aria-selected="false" data-value="en" data-flag="EN">
-                    <span class="select__flag" aria-hidden="true">EN</span>
-                    <span data-i18n="profile.prefs.lang.opt.en">English</span>
-                    <span class="select__opt-meta">en-US</span>
-                    <svg class="select__opt-check" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 4.6 9l5.4-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                  <button class="select__opt" type="button" role="option" aria-selected="false" data-value="ja" data-flag="JA">
-                    <span class="select__flag" aria-hidden="true">JA</span>
-                    <span data-i18n="profile.prefs.lang.opt.ja">日本語</span>
-                    <span class="select__opt-meta">ja-JP</span>
-                    <svg class="select__opt-check" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 4.6 9l5.4-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="pref">
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.method.label">通知方式</span>
-              <span class="pref__hint" data-i18n="profile.notify.method.hint">控制额度、订阅和管理类非安全通知</span>
-            </div>
-            <div class="pref__ctrl pref__ctrl--wide">
-              <div class="notify-methods" id="notify-methods" role="radiogroup" aria-label="通知方式" data-i18n-aria="profile.notify.method.label">
-                <button class="notify-method is-active" type="button" data-notify-method="email" aria-pressed="true">Email</button>
-                <button class="notify-method" type="button" data-notify-method="webhook" aria-pressed="false">Webhook</button>
-                <button class="notify-method" type="button" data-notify-method="bark" aria-pressed="false">Bark</button>
-                <button class="notify-method" type="button" data-notify-method="gotify" aria-pressed="false">Gotify</button>
-                <button class="notify-method notify-method--muted" type="button" data-notify-method="none" aria-pressed="false" data-i18n="profile.notify.method.none">关闭</button>
-              </div>
-            </div>
-          </div>
-          <div class="notify-none-hint" id="notify-none-hint" hidden data-i18n="profile.notify.none.hint">非安全通知已关闭。验证码邮件不受影响，密码重置邮件由管理员全局控制。</div>
-
-          <div class="notify-fields" id="notify-fields">
-            <label class="notify-field" data-notify-field="email">
-              <span data-i18n="profile.notify.email.label">通知邮箱</span>
-              <input class="notify-input" id="notify-email" type="email" autocomplete="email" placeholder="留空则使用登录邮箱" data-i18n-placeholder="profile.notify.email.placeholder">
-            </label>
-            <label class="notify-field" data-notify-field="webhook" hidden>
-              <span data-i18n="profile.notify.webhook.url">Webhook URL</span>
-              <input class="notify-input notify-input--mono" id="notify-webhook-url" type="url" placeholder="https://example.com/webhook">
-            </label>
-            <label class="notify-field" data-notify-field="webhook" hidden>
-              <span data-i18n="profile.notify.webhook.secret">Webhook Secret</span>
-              <input class="notify-input notify-input--mono" id="notify-webhook-secret" type="password" autocomplete="off" placeholder="optional">
-            </label>
-            <label class="notify-field" data-notify-field="bark" hidden>
-              <span data-i18n="profile.notify.bark.url">Bark Push URL</span>
-              <input class="notify-input notify-input--mono" id="notify-bark-url" type="url" placeholder="https://api.day.app/yourkey/{{title}}/{{content}}">
-            </label>
-            <label class="notify-field" data-notify-field="gotify" hidden>
-              <span data-i18n="profile.notify.gotify.url">Gotify Server URL</span>
-              <input class="notify-input notify-input--mono" id="notify-gotify-url" type="url" placeholder="https://gotify.example.com">
-            </label>
-            <label class="notify-field" data-notify-field="gotify" hidden>
-              <span data-i18n="profile.notify.gotify.token">Gotify Token</span>
-              <input class="notify-input notify-input--mono" id="notify-gotify-token" type="password" autocomplete="off" placeholder="token">
-            </label>
-            <label class="notify-field notify-field--short" data-notify-field="gotify" hidden>
-              <span data-i18n="profile.notify.gotify.priority">Gotify Priority</span>
-              <input class="notify-input notify-input--mono" id="notify-gotify-priority" type="number" min="0" max="10" step="1" placeholder="5">
-            </label>
-          </div>
-
-          <div class="pref">
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.threshold.label">额度提醒阈值</span>
-              <span class="pref__hint" data-i18n="profile.notify.threshold.hint">钱包或订阅额度低于该值时通知</span>
-            </div>
-            <div class="pref__ctrl">
-              <input class="notify-threshold" id="notify-threshold" type="number" min="1" step="1" value="500000">
-            </div>
-          </div>
-
-          <div class="pref">
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.wallet.label">钱包额度提醒</span>
-              <span class="pref__hint" data-i18n="profile.notify.wallet.hint">钱包余额低于阈值时发送通知</span>
-            </div>
-            <button class="toggle" type="button" aria-pressed="true" aria-label="切换钱包额度提醒" data-notify-toggle="quota_exceed" data-i18n-aria="profile.notify.wallet.aria"></button>
-          </div>
-          <div class="pref">
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.subscription.label">订阅额度提醒</span>
-              <span class="pref__hint" data-i18n="profile.notify.subscription.hint">订阅套餐额度低于阈值时发送通知</span>
-            </div>
-            <button class="toggle" type="button" aria-pressed="true" aria-label="切换订阅额度提醒" data-notify-toggle="subscription_quota_exceed" data-i18n-aria="profile.notify.subscription.aria"></button>
-          </div>
-          <div class="pref pref--admin-notify" data-admin-notify hidden>
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.channel.status.label">通道状态通知</span>
-              <span class="pref__hint" data-i18n="profile.notify.channel.status.hint">通道自动启用或禁用时通知管理员</span>
-            </div>
-            <button class="toggle" type="button" aria-pressed="true" aria-label="切换通道状态通知" data-notify-toggle="channel_update" data-i18n-aria="profile.notify.channel.status.aria"></button>
-          </div>
-          <div class="pref pref--admin-notify" data-admin-notify hidden>
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.channel.test.label">通道测试通知</span>
-              <span class="pref__hint" data-i18n="profile.notify.channel.test.hint">批量通道测试完成时通知管理员</span>
-            </div>
-            <button class="toggle" type="button" aria-pressed="true" aria-label="切换通道测试通知" data-notify-toggle="channel_test" data-i18n-aria="profile.notify.channel.test.aria"></button>
-          </div>
-          <div class="pref pref--admin-notify" data-admin-notify hidden>
-            <div class="pref__info">
-              <span class="pref__label" data-i18n="profile.notify.upstream.label">上游模型变更通知</span>
-              <span class="pref__hint" data-i18n="profile.notify.upstream.hint">检测到上游模型变更或异常时发送汇总通知</span>
-            </div>
-            <button class="toggle" type="button" aria-pressed="false" aria-label="切换上游模型变更通知" data-upstream-notify data-i18n-aria="profile.notify.upstream.aria"></button>
-          </div>
-          <div class="notify-actions">
-            <span class="notify-status" id="notify-status" data-i18n="profile.notify.status.ready">修改后保存生效</span>
-            <button class="bind__act bind__act--connect notify-save" type="button" id="notify-save" data-i18n="profile.notify.save">保存通知设置</button>
-          </div>
-        </div>
-        </div></div>
+    <section class="card fade-in fade-in--3" style="margin-top:18px">
+      <div class="card__head"><span class="card__title">§ 详情</span><span class="card__title-meta" id="detailMeta">选择一行查看 JSON</span></div>
+      <pre id="resourceDetail" style="margin:0;padding:18px;overflow:auto;max-height:420px;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:12px;line-height:1.55;background:var(--surface-2);color:var(--ink)">等待数据…</pre>
+      <div style="display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <button class="btn-secondary" id="resourceCopy" type="button">复制 JSON</button>
+        <button class="btn-secondary" id="resourceEdit" type="button" >编辑 JSON</button>
+        <button class="btn-secondary" id="resourceRun" type="button" hidden>执行测试</button>
+        <button class="btn-primary btn-primary--danger" id="resourceDelete" type="button" hidden>删除</button>
       </div>
-    </div>
-  </section>
-
-
-</main>
+    </section>
+  </main>
 </div>
 
-
-<!-- toast -->
-<div class="toast" id="toast" role="status" aria-live="polite">
-  <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 7l2.5 2.5L11 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <span id="toast-text" data-i18n="shared.toast.copied">已复制</span>
+<div class="modal-bg" id="resourceModal" hidden>
+  <div class="modal" style="width:min(720px,calc(100vw - 24px))">
+    <div class="modal__head"><div><div class="modal__title" id="resourceModalTitle">编辑</div><div class="modal__sub" id="resourceModalSub">直接编辑 sub2api 请求 JSON</div></div><button class="modal__close" id="resourceModalClose" type="button">×</button></div>
+    <div class="modal__body"><textarea class="form-input" id="resourceJson" rows="14" style="font-family:var(--f-mono);line-height:1.55;resize:vertical"></textarea></div>
+    <div class="modal__foot"><button class="btn-secondary" id="resourceModalCancel" type="button">取消</button><button class="btn-primary" id="resourceModalConfirm" type="button">提交</button></div>
+  </div>
 </div>
 
-<script src="/assets/sidebar.js" defer></script>
+<script>window.MexionResourceConfig={"dir":"admin/risk-control","title":"风控中心","endpoint":"/admin/risk-control/config","objectMode":true,"create":false,"delete":false,"subtitle":"GET/PUT /api/v1/admin/risk-control/config"};</script>
+<script src="app.js" defer></script>
 <script src="/assets/user-menu.js" defer></script>
-<script src="/assets/profile.js" defer></script>
 <script src="/assets/notification.js" defer></script>
 <script src="/assets/prefetch.js" defer></script>
-<script src="/assets/profile-page.js" defer></script>
 </body>
 </html>
-
-

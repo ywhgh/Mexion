@@ -10,257 +10,84 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="billing.tab.title">Mexion — 钱包</title>
+<title>Mexion — 订单管理</title>
 <link rel="stylesheet" href="/assets/fonts.css">
 <link rel="preload" href="/assets/common.css" as="style">
 <link rel="stylesheet" href="/assets/common.css">
+<link rel="stylesheet" href="/assets/api-keys.css">
 <script src="/assets/i18n.js"></script>
 <script src="/assets/core.js" defer></script>
 <script src="/assets/sub2api.js" defer></script>
-<link rel="stylesheet" href="/assets/billing.css">
 </head>
 <body>
 <script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
-
 <div class="app">
-
-<!-- ── SIDEBAR ── -->
-<!-- SIDEBAR -->
   <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
-<script src="/assets/sidebar.js" defer></script>
-
-<!-- ── MAIN ── -->
-<main class="main">
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar__spacer"></div>
-    <div class="topbar__sep"></div>
-    <div class="lang-toggle">
-      <button data-lang="zh" aria-pressed="true">中</button>
-      <button data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="notif-bell-wrap" style="position:relative">
-      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span data-i18n="topbar.notify.label">通知</span>
-      </button>
-    </div>
-    <div class="user-menu">
-      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
-        <span class="user__avatar" data-mexion-avatar>A</span>
-        <span class="user__name" data-mexion-user="name">—</span>
-        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
-        <div class="user-menu__head">
-          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
-          <div class="user-menu__id">
-            <div class="user-menu__name" data-mexion-user="name">—</div>
-            <div class="user-menu__email" data-mexion-user="email">—</div>
-          </div>
-        </div>
-        <div class="user-menu__list">
-          <a class="user-menu__item" href="/profile/index.html" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>个人资料</span>
-          </a>
-          <a class="user-menu__item" href="/api-keys/index.html" role="menuitem">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>API 密钥</span>
-          </a>
-          <div class="user-menu__sep" role="none"></div>
-          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>退出登录</span>
-          </button>
+  <script src="/assets/sidebar.js" defer></script>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle" role="group"><button data-lang="zh" aria-pressed="true">中</button><button data-lang="en" aria-pressed="false">EN</button></div>
+      <div class="notif-bell-wrap" style="position:relative"><button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><span data-i18n="topbar.notify.label">通知</span></button></div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel"><span class="user__avatar" data-mexion-avatar>A</span><span class="user__name" data-mexion-user="name">—</span><svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head"><div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div><div class="user-menu__id"><div class="user-menu__name" data-mexion-user="name">—</div><div class="user-menu__email" data-mexion-user="email">—</div></div></div>
+          <div class="user-menu__list"><a class="user-menu__item" href="/profile/" role="menuitem"><span>个人资料</span></a><a class="user-menu__item" href="/api-keys/" role="menuitem"><span>API 密钥</span></a><div class="user-menu__sep" role="none"></div><button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout"><span>退出登录</span></button></div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- BILLING HERO -->
-  <section class="bill-hero fade-in fade-in--1">
-    <div class="bill-hero__crumb">
-      <a href="/dashboard/index.html" data-i18n="billing.crumb.overview">概览</a>
-      <span class="sep">/</span>
-      <span style="color:var(--ink)" data-i18n="billing.crumb.wallet">钱包</span>
-    </div>
-    <h1 data-i18n-html="billing.hero.title">钱包 &amp; <em>充值</em></h1>
-
-    <div class="bal-wrap">
-      <span class="bal__cur">$</span>
-      <span class="bal__int" id="balInt">0</span>
-      <span class="bal__sep">.</span>
-      <span class="bal__frac" id="balFrac">00</span>
-    </div>
-
-    <div class="kpis fade-in fade-in--2">
-      <div class="kpi">
-        <span class="kpi__label" data-i18n="billing.kpi.topup.label">本月充值</span>
-        <span class="kpi__val" id="kpiTopup">$0</span>
-        <span class="kpi__delta" id="kpiTopupDelta" data-i18n="billing.kpi.topup.delta">0 笔</span>
+    <div class="page-head fade-in fade-in--1">
+      <div class="page-head__left">
+        <nav class="page-head__crumb"><a href="/dashboard/">概览</a><span class="sep">/</span><span style="color:var(--ink)">订单管理</span></nav>
+        <div class="page-head__title">订单<em>管理</em></div>
+        <div class="page-head__sub" id="resourceSubtitle">加载 sub2api 实时数据…</div>
       </div>
-      <div class="kpi">
-        <span class="kpi__label" data-i18n="billing.kpi.spend.label">本月消耗</span>
-        <span class="kpi__val" id="kpiSpend">$0</span>
-        <span class="kpi__delta" id="kpiSpendDelta">&mdash;</span>
-      </div>
-      <div class="kpi">
-        <span class="kpi__label" data-i18n="billing.kpi.daily.label">日均消耗</span>
-        <span class="kpi__val" id="kpiDaily">$0</span>
-        <span class="kpi__delta" id="kpiDailyDelta" data-i18n="billing.kpi.daily.delta">&mdash;</span>
-      </div>
-      <div class="kpi">
-        <span class="kpi__label" data-i18n="billing.kpi.cum.label">累计充值</span>
-        <span class="kpi__val" id="kpiCum">$0</span>
-        <span class="kpi__delta" id="kpiCumDelta">&mdash;</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ACTION GRID: top-up left, redeem code right -->
-  <div class="action-grid fade-in fade-in--3">
-
-    <!-- TOP-UP CARD -->
-    <div class="card">
-      <div class="card__head">
-        <span class="card__title" data-i18n="billing.topup.title">充值余额</span>
-        <span class="card__title-meta" data-i18n="billing.topup.meta">即时到账</span>
-      </div>
-      <div class="topup-body">
-        <div class="sec-label" data-i18n="billing.topup.amount.label">选择金额</div>
-        <div class="presets" id="presetBtns">
-          <button class="preset-btn" data-v="50">$50</button>
-          <button class="preset-btn" data-v="100">$100</button>
-          <button class="preset-btn is-active" data-v="200">$200</button>
-          <button class="preset-btn" data-v="500">$500</button>
-          <button class="preset-btn" data-v="1000">$1000</button>
-          <button class="preset-btn is-custom" data-v="custom" data-i18n="billing.topup.custom">自定义</button>
-        </div>
-        <div class="topup-input-wrap">
-          <span class="topup-input-cur">$</span>
-          <input type="number" id="topupAmt" value="200" min="1" step="1" data-i18n-placeholder="billing.topup.input.placeholder" placeholder="输入金额">
-        </div>
-        <div class="topup-preview">
-          <span data-i18n="billing.topup.preview.label">到账后余额</span>
-          <span class="topup-preview__val" id="topupPreview">$—</span>
-        </div>
-
-        <div class="topup-divider"></div>
-        <div class="sec-label" data-i18n="billing.topup.method.label">支付方式</div>
-        <div class="method-grid" id="methodGrid">
-          <button class="method-btn is-active" data-m="alipay">
-            <div class="method-icon" style="background:#1677FF;color:#fff" data-i18n="billing.topup.method.alipay.short">支付</div><span data-i18n="billing.topup.method.alipay">支付宝</span>
-          </button>
-          <button class="method-btn" data-m="wechat">
-            <div class="method-icon" style="background:#07C160;color:#fff" data-i18n="billing.topup.method.wechat.short">微信</div><span data-i18n="billing.topup.method.wechat">微信支付</span>
-          </button>
-          <button class="method-btn" data-m="card">
-            <div class="method-icon" style="background:var(--bg-2);color:var(--mute-2);border:1px solid var(--border)" data-i18n="billing.topup.method.card.short">卡</div><span data-i18n="billing.topup.method.card">银行卡</span>
-          </button>
-          <button class="method-btn" data-m="corp">
-            <div class="method-icon" style="background:var(--bg-2);color:var(--mute-2);border:1px solid var(--border)" data-i18n="billing.topup.method.corp.short">企</div><span data-i18n="billing.topup.method.corp">对公转账</span>
-          </button>
-        </div>
-
-        <button class="topup-submit" id="topupSubmit">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="submitLabel" data-i18n="billing.topup.submit.empty">—</span>
-        </button>
-
-        <!-- 自动充值：后端暂不支持，隐藏 -->
+      <div class="page-head__actions">
+        <button class="btn-secondary" id="resourceRefresh" type="button">刷新</button>
+        <button class="btn-primary" id="resourceCreate" type="button" hidden>新建</button>
       </div>
     </div>
 
-    <!-- REDEEM CODE CARD -->
-    <div class="card">
-      <div class="card__head">
-        <span class="card__title" data-i18n="billing.redeem.title">兑换码</span>
-        <span class="card__title-meta" id="redeemMeta">&mdash;</span>
+    <section class="card fade-in fade-in--2">
+      <div class="card__head"><span class="card__title">§ 订单管理</span><span class="card__title-meta" id="resourceMeta">sub2api</span></div>
+      <div style="padding:16px 18px;border-top:1px solid var(--border);display:grid;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input id="resourceSearch" class="form-input" placeholder="搜索当前数据…" style="max-width:360px">
+          <span class="pill" id="resourceCount"><span class="pill__dot"></span>—</span>
+        </div>
+        <div id="resourceStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border)"></div>
+        <div id="resourceList" style="overflow:auto;border:1px solid var(--border)"></div>
       </div>
-      <div class="redeem-body">
-        <p class="redeem-intro" data-i18n-html="billing.redeem.intro">输入兑换码即可直接到账余额。每个兑换码<strong>限用一次</strong>，兑换金额即时生效。</p>
+    </section>
 
-        <div class="redeem-field">
-          <div class="redeem-input-wrap">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="color:rgba(255,255,255,0.35);flex-shrink:0"><rect x="1.5" y="4" width="9" height="7" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 4V3a2 2 0 0 1 4 0v1" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="7.5" r="0.8" fill="currentColor"/></svg>
-            <input class="redeem-input" id="redeemInput" type="text" placeholder="xxxxxxxx-xxxxxxxx-xxxxxxxx-xxxxxxxx" maxlength="35" autocomplete="off" spellcheck="false">
-            <button class="redeem-clear" id="redeemClear">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="2" x2="10" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="2" x2="2" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            </button>
-          </div>
-          <button class="redeem-submit" id="redeemSubmit">
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span data-i18n="billing.redeem.submit">立即兑换</span>
-          </button>
-          <div class="redeem-msg" id="redeemMsg"></div>
-        </div>
-
-        <div class="redeem-hist" id="redeemHist">
-          <div class="redeem-hist-label" data-i18n="billing.redeem.hist.label">最近兑换</div>
-          <div id="redeemHistBody"></div>
-        </div>
+    <section class="card fade-in fade-in--3" style="margin-top:18px">
+      <div class="card__head"><span class="card__title">§ 详情</span><span class="card__title-meta" id="detailMeta">选择一行查看 JSON</span></div>
+      <pre id="resourceDetail" style="margin:0;padding:18px;overflow:auto;max-height:420px;border-top:1px solid var(--border);font-family:var(--f-mono);font-size:12px;line-height:1.55;background:var(--surface-2);color:var(--ink)">等待数据…</pre>
+      <div style="display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <button class="btn-secondary" id="resourceCopy" type="button">复制 JSON</button>
+        <button class="btn-secondary" id="resourceEdit" type="button" hidden>编辑 JSON</button>
+        <button class="btn-secondary" id="resourceRun" type="button" hidden>执行测试</button>
+        <button class="btn-primary btn-primary--danger" id="resourceDelete" type="button" >删除</button>
       </div>
-    </div>
-
-  </div><!-- /action-grid -->
-
-  <!-- TRANSACTION HISTORY -->
-  <div class="card fade-in fade-in--4">
-    <div class="card__head">
-      <span class="card__title" data-i18n="billing.txn.title">交易记录</span>
-      <div class="card__head-actions">
-        <div style="display:inline-flex;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;padding:2px" id="txnFilter">
-          <button style="background:var(--surface);color:var(--ink);border:none;padding:4px 9px;cursor:pointer;font-family:var(--f-mono);font-size:11px;border-radius:5px;box-shadow:0 0 0 1px var(--border);transition:all .14s" aria-pressed="true" data-filter="all" data-i18n="billing.txn.filter.all">全部</button>
-          <button style="background:none;border:none;padding:4px 9px;cursor:pointer;font-family:var(--f-mono);font-size:11px;color:var(--mute-2);border-radius:5px;transition:all .14s" aria-pressed="false" data-filter="topup" data-i18n="billing.txn.filter.topup">充值</button>
-        </div>
-        <div class="txn-date-filter">
-          <div class="txn-date-fields">
-            <div class="txn-date-field" id="txnDateFromField" role="button" tabindex="0">
-              <span class="txn-date-field__label" id="txnDateFromLabel" data-i18n="billing.txn.date.from">开始日期</span>
-              <input class="txn-date-input" id="txnDateFrom" type="date">
-            </div>
-            <span class="txn-date-sep">-</span>
-            <div class="txn-date-field" id="txnDateToField" role="button" tabindex="0">
-              <span class="txn-date-field__label" id="txnDateToLabel" data-i18n="billing.txn.date.to">结束日期</span>
-              <input class="txn-date-input" id="txnDateTo" type="date">
-            </div>
-          </div>
-          <div class="txn-quick-ranges" id="txnQuickRanges">
-            <button class="txn-quick-range" type="button" data-range="today" data-i18n="billing.txn.range.today">今天</button>
-            <button class="txn-quick-range" type="button" data-range="yesterday" data-i18n="billing.txn.range.yesterday">昨天</button>
-            <button class="txn-quick-range" type="button" data-range="3d" data-i18n="billing.txn.range.3d">最近三天</button>
-            <button class="txn-quick-range" type="button" data-range="7d" data-i18n="billing.txn.range.7d">最近7天</button>
-            <button class="txn-quick-range" type="button" data-range="30d" data-i18n="billing.txn.range.30d">最近一个月</button>
-          </div>
-        </div>
-        <button class="card__action" id="txnExportBtn" type="button">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2v7M4 6l3 3 3-3M2.5 11.5h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span data-i18n="billing.txn.export">导出 CSV</span>
-        </button>
-      </div>
-    </div>
-    <div class="txn-colhead">
-      <span data-i18n="billing.txn.col.date">日期</span>
-      <span data-i18n="billing.txn.col.desc">调用模型</span>
-      <span class="ta-r" data-i18n="billing.txn.col.amount">金额</span>
-      <span class="ta-r" data-i18n="billing.txn.col.balance">余额</span>
-    </div>
-    <div id="txnBody"></div>
-  </div>
-
-</main>
+    </section>
+  </main>
 </div>
 
+<div class="modal-bg" id="resourceModal" hidden>
+  <div class="modal" style="width:min(720px,calc(100vw - 24px))">
+    <div class="modal__head"><div><div class="modal__title" id="resourceModalTitle">编辑</div><div class="modal__sub" id="resourceModalSub">直接编辑 sub2api 请求 JSON</div></div><button class="modal__close" id="resourceModalClose" type="button">×</button></div>
+    <div class="modal__body"><textarea class="form-input" id="resourceJson" rows="14" style="font-family:var(--f-mono);line-height:1.55;resize:vertical"></textarea></div>
+    <div class="modal__foot"><button class="btn-secondary" id="resourceModalCancel" type="button">取消</button><button class="btn-primary" id="resourceModalConfirm" type="button">提交</button></div>
+  </div>
+</div>
 
-
-
+<script>window.MexionResourceConfig={"dir":"admin/orders","title":"订单管理","endpoint":"/admin/payment/orders?page=1&page_size=100","columns":[{"key":"id","label":"ID"},{"key":"user_id","label":"用户"},{"key":"amount","label":"金额"},{"key":"status","label":"状态"},{"key":"created_at","label":"时间"}],"create":false,"update":false,"arrayKeys":["items","orders"]};</script>
+<script src="app.js" defer></script>
 <script src="/assets/user-menu.js" defer></script>
 <script src="/assets/notification.js" defer></script>
 <script src="/assets/prefetch.js" defer></script>
-<script src="/assets/billing.js" defer></script>
 </body>
 </html>
-
-
