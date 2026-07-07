@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<script>/* Sidebar rail FOUC guard — adds .mexion-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("mexion_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("mexion-rail-init")}catch(e){}})();</script>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="logs.tab.title">Mexion — 调用日志</title>
+
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="preload" href="/assets/common.css" as="style">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="/assets/i18n.js"></script>
+<script src="/assets/core.js" defer></script>
+<script src="/assets/sub2api.js" defer></script>
+
+<link rel="stylesheet" href="/assets/logs.css">
+</head>
+<body>
+<script>(function(){try{if(localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id'))return;}catch(e){}location.replace('/sign-in/')})()</script>
+
+<div class="app">
+
+  <!-- SIDEBAR (identical) -->
+  <!-- SIDEBAR -->
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+<script src="/assets/sidebar.js" defer></script>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button data-lang="zh" aria-pressed="true">中</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    <div class="notif-bell-wrap" style="position:relative">
+      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="topbar.notify.label">通知</span>
+      </button>
+    </div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+          <span class="user__avatar" data-mexion-avatar>A</span>
+          <span class="user__name" data-mexion-user="name">—</span>
+          <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head">
+            <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
+            <div class="user-menu__id">
+              <div class="user-menu__name" data-mexion-user="name">—</div>
+              <div class="user-menu__email" data-mexion-user="email">—</div>
+            </div>
+          </div>
+          <div class="user-menu__list">
+            <a class="user-menu__item" href="/profile/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span>个人资料</span>
+            </a>
+            <a class="user-menu__item" href="/api-keys/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>API 密钥</span>
+            </a>
+            <div class="user-menu__sep" role="none"></div>
+            <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>退出登录</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- LOGS HERO -->
+    <section class="logs-hero fade-in fade-in--1">
+      <div>
+        <div class="logs-hero__crumb">
+          <a href="/dashboard/index.html" data-i18n="logs.crumb.overview">概览</a>
+          <span class="sep">/</span>
+          <span style="color:var(--ink);" data-i18n="logs.crumb.logs">调用日志</span>
+        </div>
+        <h1 data-i18n-html="logs.hero.title">调用<em>日志</em></h1>
+        <p class="logs-hero__sub" id="heroSub"></p>
+        <div class="kpis">
+          <div class="kpi">
+            <span class="kpi__label" data-i18n="logs.kpi.calls.label">总调用</span>
+            <span class="kpi__val" id="kpiCalls">—</span>
+            <span class="kpi__delta" id="kpiCallsDelta"></span>
+          </div>
+          <div class="kpi kpi--err">
+            <span class="kpi__label"><span class="pill__dot" style="background:var(--verm);"></span><span data-i18n="logs.kpi.err.label">异常</span></span>
+            <span class="kpi__val" id="kpiErr">—</span>
+            <span class="kpi__delta" id="kpiErrDelta"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label" data-i18n="logs.kpi.lat.label">处理耗时</span>
+            <span class="kpi__val" id="kpiLat">—</span>
+            <span class="kpi__delta" id="kpiLatDelta"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label" data-i18n="logs.kpi.cost.label">总开销</span>
+            <span class="kpi__val" id="kpiCost">—</span>
+            <span class="kpi__delta" id="kpiCostDelta"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS PULSE -->
+      <div class="pulse">
+        <div class="pulse__head">
+          <div class="pulse__title" data-i18n-html="logs.pulse.title"><b>近 60 分钟</b> · 每格为 1 分钟内的调用量</div>
+          <div class="pulse__legend">
+            <span><i style="background:linear-gradient(180deg,#7DAF8B,#3D7A55);"></i>ok</span>
+            <span><i style="background:linear-gradient(180deg,#D9A95F,#B57A1B);"></i>warn</span>
+            <span><i style="background:linear-gradient(180deg,#E26354,#C8392D);"></i>err</span>
+            <span><i style="background:#E3DFD2;"></i>idle</span>
+          </div>
+        </div>
+        <div class="pulse__grid" id="pulseGrid"></div>
+        <div class="pulse__axis">
+          <!-- 60 spans -->
+        </div>
+        <div class="pulse__tip" id="pulseTip">
+          <div><b id="ptTime">14:00</b><em id="ptCount"> · 42 calls</em></div>
+          <div style="margin-top:3px;color:rgba(255,255,255,0.65);" id="ptDetail">ok</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GROUP LENS -->
+    <section class="card group-lens fade-in fade-in--2">
+      <div class="card__head">
+        <span class="card__title" data-i18n="logs.gl.title">分组经济</span>
+        <span class="card__title-meta" id="glMeta">—</span>
+        <div class="card__head-actions">
+          <div class="tabs">
+            <button class="tab" data-gl="cost" aria-pressed="true" data-i18n="logs.gl.tab.cost">按成本</button>
+            <button class="tab" data-gl="calls" aria-pressed="false" data-i18n="logs.gl.tab.calls">按调用</button>
+            <button class="tab" data-gl="tokens" aria-pressed="false" data-i18n="logs.gl.tab.tokens">按 Token</button>
+          </div>
+          <a class="card__action" href="/api-keys/index.html">
+            <span data-i18n="logs.gl.manage">管理分组</span>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="3,2 7,6 3,10" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="gl__body">
+        <div class="gl__legend">
+          <span data-i18n-html="logs.gl.legend.cost">当前视图 · <b style="color:var(--ink);">成本占比</b></span>
+          <div class="gl__legend-key" id="glLegendKey">
+            <!-- filled by JS -->
+          </div>
+        </div>
+        <div class="gl__stack" id="glStack"></div>
+        <div class="gl__rows" id="glRows"></div>
+      </div>
+    </section>
+
+    <!-- KEY SPEND（按密钥消费） -->
+    <section class="card key-spend fade-in fade-in--2">
+      <div class="card__head">
+        <span class="card__title" data-i18n="logs.ks.title">按密钥消费</span>
+        <span class="card__title-meta" id="ksMeta">—</span>
+        <div class="card__head-actions">
+          <div class="tabs">
+            <button class="tab" data-ks="total" aria-pressed="true" data-i18n="logs.ks.tab.total">累计</button>
+            <button class="tab" data-ks="24h" aria-pressed="false">24h</button>
+            <button class="tab" data-ks="7d" aria-pressed="false">7d</button>
+            <button class="tab" data-ks="30d" aria-pressed="false">30d</button>
+          </div>
+          <a class="card__action" href="/api-keys/index.html">
+            <span data-i18n="logs.ks.manage">管理密钥</span>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="3,2 7,6 3,10" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="gl__body">
+        <div class="ks__stack" id="ksStack"></div>
+        <div class="ks__rows" id="ksRows"></div>
+      </div>
+    </section>
+
+    <!-- FILTER BAR -->
+    <section class="filterbar fade-in fade-in--3" id="filterbar">
+      <div class="fb__search">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/>
+          <line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <input type="text" data-i18n-placeholder="logs.fb.search.placeholder" placeholder="筛选 · 模型 / 密钥 / 请求 ID" id="filterSearch">
+      </div>
+      <button class="fb__chip" data-preset="err" aria-pressed="false">
+        <span class="fb__chip-dot"></span><span data-i18n="logs.fb.chip.err">仅异常</span>
+      </button>
+      <button class="fb__chip" data-preset="slow" aria-pressed="false">
+        <span class="fb__chip-dot"></span><span data-i18n="logs.fb.chip.slow">慢请求 &gt;2s</span>
+      </button>
+      <button class="fb__chip" data-preset="exp" aria-pressed="false">
+        <span class="fb__chip-dot"></span><span data-i18n="logs.fb.chip.exp">高成本 &gt;$0.5</span>
+      </button>
+      <div class="fb__sep"></div>
+      <button class="fb__select"><span data-i18n="logs.fb.sel.group">分组</span> · <b data-i18n="logs.fb.all">全部</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="fb__select"><span data-i18n="logs.fb.sel.model">模型</span> · <b data-i18n="logs.fb.all">全部</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="fb__select"><span data-i18n="logs.fb.sel.range">范围</span> · <b>24h</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="fb__select" data-fb="key"><span data-i18n="logs.fb.sel.key">密钥</span> · <b data-i18n="logs.fb.all">全部</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="fb__select" data-fb="provider"><span data-i18n="logs.fb.sel.provider">供应商</span> · <b data-i18n="logs.fb.all">全部</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="fb__select" data-fb="finish"><span data-i18n="logs.fb.sel.finish">完成原因</span> · <b data-i18n="logs.fb.all">全部</b>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="fb__spacer"></div>
+      <button class="fb__refresh" id="logsRefresh" title="刷新" data-i18n-title="logs.fb.refresh" aria-label="刷新">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M13.6 8a5.6 5.6 0 1 1-1.65-3.95M13.6 2.2v3.2h-3.2" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="fb__count"><b id="fbCount">—</b></span>
+    </section>
+
+    <!-- LOGS LAYOUT -->
+    <section class="logs-layout fade-in fade-in--4">
+
+      <!-- STREAM -->
+      <div class="card stream" data-density="normal" id="stream">
+        <div class="stream__head">
+          <div class="stream__head-titles">
+            <span data-i18n="logs.stream.col.time">时间</span>
+            <span></span>
+            <span data-i18n="logs.stream.col.model">模型 · 分组</span>
+            <span data-i18n="logs.stream.col.reqid">请求 ID</span>
+            <span data-i18n="logs.stream.col.tokens">Token · 缓存</span>
+            <span class="ta-r" data-i18n="logs.stream.col.lat">耗时</span>
+            <span class="ta-r" data-i18n="logs.stream.col.cost">实付</span>
+            <div class="stream__live"><span data-i18n="logs.stream.live">实时</span></div>
+          </div>
+        </div>
+        <div class="stream__body" id="streamBody">
+          <!-- filled by JS -->
+        </div>
+        <div class="pager" id="pager">
+          <div class="pager__info" data-i18n-html="logs.pager.info">显示 <b id="pgFrom">1</b>–<b id="pgTo">20</b> / <b id="pgTotal">—</b></div>
+          <nav class="pager__nav" id="pgNav" data-i18n-aria="logs.pager.nav.aria" aria-label="分页"></nav>
+          <label class="pager__perpage"><span data-i18n="logs.pager.perpage">每页</span>
+            <select id="pgSize">
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="card detail" id="detail">
+        <!-- empty state -->
+        <div class="detail__empty">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <rect x="6" y="8" width="24" height="20" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M6 14h24M10 11.5h2M14 11.5h1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11 19h14M11 22h10M11 25h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+          <h3 data-i18n="logs.detail.empty.title">选择一条调用</h3>
+          <p data-i18n-html="logs.detail.empty.body">点击左侧任意一行查看请求时序、成本解码与原始负载。提示：使用 <kbd>↑</kbd> <kbd>↓</kbd> 翻阅。</p>
+        </div>
+
+        <!-- body (revealed when selected) -->
+        <div class="detail__body" id="detailBody">
+          <div class="dh">
+            <div class="dh__top">
+              <span class="pill pill--ok" id="dhPill"><span class="pill__dot"></span>200 ok</span>
+              <div style="flex:1;"></div>
+              <span class="dh__id" id="dhId">req_8f3a…b21c</span>
+              <button class="dh__copy" data-i18n-title="logs.detail.copy.title" title="复制">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V2.3c0-.3-.3-.6-.6-.6H2.3c-.4 0-.6.3-.6.6V8.6c0 .3.2.6.6.6H4" stroke="currentColor" stroke-width="1.2"/></svg>
+              </button>
+            </div>
+            <div class="dh__model">
+              <span class="dh__icon" id="dhIcon" style="background:#C8392D;">C</span>
+              <div>
+                <div class="dh__name" id="dhName">claude-opus-4</div>
+                <div class="dh__sub">
+                  <span id="dhGroup">分组 <b>vip</b></span> · <span id="dhTime">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 二开：错误调用的完整报错（行内只显示状态码，详情在此展示） -->
+          <div class="derr" id="dhErr" hidden>
+            <div class="derr__head">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="10" r="0.75" fill="currentColor"/></svg>
+              <b data-i18n="logs.detail.err.title">报错详情</b>
+              <span class="derr__code" id="dhErrCode"></span>
+            </div>
+            <div class="derr__msg" id="dhErrMsg"></div>
+          </div>
+
+          <!-- COST DECODER -->
+          <div class="ds">
+            <div class="ds__title"><b data-i18n="logs.detail.cd.title">成本解码</b></div>
+            <div class="cd">
+              <div class="cd__formula">
+                <div class="cd__term">
+                  <span class="cd__term-label" data-i18n="logs.detail.cd.base">基价</span>
+                  <span class="cd__term-val" id="cdBase">$15<em>/M tok</em></span>
+                </div>
+                <div class="cd__op">×</div>
+                <div class="cd__term cd__term--mult">
+                  <span class="cd__term-label" data-i18n="logs.detail.cd.mult">分组倍率</span>
+                  <span class="cd__term-val" id="cdMult">0.80<em>×</em></span>
+                </div>
+                <div class="cd__op">×</div>
+                <div class="cd__term">
+                  <span class="cd__term-label" data-i18n="logs.detail.cd.tok">Token</span>
+                  <span class="cd__term-val" id="cdTok">31.7<em>k</em></span>
+                </div>
+                <div class="cd__op">=</div>
+                <div class="cd__term cd__term--result">
+                  <span class="cd__term-label" data-i18n="logs.detail.cd.actual">实付</span>
+                  <span class="cd__term-val" id="cdResult">$0.380</span>
+                </div>
+              </div>
+
+              <div class="cd__compare">
+                <div class="cd__compare-head">
+                  <span data-i18n="logs.detail.cd.compare">如改投其它分组</span>
+                  <b id="cdSavings">省 $0.10</b>
+                </div>
+                <div class="cd__compare-rows" id="cdRows">
+                  <!-- filled by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WATERFALL -->
+          <div class="ds">
+            <div class="ds__title"><b data-i18n="logs.detail.wf.title">时序瀑布</b> · <span id="wfTotal" style="color:var(--ink);font-weight:600;letter-spacing:0.04em;">418 ms</span></div>
+            <div class="wf" id="wf">
+              <!-- filled by JS -->
+            </div>
+          </div>
+
+          <!-- META -->
+          <div class="ds">
+            <div class="ds__title"><b data-i18n="logs.detail.meta.title">请求元数据</b></div>
+            <div class="kv">
+              <div class="kv__row"><span class="kv__k" data-i18n="logs.detail.meta.key">密钥</span><span class="kv__v" id="kvKey">ax_live_p01_…4f7a</span></div>
+              <div class="kv__row"><span class="kv__k" data-i18n="logs.detail.meta.io">输入 / 输出</span><span class="kv__v" id="kvIo">28,431 / 3,288 tok</span></div>
+              <div class="kv__row"><span class="kv__k" data-i18n="logs.detail.meta.cache">缓存命中</span><span class="kv__v" id="kvCache">12,840 tok · 45%</span></div>
+              <div class="kv__row"><span class="kv__k" data-i18n="logs.detail.meta.stream">流式</span><span class="kv__v" id="kvStream">true · TTFB 184 ms</span></div>
+              <div class="kv__row"><span class="kv__k" data-i18n="logs.detail.meta.trace">重试链路</span><span class="kv__v" id="kvTrace">—</span></div>
+            </div>
+          </div>
+
+          <!-- PAYLOAD -->
+          <div class="ds">
+            <div class="ds__title"><b data-i18n="logs.detail.payload.title">负载</b></div>
+            <div class="payload__tabs">
+              <button class="payload__tab" data-pl="req" aria-pressed="true" data-i18n="logs.detail.payload.req">请求</button>
+              <button class="payload__tab" data-pl="res" aria-pressed="false" data-i18n="logs.detail.payload.res">响应</button>
+              <button class="payload__tab" data-pl="hdr" aria-pressed="false" data-i18n="logs.detail.payload.hdr">头部</button>
+            </div>
+            <pre class="payload" id="payload"></pre>
+          </div>
+
+          <div class="df">
+            <button class="df__btn df__btn--primary" data-i18n="logs.detail.btn.curl">复制 cURL</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+
+<!-- Tweaks (match dashboard) -->
+<script src="/assets/user-menu.js" defer></script>
+
+<script src="/assets/notification.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+
+<script src="/assets/logs.js" defer></script>
+</body>
+</html>
+
+

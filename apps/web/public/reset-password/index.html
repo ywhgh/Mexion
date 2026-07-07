@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mexion — Sign in</title>
+
+<link rel="stylesheet" href="/assets/fonts.css">
+
+<!-- Unified i18n runtime -->
+<script src="/assets/i18n.js"></script>
+<script src="/assets/core.js" defer></script>
+
+<link rel="stylesheet" href="/assets/login.css">
+</head>
+<body>
+
+<div class="cm cm-tl"></div>
+<div class="cm cm-tr"></div>
+<div class="cm cm-bl"></div>
+<div class="cm cm-br"></div>
+
+<!-- ─────── LEFT: PLATE ─────── -->
+<aside class="plate">
+  <div class="plate-binding"></div>
+
+  <header class="plate__head">
+    <a class="plate__brand" href="/">
+      <span class="plate__brand-mark" aria-hidden="true"></span>
+      <span>Mexion</span>
+    </a>
+    <span class="plate__meta" data-i18n="plate.meta">Vol.&thinsp;I · Issue 01</span>
+  </header>
+  <div class="plate__rule"></div>
+
+  <div class="plate__body">
+    <div class="plate__inner">
+      <div>
+        <p class="plate__sec-label" data-i18n="plate.label">§ The Thesis</p>
+        <h1 class="plate__hero">
+          <span data-i18n="plate.hero1">一把钥匙，</span><br>
+          <span data-i18n="plate.hero2">通往所有值得调用的</span><br>
+          <span class="plate__hero-mark" data-i18n="plate.hero3">语言模型</span>
+        </h1>
+        <p class="plate__sub" data-i18n="plate.sub">欧几里得的几何中，公理是被直接接受为真的命题——一切证明从此出发。Mexion 把这种结构带入 AI 时代：一个<strong>统一的 endpoint</strong>，让一切调用<em>从此恒等</em>。</p>
+      </div>
+
+      <figure class="plate__fig">
+        <div class="plate__fig-cap">PL.&thinsp;I</div>
+        <img class="plate__fig-img" src="/assets/mascot.webp" alt="持卷者">
+        <figcaption class="plate__fig-name">
+          <span>持卷者</span>The Keeper of the Scroll
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <footer class="plate__foot">
+    <span><span class="s-key" data-i18n="status.status">状态</span><span class="s-dot"></span><span class="s-val" data-i18n="status.operational">正常运行</span></span>
+    <span><span class="s-key" data-i18n="status.latency">延迟</span><span class="s-val">142&thinsp;ms</span></span>
+    <span class="plate__foot-spacer"></span>
+    <span><span class="s-key" data-i18n="status.updated">更新于</span><span class="s-val">05 May 2026</span></span>
+  </footer>
+</aside>
+
+<!-- ─────── RIGHT: FORM ─────── -->
+<main class="form-wrap">
+  <div class="form-top">
+    <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+      <span class="lang-active" id="langActive">中文</span>
+      <span class="lang-sep">/</span>
+      <span id="langOther">EN</span>
+    </button>
+  </div>
+
+  <div class="form-card-wrap">
+  <div class="form-card" id="formCard" data-mode="login">
+    <div class="mode-stack">
+
+      <!-- ═══════════ MODE: LOGIN ═══════════ -->
+      <section class="mode-pane mode-pane--login" data-active="">
+        <p class="form__eyebrow" data-i18n="form.eyebrow">§ 登录</p>
+        <h2 class="form__title" data-i18n-html="form.title">欢迎<em>回来</em>。</h2>
+        <p class="form__lede" data-i18n="form.lede">输入你的凭证，进入控制台。</p>
+
+        <!-- SSO -->
+        <div class="sso-row">
+          <a class="sso-btn" href="#" aria-label="Continue with Google">
+            <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+            </svg>
+            <span data-i18n="sso.google">Google</span>
+          </a>
+          <a class="sso-btn" href="#" aria-label="Continue with GitHub">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="#0F0E0C" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <span data-i18n="sso.github">GitHub</span>
+          </a>
+        </div>
+
+        <div class="divider" data-i18n="divider">或使用账号</div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label class="field__label" for="email">
+              <span class="field__num" data-num="01">
+                <span data-i18n="field.email">邮箱或用户名</span>
+              </span>
+            </label>
+            <input class="field__input" id="email" name="email" type="text" autocomplete="username" placeholder="you@mexion.dev / username" required>
+            <span class="email-mark" aria-hidden="true"></span>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="loginEmailMsg"></span>
+          </div>
+
+          <div class="field field--pwd">
+            <label class="field__label" for="password">
+              <span class="field__num" data-num="02">
+                <span data-i18n="field.password">密码</span>
+              </span>
+              <span class="field__hint">
+                <a href="#" id="forgotLink" data-i18n="field.forgot">忘记密码？</a>
+              </span>
+            </label>
+            <input class="field__input" id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••••" required>
+            <button type="button" class="field__pwd-toggle" id="pwdToggle" aria-label="Toggle password visibility" data-i18n="field.show">显示</button>
+            <span class="caps-warn" aria-live="polite"><span data-i18n="field.caps">⇧ Caps Lock</span></span>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="loginPwdMsg"></span>
+          </div>
+
+          <div class="options-row">
+            <label class="checkbox">
+              <input type="checkbox" id="remember" checked>
+              <span class="checkbox__box has-svg-check">
+                <svg class="checkbox__check" viewBox="0 0 14 14" aria-hidden="true">
+                  <path d="M3 7.4 L6 10 L11 4" />
+                </svg>
+              </span>
+              <span data-i18n="field.remember">保持登录状态</span>
+            </label>
+          </div>
+
+          <button class="submit-btn" type="submit">
+            <span class="corner tl" aria-hidden="true"></span>
+            <span class="corner br" aria-hidden="true"></span>
+            <span class="submit-btn__ornament" aria-hidden="true"></span>
+            <span data-i18n="form.submit">登录 Mexion</span>
+            <svg width="24" height="10" viewBox="0 0 24 10" fill="none" aria-hidden="true">
+              <line x1="0.5" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <polyline points="16,1.4 20.2,5 16,8.6" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+          <p class="foot-note">
+            <span data-i18n="form.no-account">还没有账号？</span>
+            <a href="#" id="goSignupLink" data-i18n="form.go-signup">创建账号</a>
+          </p>
+        </form>
+      </section>
+
+      <!-- ═══════════ MODE: SIGNUP ═══════════ -->
+      <section class="mode-pane mode-pane--signup">
+        <p class="form__eyebrow" data-i18n="signup.eyebrow">§ 注册</p>
+        <h2 class="form__title" data-i18n-html="signup.title">立此<em>存照</em>。</h2>
+        <p class="form__lede" data-i18n="signup.lede">三十秒，加入 Mexion，开启你的统一调用。</p>
+
+        <!-- SSO (shared) -->
+        <div class="sso-row">
+          <a class="sso-btn" href="#" aria-label="Continue with Google">
+            <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+            </svg>
+            <span data-i18n="sso.google">Google</span>
+          </a>
+          <a class="sso-btn" href="#" aria-label="Continue with GitHub">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="#0F0E0C" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <span data-i18n="sso.github">GitHub</span>
+          </a>
+        </div>
+
+        <div class="divider" data-i18n="signup.divider">或自行注册</div>
+
+        <form id="signupForm" novalidate>
+          <!-- 01 USERNAME -->
+          <div class="field" id="suUserField">
+            <label class="field__label" for="suUsername">
+              <span class="field__num" data-num="01">
+                <span data-i18n="signup.field.username">用户名</span>
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+              <span class="field__hint" data-i18n="signup.field.username.hint">3–20 位字符，不含空格</span>
+            </label>
+            <input class="field__input" id="suUsername" name="username" type="text"
+                   autocomplete="username" minlength="3" maxlength="20"
+                   data-i18n-placeholder="signup.field.username.ph" placeholder="输入您的用户名" required>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="suUsernameMsg" aria-live="polite"></span>
+          </div>
+
+          <!-- 02 PASSWORD (with strength) -->
+          <div class="field field--pwd" id="suPwdField">
+            <label class="field__label" for="suPassword">
+              <span class="field__num" data-num="02">
+                <span data-i18n="signup.field.password">密码</span>
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+              <span class="pwd-strength" id="suPwdStrength" aria-hidden="true" data-level="0">
+                <span class="pwd-strength__label" id="suPwdStrengthLabel" data-i18n="signup.pwd.weak">弱</span>
+                <span class="pwd-strength__mark"></span>
+                <span class="pwd-strength__mark"></span>
+                <span class="pwd-strength__mark"></span>
+              </span>
+            </label>
+            <input class="field__input" id="suPassword" name="password" type="password"
+                   autocomplete="new-password" minlength="8" maxlength="20"
+                   data-i18n-placeholder="signup.field.password.ph" placeholder="输入密码（8–20 个字符）" required>
+            <button type="button" class="field__pwd-toggle" id="suPwdToggle" aria-label="Toggle password visibility" data-i18n="field.show">显示</button>
+            <span class="caps-warn" aria-live="polite"><span data-i18n="field.caps">⇧ Caps Lock</span></span>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="suPwdMsg" aria-live="polite"></span>
+          </div>
+
+          <!-- 03 CONFIRM PASSWORD -->
+          <div class="field field--pwd field--confirm" id="suConfirmField">
+            <label class="field__label" for="suConfirm">
+              <span class="field__num" data-num="03">
+                <span data-i18n="signup.field.confirm">确认密码</span>
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+              <span class="match-msg" aria-live="polite">
+                <span class="match-msg__layer match-msg__layer--no"><span data-i18n="signup.match.no">两次输入不一致</span></span>
+                <span class="match-msg__layer match-msg__layer--ok"><span data-i18n="signup.match.ok">两次输入一致</span></span>
+              </span>
+            </label>
+            <input class="field__input" id="suConfirm" name="confirm" type="password"
+                   autocomplete="new-password" minlength="8" maxlength="20"
+                   data-i18n-placeholder="signup.field.confirm.ph" placeholder="再次输入密码" required>
+            <button type="button" class="field__pwd-toggle" id="suConfirmToggle" aria-label="Toggle password visibility" data-i18n="field.show">显示</button>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="suConfMsg" aria-live="polite"></span>
+          </div>
+
+          <!-- 04 EMAIL -->
+          <div class="field" id="suEmailField">
+            <label class="field__label" for="suEmail">
+              <span class="field__num" data-num="04">
+                <span data-i18n="signup.field.email">电子邮件</span>
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+              <span class="field__hint" data-i18n="signup.field.email.hint">需验证</span>
+            </label>
+            <input class="field__input" id="suEmail" name="email" type="email"
+                   autocomplete="email" placeholder="name@example.com" required>
+            <span class="email-mark" aria-hidden="true"></span>
+            <span class="field__underline"></span>
+            <span class="field__sublabel" id="suEmailMsg" aria-live="polite"></span>
+          </div>
+
+          <!-- 05 VERIFICATION CODE + SEND -->
+          <div class="field" id="suCodeField">
+            <label class="field__label" for="suCode">
+              <span class="field__num" data-num="05">
+                <span data-i18n="signup.field.code">验证码</span>
+                <span class="req" aria-hidden="true">*</span>
+              </span>
+            </label>
+            <div class="field--inline-row">
+              <input class="field__input" id="suCode" name="code" type="text"
+                     inputmode="text" maxlength="6" autocomplete="one-time-code"
+                     data-i18n-placeholder="signup.field.code.ph" placeholder="6 位（数字+字母）" required>
+              <button type="button" class="code-btn" id="suSendCode" data-i18n="signup.field.send">发送验证码</button>
+            </div>
+            <span class="field__sublabel" id="suCodeMsg" aria-live="polite"></span>
+            <span class="field__underline"></span>
+          </div>
+
+          <div class="field" id="suInviteField" hidden>
+            <label class="field__label" for="suInviteCode">
+              <span class="field__num" data-num="06">
+                <span data-i18n="signup.field.invite">邀请码</span>
+              </span>
+              <span class="field__hint" data-i18n="signup.field.invite.hint">通过邀请链接自动带入</span>
+            </label>
+            <input class="field__input" id="suInviteCode" type="text"
+                   readonly data-i18n-placeholder="signup.field.invite.ph" placeholder="邀请链接已自动填写">
+            <span class="field__underline"></span>
+          </div>
+
+          <!-- TERMS -->
+          <div class="options-row options-row--terms">
+            <label class="checkbox">
+              <input type="checkbox" id="suTerms">
+              <span class="checkbox__box has-svg-check">
+                <svg class="checkbox__check" viewBox="0 0 14 14" aria-hidden="true">
+                  <path d="M3 7.4 L6 10 L11 4" />
+                </svg>
+              </span>
+              <span data-i18n-html="signup.terms">我已阅读并同意 <a href="/terms/" target="_blank">用户协议</a> 与 <a href="/privacy/" target="_blank">隐私政策</a>。</span>
+            </label>
+          </div>
+
+          <!-- SUBMIT -->
+          <button class="submit-btn" type="submit" id="suSubmit">
+            <span class="corner tl" aria-hidden="true"></span>
+            <span class="corner br" aria-hidden="true"></span>
+            <span class="submit-btn__ornament" aria-hidden="true"></span>
+            <span data-i18n="signup.submit">创建账户</span>
+            <svg width="24" height="10" viewBox="0 0 24 10" fill="none" aria-hidden="true">
+              <line x1="0.5" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <polyline points="16,1.4 20.2,5 16,8.6" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+          <p class="foot-note">
+            <span data-i18n="signup.foot.have">已有账户？</span>
+            <a href="#" id="goLoginLink" data-i18n="signup.foot.signin">登录</a>
+          </p>
+        </form>
+      </section>
+
+      <!-- ═══ FORGOT PASSWORD PANE ═══ -->
+      <section class="mode-pane mode-pane--forgot">
+        <h2 class="form__title" data-i18n-html="forgot.title">找回<em>密码</em>。</h2>
+        <p class="form__sub" data-i18n="forgot.sub">输入注册邮箱，我们将发送重置链接。</p>
+
+        <form id="forgotForm" novalidate>
+          <div id="forgotFields">
+            <div class="field">
+              <label class="field__label" for="forgotEmail">
+                <span class="field__num" data-num="01">
+                  <span data-i18n="forgot.field.email">注册邮箱</span>
+                </span>
+              </label>
+              <input class="field__input" id="forgotEmail" type="email" autocomplete="email" placeholder="you@mexion.dev" required>
+              <span class="field__underline"></span>
+              <span class="field__sublabel" id="forgotMsg"></span>
+            </div>
+          </div>
+
+          <div id="forgotSuccess" hidden>
+            <div style="text-align:center;padding:24px 0 16px">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="color:var(--forest,#3D7A55);margin-bottom:10px"><circle cx="18" cy="18" r="15" stroke="currentColor" stroke-width="1.8"/><path d="M11 18l4.5 4.5L25 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p style="font-family:var(--f-display);font-size:18px;font-weight:500;color:var(--ink)" data-i18n="forgot.sent.title">邮件已发送</p>
+              <p style="font-size:13px;color:var(--lead);margin-top:6px;line-height:1.5" data-i18n="forgot.sent.hint">请查收邮箱（含垃圾箱），点击链接重置密码。</p>
+            </div>
+          </div>
+
+          <button class="submit-btn" type="submit" id="forgotSubmit">
+            <span class="submit-btn__text" data-i18n="forgot.submit">发送重置链接</span>
+            <svg class="submit-btn__arrow" width="16" height="10" viewBox="0 0 16 10" fill="none">
+              <line x1="0.5" y1="5" x2="12" y2="5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <polyline points="9,1.5 12.5,5 9,8.5" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+          <p class="foot-note">
+            <span data-i18n="forgot.foot.remember">记起来了？</span>
+            <a href="#" id="forgotBackLink" data-i18n="forgot.foot.back">返回登录</a>
+          </p>
+        </form>
+      </section>
+
+    </div>
+  </div>
+  </div>
+
+  <div class="trust-strip">
+    <span class="trust-strip__item">
+      <span class="trust-strip__sym" aria-hidden="true">§</span>
+      <span data-i18n="trust.compliance">SOC 2 TYPE II</span>
+    </span>
+    <span class="trust-strip__item">
+      <span class="trust-strip__sym" aria-hidden="true">¶</span>
+      <span data-i18n="trust.encryption">端对端加密</span>
+    </span>
+    <span class="trust-strip__item">
+      <span class="trust-strip__sym" aria-hidden="true">†</span>
+      <span data-i18n="trust.uptime">99.99% 可用性</span>
+    </span>
+  </div>
+
+  <p class="form-legal">
+    <span data-i18n="legal.body">登录即表示你同意</span>
+    <a href="/terms/" target="_blank" data-i18n="legal.terms">用户协议</a>
+    <span data-i18n="legal.and">与</span>
+    <a href="/privacy/" target="_blank" data-i18n="legal.privacy">隐私政策</a>。
+  </p>
+
+  <div class="colophon">
+    <span class="colophon__seal" aria-hidden="true">
+      <span data-i18n="colophon.seal">MEXION · MMXXVI</span>
+    </span>
+    <span class="colophon__center" data-i18n="colophon.set">MEXION</span>
+    <span data-i18n="colophon.edition">No. 0001 / Vol. I</span>
+  </div>
+</main>
+
+<script>/* local mirror: login redirect guard disabled */</script>
+
+<script src="/assets/prefetch.js" defer></script>
+
+<script src="/assets/login.js" defer></script>
+</body>
+</html>
+

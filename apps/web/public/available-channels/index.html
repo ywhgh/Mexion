@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<script>/* Sidebar rail FOUC guard — adds .mexion-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("mexion_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("mexion-rail-init")}catch(e){}})();</script>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="models.tab.title">Mexion — 模型分组</title>
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="preload" href="/assets/common.css" as="style">
+<link rel="stylesheet" href="/assets/common.css">
+<script src="/assets/i18n.js"></script>
+<script src="/assets/core.js" defer></script>
+<script src="/assets/sub2api.js" defer></script>
+<link rel="stylesheet" href="/assets/models.css">
+</head>
+<body>
+<script>(function(){try{if(localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id'))return;}catch(e){}location.replace('/sign-in/')})()</script>
+
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<!-- SIDEBAR -->
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+<script src="/assets/sidebar.js" defer></script>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar__spacer"></div>
+    <div class="topbar__sep" aria-hidden="true"></div>
+    <div class="lang-toggle" role="group">
+      <button data-lang="zh" aria-pressed="true">中</button>
+      <button data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="notif-bell-wrap" style="position:relative">
+      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="topbar.notify.label">通知</span>
+      </button>
+    </div>
+    <div class="user-menu">
+      <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+        <span class="user__avatar" data-mexion-avatar>A</span>
+        <span class="user__name" data-mexion-user="name">—</span>
+        <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+        <div class="user-menu__head">
+          <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
+          <div class="user-menu__id">
+            <div class="user-menu__name" data-mexion-user="name">—</div>
+            <div class="user-menu__email" data-mexion-user="email">—</div>
+          </div>
+        </div>
+        <div class="user-menu__list">
+          <a class="user-menu__item" href="/profile/" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <span>个人资料</span>
+          </a>
+          <a class="user-menu__item" href="/api-keys/" role="menuitem">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>API 密钥</span>
+          </a>
+          <div class="user-menu__sep" role="none"></div>
+          <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>退出登录</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE HEAD -->
+  <div class="page-head fade-in fade-in--1">
+    <div>
+      <nav class="page-head__crumb">
+        <a href="/dashboard/" data-i18n="models.crumb.overview">概览</a>
+        <span class="sep">/</span>
+        <span style="color:var(--ink)" data-i18n="models.crumb.groups">模型分组</span>
+      </nav>
+      <h1 class="page-head__title" data-i18n-html="models.page.title">模型 <em>分组</em></h1>
+      <p class="page-head__sub" id="pageSubtitle"></p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn-secondary" href="/api-keys/">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8.5 8h5M11.5 6v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="models.action.mytokens">我的令牌</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTER RAIL -->
+  <div class="rail fade-in fade-in--3">
+    <div class="view-seg" id="viewSeg" role="tablist" aria-label="视图">
+      <button type="button" class="seg-btn" data-view="groups" aria-pressed="true" data-i18n="models.view.groups">分组</button>
+      <button type="button" class="seg-btn" data-view="models" aria-pressed="false" data-i18n="models.view.models">模型价格</button>
+    </div>
+    <div class="rail__sep"></div>
+    <div class="rail__search">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <input type="text" id="filterSearch" data-i18n-placeholder="models.rail.search.placeholder" placeholder="筛选分组、模型名称…">
+    </div>
+    <div class="rail__sep"></div>
+    <div class="rail__chips" role="tablist" id="tierChips">
+      <button class="chip" data-tier="all" aria-pressed="true"><span data-i18n="models.tier.all">全部</span> <span class="chip__count">20</span></button>
+      <button class="chip" data-tier="economy"><span data-i18n="models.tier.economy">经济</span> <span class="chip__count">11</span></button>
+      <button class="chip" data-tier="standard"><span data-i18n="models.tier.standard">标准</span> <span class="chip__count">5</span></button>
+      <button class="chip" data-tier="premium"><span data-i18n="models.tier.premium">极速</span> <span class="chip__count">4</span></button>
+    </div>
+    <div class="rail__sep"></div>
+    <div class="rail__prov" id="provChips">
+      <button class="prov-chip" data-prov="all" aria-pressed="true">全部</button>
+    </div>
+    <div class="rail__sort">
+      <select id="sortBy">
+        <option value="ratio-asc" data-i18n="models.sort.ratio.asc">倍率 · 低 → 高</option>
+        <option value="ratio-desc" data-i18n="models.sort.ratio.desc">倍率 · 高 → 低</option>
+        <option value="popular" data-i18n="models.sort.popular">热门优先</option>
+        <option value="name" data-i18n="models.sort.name">名称 A→Z</option>
+      </select>
+      <div class="sort-chips" id="sortChips" role="radiogroup" aria-label="排序">
+        <button type="button" class="sort-chip" data-sort="ratio-asc" aria-pressed="true" data-i18n="models.sort.ratio.asc.short">倍率低→高</button>
+        <button type="button" class="sort-chip" data-sort="ratio-desc" aria-pressed="false" data-i18n="models.sort.ratio.desc.short">倍率高→低</button>
+        <button type="button" class="sort-chip" data-sort="popular" aria-pressed="false" data-i18n="models.sort.popular.short">热门优先</button>
+        <button type="button" class="sort-chip" data-sort="name" aria-pressed="false" data-i18n="models.sort.name.short">名称A→Z</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GROUP STREAM (sections injected here) -->
+  <div id="groupStream" class="fade-in fade-in--4"></div>
+  <!-- MODEL PRICE VIEW (每模型价格 + 跨分组对比) -->
+  <div id="modelPriceView" class="fade-in fade-in--4" hidden></div>
+
+</main>
+</div>
+
+<!-- ══ CREATE TOKEN MODAL ══ -->
+<div class="modal-backdrop" id="createBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mcTitle">
+    <header class="modal__head">
+      <div class="modal__eyebrow" data-i18n="models.modal.eyebrow">创建令牌 · 绑定分组</div>
+      <div class="modal__title-row">
+        <span class="modal__title" id="mcTitle">智能路由</span>
+        <span class="modal__ratio" id="mcRatio">×1.00</span>
+      </div>
+      <p class="modal__desc" id="mcDesc">自动路由 · 按实际使用计费</p>
+      <button class="modal__close" id="mcClose" data-i18n-aria="models.modal.close.aria" aria-label="关闭">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+    <div class="modal__body">
+
+      <section>
+        <h3 class="mu-sec__title" data-i18n="models.modal.field.name">令牌名称</h3>
+        <div class="mc-input">
+          <input type="text" id="mcName" data-i18n-placeholder="models.modal.field.name.placeholder" placeholder="为令牌命名，例如 Codex-工作站" maxlength="32" autocomplete="off">
+          <span class="mc-input__hint" id="mcNameHint">0 / 32</span>
+        </div>
+        <div class="mu-quick" id="mcNameQuick">
+          <button class="mu-quick-chip" data-name="workstation" data-i18n="models.modal.namechip.workstation">工作站</button>
+          <button class="mu-quick-chip" data-name="personal" data-i18n="models.modal.namechip.personal">个人</button>
+          <button class="mu-quick-chip" data-name="test" data-i18n="models.modal.namechip.test">测试</button>
+          <button class="mu-quick-chip" data-name="automation" data-i18n="models.modal.namechip.auto">自动化</button>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="mu-sec__title" data-i18n="models.modal.field.quota">额度上限（USD）</h3>
+        <div class="mu-quick" id="mcQuotaQuick">
+          <button class="mu-quick-chip" data-quota="0" aria-pressed="true" data-i18n="models.modal.quota.unlimited">不限</button>
+          <button class="mu-quick-chip" data-quota="10">$10</button>
+          <button class="mu-quick-chip" data-quota="50">$50</button>
+          <button class="mu-quick-chip" data-quota="200">$200</button>
+          <button class="mu-quick-chip" data-quota="1000">$1000</button>
+          <button class="mu-quick-chip" data-quota="custom" data-i18n="models.modal.quota.custom">自定义</button>
+        </div>
+        <div class="mu-amount" id="mcQuotaCustom" hidden style="margin-top:8px">
+          <span class="mu-amount__sym">$</span>
+          <input type="number" id="mcQuotaAmt" placeholder="0" min="1" step="1">
+          <span class="mu-amount__unit">USD</span>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="mu-sec__title" data-i18n="models.modal.field.expiry">有效期</h3>
+        <div class="mu-quick" id="mcExpiryQuick">
+          <button class="mu-quick-chip" data-days="0" aria-pressed="true" data-i18n="models.modal.expiry.never">永不过期</button>
+          <button class="mu-quick-chip" data-days="7" data-i18n="models.modal.expiry.7d">7 天</button>
+          <button class="mu-quick-chip" data-days="30" data-i18n="models.modal.expiry.30d">30 天</button>
+          <button class="mu-quick-chip" data-days="90" data-i18n="models.modal.expiry.90d">90 天</button>
+          <button class="mu-quick-chip" data-days="365" data-i18n="models.modal.expiry.1y">1 年</button>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="mu-sec__title" data-i18n="models.modal.summary.title">创建后即用</h3>
+        <div class="mu-calc">
+          <div class="mu-calc__row">
+            <span data-i18n="models.modal.summary.bind">绑定分组</span>
+            <span class="mu-calc__val accent" id="mcGroup">智能路由</span>
+          </div>
+          <div class="mu-calc__row">
+            <span data-i18n="models.modal.summary.ratio">计费倍率</span>
+            <span class="mu-calc__val" id="mcRatioRow">×1.00 · 标准</span>
+          </div>
+          <div class="mu-calc__row">
+            <span>Base URL</span>
+            <span class="mu-calc__val" id="mcBaseUrl" style="font-size:12px">http://127.0.0.1:8787/v1</span>
+          </div>
+          <div class="mu-calc__row mu-calc__row--small">
+            <span data-i18n="models.modal.summary.sample">密钥示例</span>
+            <span class="mu-calc__val">sk-mexion-•••••••••••••••••••••••</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    <footer class="modal__foot">
+      <div class="modal__foot-hint">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5v3M6 8v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span data-i18n="models.modal.hint">令牌仅在此分组生效 · 可随时撤销</span>
+      </div>
+      <div class="modal__foot-actions">
+        <button class="btn-secondary" id="mcCancel" data-i18n="models.modal.cancel">取消</button>
+        <button class="btn-primary" id="mcSubmit"><span data-i18n="models.modal.submit">立即创建</span>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7m0 0L7 3.5m2.5 2.5L7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script src="/assets/user-menu.js" defer></script>
+
+<script src="/assets/notification.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+<script src="/assets/group-config.js" defer></script>
+<script src="/assets/models.js" defer></script>
+</body>
+</html>
+
+

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<script>/* Sidebar rail FOUC guard — adds .mexion-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("mexion_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("mexion-rail-init")}catch(e){}})();</script>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mexion — Dashboard</title>
+
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="preload" href="/assets/common.css" as="style">
+<link rel="stylesheet" href="/assets/common.css">
+
+
+<!-- Unified i18n runtime (shared across every page) -->
+<script src="/assets/i18n.js"></script>
+<script src="/assets/core.js" defer></script>
+<script src="/assets/sub2api.js" defer></script>
+
+<link rel="stylesheet" href="/assets/dashboard.css">
+</head>
+<body>
+<script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+<script src="/assets/sidebar.js" defer></script>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle">
+        <button data-lang="zh" aria-pressed="true">中</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    <div class="notif-bell-wrap" style="position:relative">
+      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="topbar.notify.label">通知</span>
+      </button>
+    </div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+          <span class="user__avatar" data-mexion-avatar>A</span>
+          <span class="user__name" data-mexion-user="name">—</span>
+          <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head">
+            <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
+            <div class="user-menu__id">
+              <div class="user-menu__name" data-mexion-user="name">—</div>
+              <div class="user-menu__email" data-mexion-user="email">—</div>
+            </div>
+          </div>
+          <div class="user-menu__list">
+            <a class="user-menu__item" href="/profile/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span>个人资料</span>
+            </a>
+            <a class="user-menu__item" href="/api-keys/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>API 密钥</span>
+            </a>
+            <div class="user-menu__sep" role="none"></div>
+            <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>退出登录</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero fade-in fade-in--1">
+      <div class="hero__intro" data-i18n="hero.date">Monday · 11 May 2026</div>
+      <h1 class="hero__hello" data-i18n-html="hero.hello.html">—</h1>
+      <p class="hero__sub" data-i18n-html="hero.sub.html">—</p>
+
+      <div class="hero__stats">
+        <div class="hstat">
+          <span class="hstat__label" data-i18n="hero.label.calls">Calls</span>
+          <span class="hstat__val">—</span>
+          <svg class="hstat__spark" viewBox="0 0 60 16" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,14 10,14 20,14 30,14 40,14 50,14 60,14" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 3" opacity="0.4"/>
+          </svg>
+          <span class="hstat__hint">—</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat__label" data-i18n="hero.label.tokens">Tokens</span>
+          <span class="hstat__val">—</span>
+          <svg class="hstat__spark" viewBox="0 0 60 16" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,14 10,14 20,14 30,14 40,14 50,14 60,14" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 3" opacity="0.4"/>
+          </svg>
+          <span class="hstat__hint">—</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat__label" data-i18n="hero.label.latency">Latency</span>
+          <span class="hstat__val">—</span>
+          <svg class="hstat__spark" viewBox="0 0 60 16" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,14 10,14 20,14 30,14 40,14 50,14 60,14" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-dasharray="2 3" opacity="0.4"/>
+          </svg>
+          <span class="hstat__hint">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 1 — HEATMAP + CREDENTIALS -->
+    <section class="row-1 fade-in fade-in--2">
+
+      <div class="card heatmap">
+        <div class="card__head">
+          <span class="card__title" data-i18n="card.activity">Activity</span>
+          <span class="card__title-meta" data-i18n="card.activity.meta">last 13 weeks</span>
+          <div class="card__head-actions">
+            <div class="tabs" id="hmRangeTabs">
+              <button class="tab" data-hm-range="month" aria-pressed="false" data-i18n="range.month">M</button>
+              <button class="tab" data-hm-range="quarter" aria-pressed="true" data-i18n="range.quarter">Q</button>
+              <button class="tab" data-hm-range="year" aria-pressed="false" data-i18n="range.year">Y</button>
+            </div>
+            <div class="tabs">
+              <button class="tab" data-hm="calls" aria-pressed="true" data-i18n="tab.calls">calls</button>
+              <button class="tab" data-hm="tokens" aria-pressed="false" data-i18n="tab.tokens">tokens</button>
+              <button class="tab" data-hm="cost" aria-pressed="false" data-i18n="tab.cost">cost</button>
+            </div>
+          </div>
+        </div>
+        <div class="heatmap__body">
+          <div class="heatmap__lead" id="hmLead">
+            <div class="heatmap__lead-num" id="hmLeadNum">—<span class="heatmap__lead-unit"></span></div>
+            <div class="heatmap__lead-note" data-i18n-html="hm.lead.note.html">—</div>
+            <div class="heatmap__sel" id="hmSel">
+              <button class="heatmap__sel-close" id="hmSelClose" aria-label="close">×</button>
+              <div class="heatmap__sel-left">
+                <div class="heatmap__sel-date">
+                  <span class="pill" data-i18n="hm.sel.pill">DAY</span>
+                  <span id="hmSelDate">—</span>
+                  <b id="hmSelDow">—</b>
+                </div>
+                <div class="heatmap__sel-metrics">
+                  <div class="heatmap__sel-metric" id="hmSelMcalls" data-metric="calls"><label data-i18n="tab.calls">calls</label><b>—</b></div>
+                  <div class="heatmap__sel-metric" id="hmSelMtokens" data-metric="tokens"><label data-i18n="tab.tokens">tokens</label><b>—</b></div>
+                  <div class="heatmap__sel-metric" id="hmSelMcost" data-metric="cost"><label data-i18n="tab.cost">cost</label><b>—</b></div>
+                </div>
+              </div>
+              <div class="heatmap__sel-right">
+                <div class="heatmap__sel-rightlabel">
+                  <span data-i18n="hm.sel.hourly">hourly distribution</span>
+                  <span id="hmSelPeakHr">—</span>
+                </div>
+                <div class="heatmap__sel-hours" id="hmSelHours"></div>
+                <div class="heatmap__sel-hours-axis">
+                  <span>0</span><span></span><span></span><span></span><span></span><span></span>
+                  <span>6</span><span></span><span></span><span></span><span></span><span></span>
+                  <span>12</span><span></span><span></span><span></span><span></span><span></span>
+                  <span>18</span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hm-months" id="hmMonths"></div>
+
+          <div class="hm-grid" id="hmGrid">
+            <div class="hm-days">
+              <span></span><span>M</span><span></span><span>W</span><span></span><span>F</span><span></span>
+            </div>
+            <div class="hm-cells" id="hmCells"></div>
+          </div>
+
+          <div class="hm-foot">
+            <span><span data-i18n="hm.foot.prefix">Each cell is a day · green→red = low→peak</span> <span id="hmFootMetric">calls</span></span>
+            <span class="hm-legend">
+              <span data-i18n="hm.foot.less">less</span>
+              <span class="hm-legend-cells">
+                <span style="background:var(--h0);"></span>
+                <span style="background:var(--h1);"></span>
+                <span style="background:var(--h2);"></span>
+                <span style="background:var(--h3);"></span>
+                <span style="background:var(--h4);"></span>
+              </span>
+              <span data-i18n="hm.foot.more">more</span>
+            </span>
+          </div>
+          <div class="hm-tip" id="hmTip">
+            <div class="hm-tip__date"><span class="hm-tip__day">—</span><b class="hm-tip__dow">—</b></div>
+            <div class="hm-tip__val">—</div>
+            <div class="hm-tip__delta">—</div>
+            <div class="hm-tip__bar"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creds-col">
+        <!-- 余额与额度 -->
+        <div class="card creds creds--bal">
+          <div class="card__head">
+            <span class="card__title" data-i18n="card.balance">Balance</span>
+          </div>
+          <div class="creds__body">
+            <div class="creds__balance">
+              <div class="creds__amount">
+                <span class="creds__amount-cur">$</span>—<span class="creds__amount-frac">.—</span>
+              </div>
+              <a class="creds__topup" href="/billing/index.html">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><line x1="6" y1="2" x2="6" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <span data-i18n="creds.topup">Top up</span>
+              </a>
+            </div>
+            <div>
+              <div class="creds__bar"><div class="creds__bar-fill" id="credsBarFill" style="width:0%"></div></div>
+              <div class="creds__bar-meta">
+                <span id="credsBarUsed">used 0%</span>
+                <span id="credsBarRenew">—</span>
+                <span id="credsBarCap">cap $0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API 凭证：快速获取每个 key -->
+        <div class="card creds">
+          <div class="card__head">
+            <span class="card__title" data-i18n="card.creds">API Credentials</span>
+            <div class="card__head-actions">
+              <a class="card__action" href="/api-keys/index.html"><span data-i18n="creds.action.manage">Manage</span>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="3,2 7,6 3,10" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            </div>
+          </div>
+          <div class="creds__body">
+            <div class="creds__keys-wrap">
+              <div class="creds__keys" id="keySelector" hidden></div>
+            </div>
+
+          <div class="creds__keyrow">
+            <span class="creds__keyrow__val" id="keyVal"><span class="mask">Loading…</span></span>
+            <span class="creds__keyrow__group" id="keyGroup" hidden></span>
+            <button class="icbtn" id="revealBtn" aria-label="reveal">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7C2.5 4 4.5 3 7 3s4.5 1 6 4c-1.5 3-3.5 4-6 4S2.5 10 1 7Z" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
+            </button>
+            <button class="icbtn" id="copyBtn" aria-label="copy">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V2.3c0-.3-.3-.6-.6-.6H2.3c-.4 0-.6.3-.6.6V8.6c0 .3.2.6.6.6H4" stroke="currentColor" stroke-width="1.2"/></svg>
+            </button>
+          </div>
+
+          <div class="creds__fmt" role="group" aria-label="API format">
+            <button type="button" class="creds__fmt-btn is-on" data-fmt="openai">OpenAI · /v1</button>
+            <button type="button" class="creds__fmt-btn" data-fmt="claude">Claude Code</button>
+          </div>
+
+          <div class="creds__endpoint">
+            <span class="creds__endpoint-tag">POST</span>
+            <span class="creds__endpoint-url">—</span>
+            <button class="icbtn" id="copyEpBtn" style="color:rgba(255,255,255,0.55);" aria-label="copy endpoint">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V2.3c0-.3-.3-.6-.6-.6H2.3c-.4 0-.6.3-.6.6V8.6c0 .3.2.6.6.6H4" stroke="currentColor" stroke-width="1.2"/></svg>
+            </button>
+          </div>
+
+          <div class="creds__actions">
+            <button type="button" class="creds__act" id="copyConnBtn" data-i18n="creds.copyConn">Copy connection</button>
+            <button type="button" class="creds__act" id="copyCurlBtn" data-i18n="creds.copyCurl">Copy cURL</button>
+          </div>
+
+          <div class="creds__meta">
+            <div class="creds__meta-cell">
+              <span class="creds__meta-key" data-i18n="creds.meta.status">Status</span>
+              <span class="creds__meta-val" id="credsStatus"><span class="creds__meta-dot"></span><span>—</span></span>
+            </div>
+            <div class="creds__meta-cell">
+              <span class="creds__meta-key" data-i18n="creds.meta.last">Last used</span>
+              <span class="creds__meta-val" id="credsLastUsed">—</span>
+            </div>
+            <div class="creds__meta-cell">
+              <span class="creds__meta-key" data-i18n="creds.meta.rate">Rate</span>
+              <span class="creds__meta-val" id="credsRate">—</span>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ROW 2 — DONUT + LIVE -->
+    <section class="row-2 fade-in fade-in--3">
+
+      <div class="card mix">
+        <div class="card__head">
+          <span class="card__title" data-i18n="card.mix">Model mix</span>
+          <span class="card__title-meta" data-i18n="card.mix.meta">this quarter</span>
+          <div class="card__head-actions">
+            <div class="tabs" id="mixRangeTabs">
+              <button class="tab" data-mix-range="month" aria-pressed="false" data-i18n="range.month">M</button>
+              <button class="tab" data-mix-range="quarter" aria-pressed="true" data-i18n="range.quarter">Q</button>
+              <button class="tab" data-mix-range="year" aria-pressed="false" data-i18n="range.year">Y</button>
+            </div>
+          </div>
+        </div>
+        <div class="mix__body">
+          <div class="mix__lead">
+            <div class="mix__lead-l">
+              <div class="mix__lead-num" id="mixLeadNum">0<span class="mix__lead-unit" data-i18n="donut.center.label">models</span></div>
+              <div class="mix__lead-sub" id="mixLeadSub">—</div>
+            </div>
+            <div class="mix__lead-r">
+              <div class="mix__lead-delta is-up" id="mixDelta"><svg width="9" height="9" viewBox="0 0 9 9"><path d="M4.5 1L8 6H1z" fill="currentColor"/></svg><span>+3</span></div>
+              <div class="mix__lead-deltal" data-i18n="mix.vs.prev">vs previous</div>
+            </div>
+          </div>
+          <div class="mix__stack" id="mixStack"></div>
+          <div class="mix__rows" id="mixRows"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <span class="card__title" data-i18n="card.live">Live</span>
+          <span class="live__chip" aria-hidden="true">
+            <span class="live__chip-label">LIVE</span>
+            <span class="live__chip-bar"></span>
+          </span>
+          <span class="card__title-meta" id="liveCounter">0 calls today</span>
+          <div class="card__head-actions">
+            <a class="card__action" href="/logs/index.html"><span data-i18n="live.action.all">All logs</span>
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="3,2 7,6 3,10" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="live__body" id="liveBody"></div>
+        <div class="live__foot">
+          <span data-i18n="live.foot.auto">Auto-refreshing</span>
+          <a href="/logs/index.html"><span data-i18n="live.foot.browse">Browse all</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="6" x2="9" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><polyline points="6.5,3 9.5,6 6.5,9" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- USAGE CHART -->
+    <section class="fade-in fade-in--4">
+      <div class="card chart-card">
+        <div class="card__head">
+          <span class="card__title" data-i18n="card.usage">Usage</span>
+          <span class="card__title-meta" id="usageMeta" data-i18n="card.usage.meta.30">last 30 days</span>
+          <div class="card__head-actions">
+            <div class="tabs">
+              <button class="tab" data-range="7"  aria-pressed="false">7D</button>
+              <button class="tab" data-range="30" aria-pressed="true">30D</button>
+              <button class="tab" data-range="90" aria-pressed="false">90D</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card__body">
+          <div class="chart-summary">
+            <div class="chart-summary__main" id="chartSummaryMain">0<span class="chart-summary__unit" data-i18n="chart.summary.unit">k calls</span></div>
+            <span class="chart-summary__delta">
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M3 7.5L6 4.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="usageDelta" data-i18n="chart.summary.delta.30">+24.8% vs previous 30 days</span>
+            </span>
+            <div class="chart-stats" id="chartStats">
+              <div class="chart-stat chart-stat--max">
+                <span class="chart-stat__dot"></span>
+                <span class="chart-stat__lbl" data-i18n="chart.stat.peak">peak</span>
+                <span class="chart-stat__val" id="statPeakVal">—</span>
+                <span class="chart-stat__date" id="statPeakDate">—</span>
+              </div>
+              <div class="chart-stat chart-stat--min">
+                <span class="chart-stat__dot"></span>
+                <span class="chart-stat__lbl" data-i18n="chart.stat.low">low</span>
+                <span class="chart-stat__val" id="statLowVal">—</span>
+                <span class="chart-stat__date" id="statLowDate">—</span>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <span class="chart-legend__item"><span class="chart-legend__sw" style="background:var(--verm);"></span><span data-i18n="chart.legend.current">current</span></span>
+              <span class="chart-legend__item"><span class="chart-legend__sw" style="background:var(--mute-2);height:0;border-top:1px dashed var(--mute-2);"></span><span data-i18n="chart.legend.previous">previous</span></span>
+            </div>
+          </div>
+          <div class="chart" id="chart">
+            <svg id="chartSvg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gradMain" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stop-color="#C8392D" stop-opacity="0.16"/>
+                  <stop offset="100%" stop-color="#C8392D" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="chart-tip" id="chartTip">
+              <div class="chart-tip__date" id="tipDate">—</div>
+              <div class="chart-tip__val" id="tipVal">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="row-admin fade-in fade-in--5" id="adminQuickSection" hidden>
+      <div class="card">
+        <div class="card__head">
+          <span class="card__title">§ 管理快捷入口</span>
+          <span class="card__title-meta">Admin</span>
+        </div>
+        <div class="admin-quick-grid" id="adminQuickGrid"></div>
+      </div>
+    </section>
+
+    <section class="row-ops fade-in fade-in--5" id="opsSection" hidden>
+      <div class="card">
+        <div class="card__head">
+          <span class="card__title">§ 渠道健康</span>
+          <span class="card__title-meta">实时</span>
+        </div>
+        <div class="ops-list" id="channelHealthList"></div>
+      </div>
+      <div class="card">
+        <div class="card__head">
+          <span class="card__title">§ Provider 分布</span>
+          <span class="card__title-meta">24h</span>
+        </div>
+        <div class="ops-list" id="providerDistList"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+
+
+<!-- Polish: count-up, donut hover sync, chart min/max annotations -->
+
+<!-- Tweaks -->
+
+<!-- Dashboard API data hydration -->
+
+<script src="/assets/user-menu.js" defer></script>
+<script src="/assets/notification.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+<script src="/assets/dashboard.js" defer></script>
+</body>
+</html>
+
+
+

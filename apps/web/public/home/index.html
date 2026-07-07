@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mexion — A Catalogue of Language Models</title>
+
+<!-- Preload critical fonts: start download before CSS is parsed -->
+<link rel="preload" href="/assets/fonts/gyByhwUxId8gMEwcGFU.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/k3kXo84MPvpLmixcA63oeALhLOCT-xWNm8Hqd37g1OkDRZe7lR4sg1IzSy-MNbE9VH8V.119.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts.css">
+
+<!-- Unified i18n runtime (shared across every page) -->
+<script src="/assets/i18n.js"></script>
+
+
+<link rel="stylesheet" href="/assets/index.css">
+</head>
+<body>
+
+<!-- binding shadow -->
+<div class="binding"></div>
+
+<!-- typesetter registration corners -->
+<div class="corner-mark cm-tl"></div>
+<div class="corner-mark cm-tr"></div>
+<div class="corner-mark cm-bl"></div>
+<div class="corner-mark cm-br"></div>
+
+<!-- grid overlay canvas -->
+<canvas id="grid-overlay"></canvas>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav__brand" href="/">
+    <span class="nav__brand-mark" aria-hidden="true"></span>
+    <span>Mexion</span>
+  </a>
+  <span class="nav__brand-meta">Vol.&thinsp;I · est.&thinsp;2026</span>
+  <div class="nav__gap"></div>
+  <div class="nav__links">
+    <a href="/models/" data-i18n="nav.models">models</a>
+    <a href="https://mexion-doc.pages.dev/" target="_blank" rel="noopener" data-i18n="nav.docs">docs</a>
+    <a href="/subscription/" data-i18n="nav.pricing">pricing</a>
+  </div>
+  <div class="nav__divider"></div>
+  <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+    <span class="lang-active" id="langActive">EN</span>
+    <span class="lang-sep">/</span>
+    <span id="langOther">中文</span>
+  </button>
+  <div class="nav__divider"></div>
+  <a class="nav__signin" href="/sign-in/">
+    <span data-i18n="nav.signin">Sign in</span>
+    <svg width="10" height="9" viewBox="0 0 10 9" fill="none" aria-hidden="true">
+      <path d="M0.5 4.5H8M5 1.5L8 4.5L5 7.5" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
+</nav>
+<div class="nav__rule"></div>
+
+<!-- STAGE -->
+<main class="stage">
+
+  <div class="left">
+    <p class="sec-label" data-i18n="label">§ The Thesis</p>
+
+    <h1 class="hero">
+      <span class="hero__l1" data-i18n="hero.l1">One key,</span>
+      <span class="hero__l2" data-i18n-html="hero.l2"><span class="hero__mark">every<svg class="brush-svg" viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M 2,11.8 C 8,10.2 18,12.4 32,11.0 C 48,9.4 68,12.8 86,11.2 C 102,9.6 118,12.6 134,10.8 C 150,9.2 168,12.2 182,10.6 C 190,9.8 196,10.8 198,10.2 L 198,12.4 C 196,13.0 190,12.0 182,13.2 C 168,14.8 150,11.4 134,13.0 C 118,14.6 102,11.6 86,13.4 C 68,15.0 48,11.4 32,13.2 C 18,14.6 8,12.0 2,13.4 Z"/></svg></span> language model</span>
+      <span class="hero__l3">
+        <span data-i18n-html="hero.l3">worth calling</span><span class="caret" aria-hidden="true"></span>
+      </span>
+    </h1>
+
+    <p class="sub" data-i18n="sub.body">In Euclid's geometry, an mexion is a proposition accepted as self-evidently true—all proofs depart from here. Mexion brings this structure to the age of AI: a single, <strong><em>unified endpoint</em></strong> as the foundation beneath your application, requiring no elaboration. Whether you call Claude, GPT, Gemini or DeepSeek, the form of invocation is <em>henceforth identical</em>.</p>
+
+    <div class="cta-row">
+      <a class="cta" href="/sign-in/">
+        <span class="cta-corner tl" aria-hidden="true"></span>
+        <span class="cta-corner br" aria-hidden="true"></span>
+        <span class="cta-ornament" aria-hidden="true"></span>
+        <span class="cta__label" data-i18n="cta">Sign in to Mexion</span>
+        <svg width="24" height="10" viewBox="0 0 24 10" fill="none" aria-hidden="true">
+          <line x1="0.5" y1="5" x2="20" y2="5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <polyline points="16,1.4 20.2,5 16,8.6" stroke="currentColor" stroke-width="1.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <a class="cta-secondary" href="/models/" data-i18n="cta2">Browse the catalogue →</a>
+    </div>
+  </div>
+
+  <div class="plate">
+    <div class="plate__head">
+      <span class="plate__head-num">PL.&thinsp;I</span>
+      <span class="plate__head-rule"></span>
+      <span class="plate__head-meta" data-i18n="plate.head">Frontispiece · Folio Recto</span>
+    </div>
+    <p class="plate__title">
+      <span class="plate__title-cn">持卷者</span>
+      <span class="plate__title-sep">&middot;</span>
+      <span class="plate__title-en">The Keeper of the Scroll</span>
+    </p>
+    <div class="plate__frame-wrap">
+      <div class="plate__frame" id="plateFrame">
+        <img class="plate__ink" src="/assets/mascot.webp" alt="持卷者 — The Keeper of the Scroll">
+      </div>
+    </div>
+    <p class="plate__caption">
+      <span class="plate__caption-num">FIG.&thinsp;0.1&nbsp;—&nbsp;</span>
+      <span class="plate__caption-text" data-i18n="plate.caption">Ink and wash, vermilion-touched.</span>
+    </p>
+    <div class="plate__prop">
+      <div class="prop__eyebrow">
+        <span class="prop__eyebrow-num" data-i18n="note.title">A Note on the Name</span>
+      </div>
+      <p class="prop__body" data-i18n="note.body">
+        Mexion — from Greek ἀξίωμα,
+        <em class="prop__quote">"that which is thought worthy."</em>
+        A foundational truth, accepted without proof.<span class="prop__end"></span>
+      </p>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="foot__rule"></div>
+  <div class="status">
+    <div class="s-item"><span class="s-key" data-i18n="status.status">Status</span><span class="s-dot" id="statusDot"></span><span class="s-val" id="statusVal" data-i18n="status.operational">operational</span></div>
+    <div class="s-item"><span class="s-key" data-i18n="status.latency">Latency</span><span class="s-val">&lt;&thinsp;50&thinsp;ms</span></div>
+    <div class="status__spacer"></div>
+    <div class="s-item"><span class="s-key">Vol.&thinsp;I</span><span class="s-val">Issue&thinsp;01</span></div>
+    <div class="s-item"><span class="s-key" data-i18n="status.updated">Updated</span><span class="s-val" id="footDate">—</span></div>
+  </div>
+</footer>
+<script src="/assets/core.js"></script>
+<script src="/assets/sub2api.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+<script src="/assets/index.js" defer></script>
+</body>
+</html>
+
+

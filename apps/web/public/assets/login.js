@@ -392,6 +392,12 @@
     initInviteCode();
     loadPublicSettings();
 
+    var initialMode = new URLSearchParams(location.search).get('mode') || '';
+    var authPath = location.pathname.replace(/\/+$/, '');
+    if (!initialMode && authPath === '/register') initialMode = 'signup';
+    if (!initialMode && (authPath === '/forgot-password' || authPath === '/reset-password')) initialMode = 'forgot';
+    if (initialMode === 'signup' || initialMode === 'forgot' || initialMode === 'login') setMode(initialMode);
+
     if ($('loginForm')) $('loginForm').addEventListener('submit', loginSubmit);
     if ($('signupForm')) $('signupForm').addEventListener('submit', signupSubmit);
     if ($('forgotForm')) $('forgotForm').addEventListener('submit', forgotSubmit);

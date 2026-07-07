@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<script>/* theme FOUC guard — set dark before first paint */(function(){try{var t=localStorage.getItem("mexion_theme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";if(t==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}})();</script>
+<meta name="theme-color" content="#F4F3EE">
+<meta charset="UTF-8">
+<script>/* Sidebar rail FOUC guard — adds .mexion-rail-init before CSS paints when storage says rail (or first visit on small screens). Mirrored in sidebar.js. */(function(){try{var s=localStorage.getItem("mexion_sidebar_rail");var w=window.innerWidth;if(s==="1"||(s==null&&w>860&&w<1180))document.documentElement.classList.add("mexion-rail-init")}catch(e){}})();</script>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mexion — 渠道管理</title>
+
+<link rel="stylesheet" href="/assets/fonts.css">
+<link rel="preload" href="/assets/common.css" as="style">
+<link rel="stylesheet" href="/assets/common.css">
+
+
+<!-- Unified i18n runtime (shared across every page) -->
+<script src="/assets/i18n.js"></script>
+<script src="/assets/core.js" defer></script>
+<script src="/assets/sub2api.js" defer></script>
+
+<link rel="stylesheet" href="/assets/channels.css">
+
+</head>
+<body>
+<script>(function(){try{var uid=localStorage.getItem('mexion_user_id')||sessionStorage.getItem('mexion_user_id');if(!uid){location.replace('/sign-in/');return;}if(localStorage.getItem('mexion_user_role')!=='admin'){location.replace('/dashboard/');return;}}catch(e){}})()</script>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side" id="mexion-sidebar"><div class="side-skel" style="padding:18px 14px;height:100%;display:flex;flex-direction:column"><div style="display:flex;align-items:center;gap:9px;padding:6px 10px 18px"><div style="width:28px;height:28px;border-radius:8px;background:var(--border-2)"></div><div style="width:60px;height:14px;border-radius:4px;background:var(--border-2)"></div></div><div style="display:flex;flex-direction:column;gap:6px;padding:0 4px"><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:1px;background:var(--border-2);margin:8px 0"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div><div style="height:32px;border-radius:8px;background:var(--bg-2)"></div></div></div></aside>
+<script src="/assets/sidebar.js" defer></script>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar__spacer"></div>
+      <div class="topbar__sep" aria-hidden="true"></div>
+      <div class="lang-toggle">
+        <button data-lang="zh" aria-pressed="true">中</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    <div class="notif-bell-wrap" style="position:relative">
+      <button class="iconbtn iconbtn--labeled notif-bell" title="通知" data-i18n-title="topbar.notify.title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6a4 4 0 0 1 8 0c0 2 1 3.5 1.5 4.5H2.5C3 9.5 4 8 4 6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span data-i18n="topbar.notify.label">通知</span>
+      </button>
+    </div>
+      <div class="user-menu">
+        <button class="user" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+          <span class="user__avatar" data-mexion-avatar>A</span>
+          <span class="user__name" data-mexion-user="name">—</span>
+          <svg class="user__caret" width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="2.5,4 5,6.5 7.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </button>
+        <div class="user-menu__panel" id="user-menu-panel" role="menu" aria-label="账户菜单" hidden>
+          <div class="user-menu__head">
+            <div class="user-menu__avatar-lg" data-mexion-avatar aria-hidden="true">A</div>
+            <div class="user-menu__id">
+              <div class="user-menu__name" data-mexion-user="name">—</div>
+              <div class="user-menu__email" data-mexion-user="email">—</div>
+            </div>
+          </div>
+          <div class="user-menu__list">
+            <a class="user-menu__item" href="/profile/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 13c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <span>个人资料</span>
+            </a>
+            <a class="user-menu__item" href="/api-keys/index.html" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="5.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 9l6-6M11 5l1.5 1.5M12.5 3.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>API 密钥</span>
+            </a>
+            <div class="user-menu__sep" role="none"></div>
+            <button class="user-menu__item user-menu__item--danger" type="button" role="menuitem" data-action="signout">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.5 3.5h-5a1 1 0 00-1 1v7a1 1 0 001 1h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 5.5L12.5 8l-3 2.5M6 8h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>退出登录</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Head -->
+    <div class="page-head fade-in fade-in--1">
+      <div class="page-head__left">
+        <nav class="page-head__crumb">
+          <a href="/dashboard/">概览</a><span class="sep">/</span>
+          <span style="color:var(--ink)">渠道管理</span>
+        </nav>
+        <div class="page-head__title">渠道<em>管理</em></div>
+        <div class="page-head__sub"><span id="channelStats">加载中…</span><span class="channels-health-bar" id="channelHealthBar"></span></div>
+      </div>
+      <button class="btn-primary" id="createChannelBtn" type="button">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span>新建渠道</span>
+      </button>
+    </div>
+
+    <div class="channels-layout fade-in fade-in--2">
+      <div class="channels-stream">
+        <div class="card channels-card">
+          <div class="channels-card-head">
+            <div class="channels-search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9.2 9.2 12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><input id="channelSearch" type="search" placeholder="搜索渠道、Provider、Base URL"></div>
+            <div class="channels-view-tabs" id="channelViewTabs">
+              <button class="tab" data-view="list" aria-pressed="true" type="button">列表</button>
+              <button class="tab" data-view="group" aria-pressed="false" type="button">按分组</button>
+            </div>
+            <span class="channels-count" id="channelCount">—</span>
+          </div>
+          <div class="channels-batch" id="channelBatch" hidden>
+            <span id="batchCount">已选 0</span>
+            <button class="btn-secondary" data-batch="enable" type="button">批量启用</button>
+            <button class="btn-secondary" data-batch="disable" type="button">批量停用</button>
+            <button class="btn-secondary channels-btn-danger" data-batch="delete" type="button">批量删除</button>
+          </div>
+          <div class="channels-filter" id="providerFilter"></div>
+          <div class="channels-colhead"><span></span><span></span><span>名称</span><span>Provider</span><span>分组</span><span>延迟</span><span class="colh-r">状态</span><span></span></div>
+          <div id="channelList"></div>
+        </div>
+      </div>
+      <div class="card channel-detail" id="channelDetail"><div class="channel-empty"><h3>选择渠道</h3><p>点击左侧渠道查看详情与配置</p></div></div>
+    </div>
+
+    <div class="channels-modal-bg" id="createChannelModal" hidden role="dialog" aria-modal="true">
+      <div class="channels-modal">
+        <div class="channels-modal__head"><h2 class="channels-modal__title">新建渠道</h2><button class="channels-modal__close" id="createChannelClose" type="button">×</button></div>
+        <div class="channels-modal__body">
+          <label class="channels-form-field"><span class="channels-form-label">01 名称</span><input class="channels-form-input" id="channelName" type="text" placeholder="OpenAI primary"></label>
+          <label class="channels-form-field"><span class="channels-form-label">02 Provider</span><select class="channels-form-input" id="channelProvider"><option value="openai">openai</option><option value="anthropic">anthropic</option><option value="gemini">gemini</option><option value="azure">azure</option><option value="custom">custom</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">03 Base URL</span><input class="channels-form-input" id="channelBaseUrl" type="url" placeholder="https://api.openai.com/v1"></label>
+          <label class="channels-form-field"><span class="channels-form-label">04 API Key</span><input class="channels-form-input" id="channelSecret" type="password" autocomplete="new-password"></label>
+          <label class="channels-form-field"><span class="channels-form-label">05 所属分组</span><select class="channels-form-input" id="channelGroup"><option value="">不绑定分组</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">06 模型列表</span><textarea class="channels-form-input" id="channelModels" rows="4" placeholder="gpt-4o-mini, gpt-4.1"></textarea></label><div class="channels-model-tools"><button class="btn-secondary channels-probe-btn" id="fetchModelsBtn" type="button">从上游探测模型</button><span class="channels-model-hint" id="fetchModelsHint">调用 Base URL 的模型列表接口并自动填入</span></div>
+          <label class="channels-form-field"><span class="channels-form-label">07 优先级</span><input class="channels-form-input" id="channelPriority" type="number" value="0"></label>
+        </div>
+        <div class="channels-modal__foot"><button class="btn-secondary" id="createChannelCancel" type="button">取消</button><button class="btn-primary" id="createChannelConfirm" type="button">创建渠道</button></div>
+      </div>
+    </div>
+
+    <div class="channels-modal-bg" id="editChannelModal" hidden role="dialog" aria-modal="true">
+      <div class="channels-modal">
+        <div class="channels-modal__head"><h2 class="channels-modal__title">编辑渠道</h2><button class="channels-modal__close" id="editChannelClose" type="button">×</button></div>
+        <div class="channels-modal__body">
+          <label class="channels-form-field"><span class="channels-form-label">01 名称</span><input class="channels-form-input" id="editChannelName" type="text"></label>
+          <label class="channels-form-field"><span class="channels-form-label">02 Provider</span><select class="channels-form-input" id="editChannelProvider"><option value="openai">openai</option><option value="anthropic">anthropic</option><option value="gemini">gemini</option><option value="azure">azure</option><option value="custom">custom</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">03 Base URL</span><input class="channels-form-input" id="editChannelBaseUrl" type="url"></label>
+          <label class="channels-form-field"><span class="channels-form-label">04 API Key</span><input class="channels-form-input" id="editChannelSecret" type="password" autocomplete="new-password" placeholder="（留空则不修改）"></label>
+          <label class="channels-form-field"><span class="channels-form-label">05 所属分组</span><select class="channels-form-input" id="editChannelGroup"><option value="">不绑定分组</option></select></label>
+          <label class="channels-form-field"><span class="channels-form-label">06 模型列表</span><textarea class="channels-form-input" id="editChannelModels" rows="4" placeholder="gpt-4o-mini, gpt-4.1"></textarea></label>
+          <label class="channels-form-field"><span class="channels-form-label">07 优先级</span><input class="channels-form-input" id="editChannelPriority" type="number" value="0"></label>
+        </div>
+        <div class="channels-modal__foot"><button class="btn-secondary" id="editChannelCancel" type="button">取消</button><button class="btn-primary" id="editChannelConfirm" type="button">保存修改</button></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="/assets/user-menu.js" defer></script>
+<script src="/assets/notification.js" defer></script>
+<script src="/assets/prefetch.js" defer></script>
+<script src="/channels/app.js" defer></script>
+</body>
+</html>
+
