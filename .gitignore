@@ -16,3 +16,30 @@ pnpm-debug.log*
 # Local reference material for Codex — do not commit
 research/
 apps/web/public/vendor/
+
+# Local backups & update staging — contain PostgreSQL dumps and backend config.yaml
+backups/
+.update/
+.latest-update-backup
+apps/web-static-backup-*/
+logs/
+
+# Local working notes / scratch state
+CODEX_GOAL_FINAL.md
+CODEX_SETUP_PROMPT.md
+CODEX_SUB2API_SKIN.md
+findings.md
+progress.md
+task_plan.md
+
+# Local-only scripts and docs that hardcode dev admin credentials
+scripts/cdp-admin-screenshot.mjs
+scripts/cdp-logo-audit.mjs
+scripts/cdp-mexion-interaction-audit.mjs
+scripts/cdp-ops-style-audit.mjs
+scripts/cdp-overlay-audit.mjs
+scripts/cdp-route-audit.mjs
+scripts/cdp-sidebar-audit.mjs
+scripts/cdp-surface-audit.mjs
+scripts/start-mexion-vue-preview.ps1
+docs/SECURITY_OPTIMIZATION_PLAN.md

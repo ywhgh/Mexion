@@ -1,0 +1,633 @@
+/*
+ * Mexion motion language
+ * ----------------------
+ * brush: a deliberate line travelling across paper
+ * ink: quick contact followed by a soft soak
+ * stamp: a decisive vermilion landing
+ *
+ * Keep this file behavioral and scoped. Static geometry stays in the existing
+ * parity CSS until it is progressively moved into this skin package.
+ */
+
+
+@keyframes mx-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mx-scale-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes mx-fade {
+  to { opacity: 1; }
+}
+
+@keyframes mx-write {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes mx-rise {
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mx-paper-soak {
+  from { background-color: #fff; }
+  to { background-color: #f8f4ea; }
+}
+
+@keyframes mx-brush-draw {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  30% { opacity: 1; }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes mx-cta-row-in {
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mx-verm-stamp-nav {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) translateY(-1px) scale(.6);
+    filter: blur(2px);
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(45deg) translateY(-1px) scale(1.18);
+    filter: blur(0) drop-shadow(0 0 4px rgb(181 57 45 / 45%));
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) translateY(-1px) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes mx-diamond-pulse {
+  0% { transform: rotate(45deg) translateY(-1px) scale(1); }
+  40% {
+    transform: rotate(225deg) translateY(-1px) scale(1.35);
+    filter: drop-shadow(0 0 8px rgb(181 57 45 / 55%));
+  }
+  100% { transform: rotate(45deg) translateY(-1px) scale(1); }
+}
+
+@keyframes mx-corner-fade {
+  from { opacity: 0; }
+  to { opacity: .5; }
+}
+
+@keyframes mx-nav-item-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mx-main-shift-collapse {
+  0% { transform: translateX(0); }
+  35% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes mx-main-shift-expand {
+  0% { transform: translateX(0); }
+  35% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes mx-drawer-nav-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mx-auth-develop {
+  0% {
+    filter: blur(7px) saturate(.18) contrast(.46) brightness(1.18);
+    opacity: .42;
+  }
+  32% {
+    filter: blur(4.5px) saturate(.4) contrast(.62) brightness(1.13);
+    opacity: .7;
+  }
+  100% {
+    filter: blur(0) saturate(1) contrast(1) brightness(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mx-auth-mascot-rise {
+  from { clip-path: inset(100% 0 0 0); filter: contrast(.5) brightness(1.18); }
+  to { clip-path: inset(0); filter: contrast(1) brightness(1); }
+}
+
+@keyframes mx-auth-rule-scale {
+  from { transform: scaleX(.1); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes mx-auth-second-pass {
+  0% { opacity: 0; transform: scale(.78); }
+  62% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mx-auth-second-pass-diamond {
+  0% { opacity: 0; transform: rotate(45deg) scale(.6); }
+  62% { opacity: 1; transform: rotate(45deg) scale(1.16); }
+  100% { opacity: 1; transform: rotate(45deg) scale(1); }
+}
+
+@keyframes mx-auth-brand-breathe {
+  0%, 100% { filter: drop-shadow(0 0 0 rgb(181 57 45 / 0%)); }
+  50% { filter: drop-shadow(0 0 5px rgb(181 57 45 / 28%)); }
+}
+
+/* Dashboard/page cadence. Scope deliberately excludes generic dropdown fade-ins. */
+@media (prefers-reduced-motion: no-preference) {
+  .mexion-dashboard-shell .fade-in,
+  .app > .main > .page-head.fade-in {
+    animation: mx-fade-up .55s cubic-bezier(.22, .61, .36, 1) both;
+    will-change: opacity, transform;
+  }
+
+  .mexion-dashboard-shell .fade-in--1,
+  .app > .main > .page-head.fade-in--1 { animation-delay: .04s; }
+  .mexion-dashboard-shell .fade-in--2,
+  .app > .main > .page-head.fade-in--2 { animation-delay: .12s; }
+  .mexion-dashboard-shell .fade-in--3,
+  .app > .main > .page-head.fade-in--3 { animation-delay: .2s; }
+  .mexion-dashboard-shell .fade-in--4,
+  .app > .main > .page-head.fade-in--4 { animation-delay: .28s; }
+  .mexion-dashboard-shell .fade-in--5,
+  .app > .main > .page-head.fade-in--5 { animation-delay: .36s; }
+}
+
+/* Sidebar physical feedback is injected by MexionOverlayHost. */
+@media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+  .app.is-just-expanded .sidebar-link {
+    animation: mx-nav-item-in 240ms var(--mx-ease-ink) both;
+    animation-delay: calc(120ms + var(--i, 0) * 22ms);
+  }
+
+  .app.is-just-expanded .sidebar-brand,
+  .app.is-just-expanded .brand__plan {
+    animation: mx-nav-item-in 240ms var(--mx-ease-ink) 80ms both;
+  }
+
+  .app.is-shift-collapse .main {
+    animation: mx-main-shift-collapse 380ms var(--mx-ease-ink);
+  }
+
+  .app.is-shift-expand .main {
+    animation: mx-main-shift-expand 380ms var(--mx-ease-ink);
+  }
+}
+
+@media (min-width: 861px) {
+  .app:not(.is-rail) .side {
+    transition: border-right-color 220ms ease-out;
+  }
+
+  .app:not(.is-rail) .side.is-edge-hover {
+    border-right-color: var(--mute-3, #bbb7a4) !important;
+  }
+}
+
+@media (max-width: 860px) and (prefers-reduced-motion: no-preference) {
+  .side.is-open .sidebar-link {
+    animation: mx-drawer-nav-in 260ms var(--mx-ease-ink) both;
+    animation-delay: calc(55ms + var(--i, 0) * 18ms);
+  }
+}
+
+/* Home entrance timeline: copy the old woodblock ritual, not generic page fades. */
+.mexion-index-page {
+  --mx-d-rule-top: 0ms;
+  --mx-d-logo: 200ms;
+  --mx-d-nav-right: 280ms;
+  --mx-d-label: 420ms;
+  --mx-d-hero-1: 520ms;
+  --mx-d-plate: 660ms;
+  --mx-d-hero-2: 720ms;
+  --mx-d-hero-3: 920ms;
+  --mx-d-rule-bot: 1120ms;
+  --mx-d-sub: 1160ms;
+  --mx-d-foot: 1340ms;
+  --mx-d-cta: 1400ms;
+  --mx-d-brush: 1640ms;
+  --mx-d-stamp: 1740ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mexion-index-page {
+    animation: mx-paper-soak .55s cubic-bezier(.4, 0, .2, 1) both;
+  }
+
+  .mexion-index-page .nav__rule {
+    transform-origin: left;
+    animation: mx-scale-x 380ms var(--mx-d-rule-top) var(--mx-ease-brush) both;
+  }
+
+  .mexion-index-page .nav__brand,
+  .mexion-index-page .nav__brand-meta {
+    opacity: 0;
+    animation: mx-fade 440ms var(--mx-d-logo) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .nav__links,
+  .mexion-index-page .lang-toggle,
+  .mexion-index-page .nav__signin,
+  .mexion-index-page .nav__divider {
+    opacity: 0;
+    animation: mx-fade 420ms var(--mx-d-nav-right) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .nav__brand-mark {
+    animation: mx-verm-stamp-nav .55s cubic-bezier(.34, 1.56, .64, 1) var(--mx-d-stamp) both;
+    will-change: transform, filter;
+  }
+
+  .mexion-index-page .nav__brand-mark.is-stamping {
+    animation: mx-diamond-pulse .42s cubic-bezier(.34, 1.56, .64, 1) both !important;
+  }
+
+  .mexion-index-page .sec-label {
+    opacity: 0;
+    animation: mx-fade 380ms var(--mx-d-label) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .hero__l1,
+  .mexion-index-page .hero__l2,
+  .mexion-index-page .hero__l3 {
+    clip-path: inset(0 100% 0 0);
+    animation: mx-write 680ms var(--mx-ease-brush) both;
+    will-change: clip-path;
+  }
+
+  .mexion-index-page .hero__l1 { animation-delay: var(--mx-d-hero-1); }
+  .mexion-index-page .hero__l2 { animation-delay: var(--mx-d-hero-2); }
+  .mexion-index-page .hero__l3 { animation-delay: var(--mx-d-hero-3); }
+
+  .mexion-index-page .brush-svg {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    animation: mx-brush-draw 600ms var(--mx-d-brush) var(--mx-ease-ink) forwards;
+  }
+
+  .mexion-index-page .sub {
+    opacity: 0;
+    animation: mx-fade 440ms var(--mx-d-sub) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .cta-row {
+    opacity: 0;
+    transform: translateX(-18px);
+    animation: mx-cta-row-in 620ms var(--mx-d-cta) var(--mx-ease-brush) both;
+  }
+
+  .mexion-index-page .plate-index {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: mx-rise 560ms var(--mx-d-plate) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .foot__rule {
+    transform-origin: left;
+    animation: mx-scale-x 440ms var(--mx-d-rule-bot) var(--mx-ease-brush) both;
+  }
+
+  .mexion-index-page .status {
+    opacity: 0;
+    animation: mx-fade 380ms var(--mx-d-foot) var(--mx-ease-ink) both;
+  }
+
+  .mexion-index-page .corner-mark {
+    opacity: 0;
+    animation: mx-corner-fade .5s var(--mx-ease-ink) 1.4s forwards;
+  }
+}
+
+/* Login/register/forgot-password: one woodblock press, then a red second pass. */
+@media (prefers-reduced-motion: no-preference) {
+  .mexion-auth-page > .plate,
+  .mexion-auth-page > .form-wrap {
+    animation: mx-auth-develop 1.15s cubic-bezier(.62, .04, .34, 1) .18s both;
+    will-change: filter, opacity;
+  }
+
+  .mexion-auth-page .plate__fig-img {
+    animation: mx-auth-mascot-rise 1s cubic-bezier(.22, .61, .36, 1) .32s both;
+  }
+
+  .mexion-auth-page .plate__rule {
+    animation: mx-auth-rule-scale .7s cubic-bezier(.65, 0, .35, 1) .3s both;
+    transform-origin: left center;
+  }
+
+  .mexion-auth-page .form__title em {
+    animation: mx-auth-second-pass .5s cubic-bezier(.34, 1.56, .64, 1) 1.05s both;
+    transform-origin: center center;
+  }
+
+  .mexion-auth-page .plate__brand-mark {
+    animation:
+      mx-auth-second-pass-diamond .5s cubic-bezier(.34, 1.56, .64, 1) 1.05s both,
+      mx-auth-brand-breathe 4.2s ease-in-out infinite 1.8s;
+  }
+}
+
+/* Public/Auth living details: motion follows reading order and paper physics. */
+@keyframes mx-caret-blink {
+  0%, 70% { opacity: 1; }
+  70.01%, 100% { opacity: 0; }
+}
+
+@keyframes mx-status-ring {
+  0% { opacity: .5; transform: scale(.6); }
+  70%, 100% { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes mx-auth-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(45 95 63 / 40%); }
+  70% { box-shadow: 0 0 0 6px rgb(45 95 63 / 0%); }
+}
+
+@keyframes mx-auth-corner-pulse {
+  0%, 100% { opacity: .32; filter: opacity(.32); }
+  50% { opacity: .55; filter: opacity(.55); }
+}
+
+@keyframes mx-field-shake {
+  0%, 100% { transform: translateX(0); }
+  22% { transform: translateX(-4px); }
+  52% { transform: translateX(3px); }
+  78% { transform: translateX(-1.5px); }
+}
+
+.mexion-index-page {
+  --mx-d-caret: 1580ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The caret arrives only after the headline has finished writing. */
+  .mexion-index-page .caret {
+    opacity: 0;
+    animation: mx-caret-blink 1.6s var(--mx-d-caret) step-end infinite forwards;
+  }
+
+  /* Continuous motion is reserved for real service/life state. */
+  .mexion-index-page .s-dot::after {
+    animation: mx-status-ring 2.4s ease-out infinite;
+  }
+
+  .mexion-auth-page .plate__foot .s-dot {
+    animation: mx-auth-dot-pulse 2.6s ease-out 2.6s infinite;
+  }
+
+  .mexion-auth-page .cm {
+    /* parity CSS fixes opacity with !important; animate filter as the visible alpha channel. */
+    opacity: 1 !important;
+    animation: mx-auth-corner-pulse 5.5s ease-in-out infinite;
+  }
+}
+
+/* Form focus is a vermilion rule being written, not a generic glow. */
+.mexion-auth-page .field__input {
+  transition:
+    border-color .18s ease,
+    padding-left .22s cubic-bezier(.65, 0, .35, 1) !important;
+}
+
+.mexion-auth-page .field__input:focus {
+  border-bottom-color: var(--verm) !important;
+  padding-left: 8px !important;
+}
+
+.mexion-auth-page .field:focus-within .field__num::before {
+  color: var(--verm-deep);
+}
+
+/* Anchor the animated rule to the input instead of the optional error copy. */
+.mexion-auth-page .field::before {
+  content: none;
+}
+
+.mexion-auth-page .field__underline {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  display: block !important;
+  width: 100%;
+  height: 1.5px;
+  margin-top: -1.5px;
+  background: var(--verm);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .3s cubic-bezier(.65, 0, .35, 1);
+  pointer-events: none;
+}
+
+.mexion-auth-page .field__underline::after {
+  content: none;
+}
+
+.mexion-auth-page .field__underline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--verm);
+  transform: translateY(-50%) rotate(45deg) scale(0);
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.mexion-auth-page .field:focus-within .field__underline,
+.mexion-auth-page .field__input:focus ~ .field__underline,
+.mexion-auth-page .field.is-error .field__underline {
+  transform: scaleX(1);
+}
+
+.mexion-auth-page .field:focus-within .field__underline::before,
+.mexion-auth-page .field.is-error .field__underline::before {
+  transform: translateY(-50%) rotate(45deg) scale(1);
+}
+
+.mexion-auth-page .field.is-error .field__input {
+  border-bottom-color: var(--verm) !important;
+}
+
+.mexion-auth-page .field.is-error .field__num::before {
+  color: var(--verm);
+}
+
+.mexion-auth-page .field.is-error {
+  animation: mx-field-shake .36s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Primary actions behave like an inked block: wash, seal flip, register, release. */
+.mexion-index-page .cta,
+.mexion-auth-page .submit-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    box-shadow .3s ease,
+    transform .15s ease,
+    letter-spacing .4s ease,
+    color .3s ease;
+}
+
+.mexion-index-page .cta::before,
+.mexion-auth-page .submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 130% 70% at 50% 50%, var(--verm) 0%, var(--verm-deep) 100%);
+  transform: translateX(-101%);
+  transition: transform .5s cubic-bezier(.65, 0, .35, 1);
+  pointer-events: none;
+}
+
+.mexion-index-page .cta > :not(.cta-corner),
+.mexion-auth-page .submit-btn > :not(.corner) {
+  position: relative;
+  z-index: 1;
+}
+
+.mexion-index-page .cta-corner,
+.mexion-auth-page .submit-btn .corner {
+  z-index: 2;
+  transition: opacity .3s ease, width .3s ease, height .3s ease;
+}
+
+.mexion-index-page .cta:hover::before,
+.mexion-index-page .cta:focus-visible::before,
+.mexion-auth-page .submit-btn:hover:not(:disabled)::before,
+.mexion-auth-page .submit-btn:focus-visible:not(:disabled)::before {
+  transform: translateX(0);
+}
+
+.mexion-index-page .cta:hover,
+.mexion-index-page .cta:focus-visible,
+.mexion-auth-page .submit-btn:hover:not(:disabled),
+.mexion-auth-page .submit-btn:focus-visible:not(:disabled) {
+  color: #fff8ec;
+  transform: none;
+  letter-spacing: .02em !important;
+  box-shadow:
+    0 10px 30px rgb(181 57 45 / 34%),
+    0 2px 8px rgb(181 57 45 / 20%),
+    0 1px 0 rgb(0 0 0 / 40%) !important;
+}
+
+html[lang='zh'] .mexion-index-page .cta:hover,
+html[lang='zh'] .mexion-index-page .cta:focus-visible,
+html[lang='zh'] .mexion-auth-page .submit-btn:hover:not(:disabled),
+html[lang='zh'] .mexion-auth-page .submit-btn:focus-visible:not(:disabled) {
+  letter-spacing: .1em !important;
+}
+
+.mexion-index-page .cta:active,
+.mexion-auth-page .submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.mexion-index-page .cta svg,
+.mexion-auth-page .submit-btn svg {
+  transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.mexion-index-page .cta:hover svg,
+.mexion-index-page .cta:focus-visible svg,
+.mexion-auth-page .submit-btn:hover:not(:disabled) svg,
+.mexion-auth-page .submit-btn:focus-visible:not(:disabled) svg {
+  transform: translateX(6px);
+}
+
+.mexion-index-page .cta-ornament,
+.mexion-auth-page .submit-btn__ornament {
+  transition:
+    background .35s ease,
+    transform .45s cubic-bezier(.34, 1.56, .64, 1),
+    box-shadow .35s ease;
+}
+
+.mexion-index-page .cta:hover .cta-ornament,
+.mexion-index-page .cta:focus-visible .cta-ornament,
+.mexion-auth-page .submit-btn:hover:not(:disabled) .submit-btn__ornament,
+.mexion-auth-page .submit-btn:focus-visible:not(:disabled) .submit-btn__ornament {
+  background: var(--paper);
+  transform: rotate(225deg) scale(1.12);
+  box-shadow: 0 0 0 1.5px rgb(248 244 234 / 45%);
+}
+
+.mexion-index-page .cta:hover .cta-corner,
+.mexion-index-page .cta:focus-visible .cta-corner,
+.mexion-auth-page .submit-btn:hover:not(:disabled) .corner,
+.mexion-auth-page .submit-btn:focus-visible:not(:disabled) .corner {
+  width: 14px !important;
+  height: 14px !important;
+  opacity: .85 !important;
+}
+
+.mexion-auth-page .submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  transform: none !important;
+}
+
+.mexion-auth-page .submit-btn:disabled::before {
+  transform: translateX(-101%);
+}
+
+/* Secondary action: the rule writes itself under the label. */
+.mexion-index-page .cta-secondary {
+  position: relative;
+  transition: color .2s ease;
+}
+
+.mexion-index-page .cta-secondary::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width .25s ease;
+}
+
+.mexion-index-page .cta-secondary:hover,
+.mexion-index-page .cta-secondary:focus-visible {
+  color: var(--ink);
+}
+
+.mexion-index-page .cta-secondary:hover::after,
+.mexion-index-page .cta-secondary:focus-visible::after {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mexion-index-page *,
+  .mexion-index-page *::before,
+  .mexion-index-page *::after,
+  .mexion-auth-page *,
+  .mexion-auth-page *::before,
+  .mexion-auth-page *::after,
+  .app.is-just-expanded .sidebar-link,
+  .app.is-shift-collapse .main,
+  .app.is-shift-expand .main,
+  .side.is-open .sidebar-link {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+

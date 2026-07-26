@@ -1,0 +1,2452 @@
+/*
+ * Mexion skin overlay.
+ * 目标：只换视觉皮肤，不改 Sub2API 的路由、组件逻辑和 API。
+ * 这份样式按旧 Mexion 静态前端的 common.css 视觉系统复刻：
+ * 暖纸背景 + 点阵纹理 + 216px 侧栏 + 细边框卡片 + 朱红强调色。
+ */
+
+@import url('/assets/fonts.css');
+
+:root {
+  /* surfaces */
+  --mx-bg: var(--mx-app-bg, #f4f3ee);
+  --mx-bg-2: var(--mx-app-bg-2, #efeee8);
+  --mx-surface: var(--mx-app-surface, #fff);
+  --mx-surface-2: var(--mx-app-surface-2, #faf9f4);
+  --mx-warm: var(--mx-app-warm, #f2efe6);
+  --mx-border: var(--mx-app-border, #e6e2d6);
+  --mx-border-2: var(--mx-app-border-2, #efece2);
+  --mx-hairline: var(--mx-app-hairline, #f4f1e8);
+
+  /* ink */
+  --mx-ink: var(--mx-app-ink, #14140f);
+  --mx-ink-2: var(--mx-app-ink-2, #2e2d26);
+  --mx-muted: var(--mx-app-muted, #6b6859);
+  --mx-mute-2: var(--mx-app-mute-2, #94917f);
+  --mx-mute-3: var(--mx-app-mute-3, #bbb7a4);
+
+  /* accents */
+  --mx-verm: var(--mx-app-verm, #c8392d);
+  --mx-verm-2: var(--mx-app-verm-2, #a82e22);
+  --mx-verm-soft: var(--mx-app-verm-soft, #fae7e1);
+  --mx-verm-tint: var(--mx-app-verm-tint, #fcefea);
+  --mx-green: var(--mx-app-green, #3d7a55);
+  --mx-green-soft: var(--mx-app-green-soft, #e6efe7);
+  --mx-blue: var(--mx-app-blue, #2f5c8c);
+  --mx-blue-soft: var(--mx-app-blue-soft, #e5ecf3);
+  --mx-amber: var(--mx-app-amber, #b57a1b);
+  --mx-amber-soft: var(--mx-app-amber-soft, #f6ecd3);
+
+  /* radii/shadows */
+  --mx-r-sm: var(--mx-radius-sm, 6px);
+  --mx-r-md: var(--mx-radius-md, 10px);
+  --mx-r-lg: var(--mx-radius-lg, 14px);
+  --mx-shadow-1: var(--mx-shadow-paper);
+  --mx-shadow-2: var(--mx-shadow-raised);
+
+  /* typography */
+  --mx-f-sans: var(--mx-font-interface);
+  --mx-f-mono: var(--mx-font-meta);
+  --mx-f-display: var(--mx-font-display);
+}
+
+html.dark {
+  --mx-bg: var(--mx-app-bg, #15140e);
+  --mx-bg-2: var(--mx-app-bg-2, #1b1a12);
+  --mx-surface: var(--mx-app-surface, #1f1d15);
+  --mx-surface-2: var(--mx-app-surface-2, #25231a);
+  --mx-warm: var(--mx-app-warm, #1b1a12);
+  --mx-border: var(--mx-app-border, #35322a);
+  --mx-border-2: var(--mx-app-border-2, #2b2820);
+  --mx-hairline: var(--mx-app-hairline, #242117);
+
+  --mx-ink: var(--mx-app-ink, #f1efe6);
+  --mx-ink-2: var(--mx-app-ink-2, #d8d5c9);
+  --mx-muted: var(--mx-app-muted, #a6a291);
+  --mx-mute-2: var(--mx-app-mute-2, #7c7869);
+  --mx-mute-3: var(--mx-app-mute-3, #57544a);
+
+  --mx-verm: var(--mx-app-verm, #e45c4f);
+  --mx-verm-2: var(--mx-app-verm-2, #c8392d);
+  --mx-verm-soft: var(--mx-app-verm-soft, #38201b);
+  --mx-verm-tint: var(--mx-app-verm-tint, #2d1916);
+  --mx-green: var(--mx-app-green, #5cae78);
+  --mx-green-soft: var(--mx-app-green-soft, #1c2c21);
+  --mx-blue: var(--mx-app-blue, #5e91c2);
+  --mx-blue-soft: var(--mx-app-blue-soft, #1b2733);
+  --mx-amber: var(--mx-app-amber, #d69b3c);
+  --mx-amber-soft: var(--mx-app-amber-soft, #2c2415);
+  --mx-shadow-1: var(--mx-shadow-paper);
+  --mx-shadow-2: var(--mx-shadow-raised);
+}
+
+/* ========= 全局背景：旧 Mexion 暖纸点阵 ========= */
+html,
+body,
+#app {
+  min-height: 100%;
+  font-family: var(--mx-f-sans) !important;
+  color: var(--mx-ink);
+}
+
+body {
+  background-color: var(--mx-bg) !important;
+  background-image: var(--mx-paper-grid) !important;
+  background-size: var(--mx-paper-grid-size) !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern', 'ss01', 'cv11';
+}
+
+html.dark body {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.022) 1px, transparent 0) !important;
+}
+
+/* 覆盖 AppLayout/AuthLayout 的 Tailwind 灰/蓝渐变背景 */
+#app .min-h-screen,
+#app .bg-gray-50,
+#app .dark\:bg-dark-950,
+#app .from-gray-50,
+#app .via-primary-50\/30,
+#app .to-gray-100 {
+  background-color: transparent !important;
+}
+
+#app .bg-mesh-gradient {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(20, 18, 14, 0.025) 1px, transparent 0) 0 0 / 22px 22px,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)) !important;
+  opacity: 1 !important;
+}
+
+html.dark #app .bg-mesh-gradient {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.022) 1px, transparent 0) 0 0 / 22px 22px,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) !important;
+}
+
+/* Auth 页面的装饰光球太像原 Sub2API，这里压掉，恢复旧 Mexion 纸面感 */
+#app [class*='bg-primary-400/20'],
+#app [class*='bg-primary-500/15'],
+#app [class*='bg-primary-300/10'],
+#app [class*='rgba(20,184,166'] {
+  display: none !important;
+}
+
+/* ========= 布局尺寸：旧 Mexion 桌面侧栏 216px / rail 56px ========= */
+.sidebar {
+  width: var(--mx-sidebar-width) !important;
+  background: var(--mx-bg) !important;
+  border-right: 1px solid var(--mx-border) !important;
+  padding: 18px 14px !important;
+  box-shadow: none !important;
+}
+
+.sidebar.w-\[72px\] {
+  width: var(--mx-sidebar-rail-width) !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+@media (min-width: 1024px) {
+  .lg\:ml-64 {
+    margin-left: var(--mx-sidebar-width) !important;
+  }
+
+  .lg\:ml-\[72px\] {
+    margin-left: var(--mx-sidebar-rail-width) !important;
+  }
+}
+
+main {
+  padding: 24px 34px 60px !important;
+}
+
+@media (max-width: 860px) {
+  .sidebar {
+    width: min(86vw, 320px) !important;
+    padding: 0 !important;
+    background: var(--mx-bg) !important;
+    box-shadow: 30px 0 80px -28px rgba(20, 18, 14, 0.34) !important;
+  }
+
+  main {
+    padding: 16px 16px 40px !important;
+  }
+}
+
+/* ========= 顶部栏：旧 Mexion topbar 的半透明暖纸 ========= */
+header.glass,
+.glass.sticky {
+  height: 66px;
+  background: color-mix(in oklab, var(--mx-bg) 86%, transparent) !important;
+  border-bottom: 1px solid var(--mx-hairline) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow: none !important;
+}
+
+header.glass h1 {
+  font-family: var(--mx-f-display);
+  font-size: 22px !important;
+  line-height: 1.15;
+  font-weight: 500 !important;
+  letter-spacing: -0.025em;
+  color: var(--mx-ink) !important;
+}
+
+header.glass p {
+  color: var(--mx-mute-2) !important;
+}
+
+/* ========= 侧栏 Header/Brand ========= */
+.sidebar-header {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 6px 10px 18px !important;
+  border-bottom: 0 !important;
+  gap: 9px !important;
+  align-items: flex-start !important;
+}
+
+.sidebar-logo {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  flex-basis: 28px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.sidebar-logo img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.sidebar-brand {
+  display: flex !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  padding-top: 0 !important;
+  white-space: nowrap !important;
+}
+
+.sidebar-brand-title {
+  display: block !important;
+  max-width: 132px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-family: var(--mx-f-display) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.025em !important;
+  color: var(--mx-ink) !important;
+}
+
+/* 版本徽标复刻旧 Mexion 小胶囊；保留原组件下拉能力 */
+.sidebar-brand > .relative {
+  line-height: 1 !important;
+}
+
+.sidebar-brand > .relative > button,
+.sidebar-brand > .relative > span {
+  display: inline-flex !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  gap: 5px !important;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in oklab, var(--mx-verm) 22%, transparent) !important;
+  background: var(--mx-verm-soft) !important;
+  color: var(--mx-verm) !important;
+  padding: 2px 7px !important;
+  font-family: var(--mx-f-mono) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  box-shadow: none !important;
+}
+
+.sidebar-brand > .relative .animate-ping {
+  background: var(--mx-amber) !important;
+}
+
+.sidebar-brand > .relative .relative.inline-flex {
+  background: var(--mx-amber) !important;
+}
+
+.sidebar-header-collapsed {
+  padding: 6px 6px 18px !important;
+  justify-content: center !important;
+}
+
+/* ========= 侧栏菜单：旧 Mexion nav-item ========= */
+.sidebar-nav {
+  padding: 0 !important;
+  overflow-y: auto !important;
+}
+
+.sidebar-section {
+  margin-bottom: 18px !important;
+}
+
+.sidebar-section-title {
+  min-height: 0 !important;
+  margin: 4px 0 4px !important;
+  padding: 10px 12px 4px !important;
+  color: var(--mx-mute-3) !important;
+  font-family: var(--mx-f-mono) !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: none !important;
+}
+
+.sidebar-section-title::after {
+  left: auto !important;
+  right: 0 !important;
+  width: 42px !important;
+  background: var(--mx-border) !important;
+}
+
+.sidebar-link {
+  position: relative !important;
+  display: flex !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+  padding: 8px 10px !important;
+  color: var(--mx-ink-2) !important;
+  font-family: var(--mx-f-sans) !important;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  transition: background 0.12s, color 0.12s, transform 0.12s !important;
+}
+
+.sidebar-link.mb-1 {
+  margin-bottom: 1px !important;
+}
+
+.sidebar-link svg,
+.sidebar-svg-icon,
+.sidebar-svg-icon :deep(svg) {
+  width: 16px !important;
+  height: 16px !important;
+  color: var(--mx-mute-2) !important;
+  stroke-width: 1.5 !important;
+}
+
+.sidebar-link:hover {
+  background: var(--mx-surface) !important;
+  color: var(--mx-ink) !important;
+}
+
+.sidebar-link:hover svg,
+.sidebar-link:hover .sidebar-svg-icon {
+  color: var(--mx-ink) !important;
+}
+
+.sidebar-link:active {
+  background: var(--mx-bg-2) !important;
+  transform: scale(0.985);
+}
+
+.sidebar-link-active {
+  background: var(--mx-surface) !important;
+  color: var(--mx-ink) !important;
+  font-weight: 500 !important;
+  box-shadow: 0 0 0 1px var(--mx-border) !important;
+}
+
+.sidebar-link-active::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -14px !important;
+  top: 7px !important;
+  bottom: 7px !important;
+  width: 2.5px !important;
+  border-radius: 2px !important;
+  background: var(--mx-verm) !important;
+  box-shadow: 0 0 6px color-mix(in oklab, var(--mx-verm) 40%, transparent) !important;
+}
+
+.sidebar-link-active svg,
+.sidebar-link-active .sidebar-svg-icon {
+  color: var(--mx-ink) !important;
+}
+
+.sidebar-link-collapsed {
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 8px !important;
+}
+
+.sidebar-link-collapsed.sidebar-link-active::before {
+  left: -8px !important;
+}
+
+.sidebar-label,
+.sidebar-label-flex {
+  color: inherit !important;
+}
+
+/* 子菜单边线也改成旧皮肤色 */
+.sidebar-nav .border-l {
+  border-color: var(--mx-border) !important;
+}
+
+/* 底部折叠/主题区：与旧侧栏底部一致，不要 Sub2API 蓝绿色 */
+.sidebar > .mt-auto {
+  margin-top: auto !important;
+  border-top: 1px solid var(--mx-border) !important;
+  padding: 12px 0 0 !important;
+}
+
+.sidebar > .mt-auto .sidebar-link {
+  font-size: 12px !important;
+  color: var(--mx-muted) !important;
+}
+
+/* ========= 卡片/表格/弹窗/下拉：旧 Mexion 细边框白纸 ========= */
+.card,
+.card-glass,
+.glass-card,
+.stat-card,
+.modal-content,
+.dialog-container,
+.dropdown,
+.table-container,
+[class*='rounded-2xl'][class*='bg-white'],
+[class*='rounded-xl'][class*='bg-white'] {
+  background: var(--mx-surface) !important;
+  border-color: var(--mx-border) !important;
+  box-shadow: var(--mx-shadow-1) !important;
+}
+
+.card-hover:hover {
+  border-color: var(--mx-mute-3) !important;
+  box-shadow: var(--mx-shadow-2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.card-header,
+.card-footer,
+.modal-header,
+.modal-footer,
+.dialog-header,
+.dialog-footer,
+.dropdown .border-b,
+.dropdown .border-t {
+  border-color: var(--mx-border-2) !important;
+}
+
+.card-body,
+.modal-body,
+.dialog-body {
+  color: var(--mx-ink-2) !important;
+}
+
+.table th {
+  background: var(--mx-surface-2) !important;
+  border-color: var(--mx-border) !important;
+  color: var(--mx-muted) !important;
+  font-family: var(--mx-f-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.04em;
+}
+
+.table td {
+  border-color: var(--mx-border-2) !important;
+  color: var(--mx-ink-2) !important;
+}
+
+.table tbody tr:hover {
+  background: var(--mx-surface-2) !important;
+}
+
+/* ========= 表单/按钮/标签 ========= */
+.input,
+.select,
+input:not(.date-picker-input),
+textarea,
+select {
+  border-color: var(--mx-border) !important;
+  background-color: var(--mx-surface) !important;
+  color: var(--mx-ink) !important;
+  border-radius: var(--mx-r-md) !important;
+  box-shadow: none !important;
+}
+
+.input:focus,
+.select:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--mx-verm) !important;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--mx-verm) 13%, transparent) !important;
+  outline: none !important;
+}
+
+.input::placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: var(--mx-mute-2) !important;
+}
+
+.btn {
+  border-radius: var(--mx-r-md) !important;
+  font-family: var(--mx-f-sans) !important;
+  box-shadow: none !important;
+}
+
+.btn-primary,
+button[class*='bg-primary-'],
+a[class*='bg-primary-'] {
+  background: var(--mx-ink) !important;
+  color: #fff !important;
+  border-color: var(--mx-ink) !important;
+  box-shadow: 0 4px 14px -8px rgba(20, 18, 14, 0.35) !important;
+}
+
+.btn-primary:hover,
+button[class*='bg-primary-']:hover,
+a[class*='bg-primary-']:hover {
+  background: var(--mx-ink-2) !important;
+}
+
+.btn-secondary,
+.btn-ghost,
+.iconbtn,
+.dropdown-item,
+button[class*='hover:bg-gray-100'],
+a[class*='hover:bg-gray-100'] {
+  color: var(--mx-ink-2) !important;
+}
+
+.btn-secondary {
+  background: var(--mx-surface) !important;
+  border-color: var(--mx-border) !important;
+}
+
+.btn-ghost:hover,
+.dropdown-item:hover,
+button[class*='hover:bg-gray-100']:hover,
+a[class*='hover:bg-gray-100']:hover {
+  background: var(--mx-bg-2) !important;
+  color: var(--mx-ink) !important;
+}
+
+.badge-primary,
+.badge-warning,
+.badge-success,
+.badge-gray,
+.badge-purple,
+[class*='bg-primary-50'],
+[class*='bg-primary-100'] {
+  background: var(--mx-verm-soft) !important;
+  color: var(--mx-verm-2) !important;
+}
+
+.text-gradient {
+  background-image: linear-gradient(90deg, var(--mx-verm), var(--mx-verm-2)) !important;
+}
+
+/* ========= 通用 Tailwind 颜色重映射，避免灰蓝 Sub2API 底色漏出来 ========= */
+html:not(.dark) .bg-white {
+  background-color: var(--mx-surface) !important;
+}
+
+html:not(.dark) .bg-gray-50,
+html:not(.dark) .bg-gray-100 {
+  background-color: var(--mx-bg-2) !important;
+}
+
+html:not(.dark) .border-gray-100,
+html:not(.dark) .border-gray-200,
+html:not(.dark) .border-gray-300 {
+  border-color: var(--mx-border) !important;
+}
+
+html:not(.dark) .text-gray-900 {
+  color: var(--mx-ink) !important;
+}
+
+html:not(.dark) .text-gray-700,
+html:not(.dark) .text-gray-800 {
+  color: var(--mx-ink-2) !important;
+}
+
+html:not(.dark) .text-gray-500,
+html:not(.dark) .text-gray-600,
+html:not(.dark) .text-gray-400 {
+  color: var(--mx-muted) !important;
+}
+
+html.dark .bg-dark-950,
+html.dark .bg-dark-900,
+html.dark .bg-dark-800 {
+  background-color: var(--mx-surface) !important;
+}
+
+html.dark .border-dark-700,
+html.dark .border-dark-800,
+html.dark .border-dark-600 {
+  border-color: var(--mx-border) !important;
+}
+
+html.dark .text-white,
+html.dark .text-gray-100 {
+  color: var(--mx-ink) !important;
+}
+
+html.dark .text-dark-300,
+html.dark .text-dark-400,
+html.dark .text-gray-300 {
+  color: var(--mx-muted) !important;
+}
+
+/* ========= 登录页品牌也回到旧 Mexion 风格 ========= */
+.text-gradient.mb-2.text-3xl {
+  font-family: var(--mx-f-display) !important;
+  font-style: italic !important;
+  font-size: 42px !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.card-glass.rounded-2xl.p-8 {
+  border-radius: var(--mx-r-lg) !important;
+  padding: 30px !important;
+}
+
+
+/* ========= Static Mexion parity pass: reuse old common.css class contract ========= */
+:root {
+  --bg: var(--mx-bg);
+  --bg-2: var(--mx-bg-2);
+  --surface: var(--mx-surface);
+  --surface-2: var(--mx-surface-2);
+  --warm: var(--mx-warm);
+  --border: var(--mx-border);
+  --border-2: var(--mx-border-2);
+  --hairline: var(--mx-hairline);
+  --ink: var(--mx-ink);
+  --ink-2: var(--mx-ink-2);
+  --muted: var(--mx-muted);
+  --mute-2: var(--mx-mute-2);
+  --mute-3: var(--mx-mute-3);
+  --verm: var(--mx-verm);
+  --verm-2: var(--mx-verm-2);
+  --verm-soft: var(--mx-verm-soft);
+  --verm-tint: var(--mx-verm-tint);
+  --green: var(--mx-green);
+  --green-soft: var(--mx-green-soft);
+  --blue: var(--mx-blue);
+  --blue-soft: var(--mx-blue-soft);
+  --amber: var(--mx-amber);
+  --amber-soft: var(--mx-amber-soft);
+  --h0: #ECEAE0;
+  --h1: #C2DCBE;
+  --h2: #7AB87A;
+  --h3: #D4A04A;
+  --h4: #C8392D;
+  --r-sm: var(--mx-r-sm);
+  --r-md: var(--mx-r-md);
+  --r-lg: var(--mx-r-lg);
+  --shadow-1: var(--mx-shadow-1);
+  --shadow-2: var(--mx-shadow-2);
+  --f-sans: var(--mx-f-sans);
+  --f-mono: var(--mx-f-mono);
+  --f-display: var(--mx-f-display);
+  --f-serif: var(--mx-f-display);
+  --on-ink: #fff;
+}
+
+html.dark {
+  --bg: var(--mx-bg);
+  --bg-2: var(--mx-bg-2);
+  --surface: var(--mx-surface);
+  --surface-2: var(--mx-surface-2);
+  --warm: var(--mx-warm);
+  --border: var(--mx-border);
+  --border-2: var(--mx-border-2);
+  --hairline: var(--mx-hairline);
+  --ink: var(--mx-ink);
+  --ink-2: var(--mx-ink-2);
+  --muted: var(--mx-muted);
+  --mute-2: var(--mx-mute-2);
+  --mute-3: var(--mx-mute-3);
+  --verm: var(--mx-verm);
+  --verm-2: var(--mx-verm-2);
+  --verm-soft: var(--mx-verm-soft);
+  --verm-tint: var(--mx-verm-tint);
+  --green: var(--mx-green);
+  --green-soft: var(--mx-green-soft);
+  --blue: var(--mx-blue);
+  --blue-soft: var(--mx-blue-soft);
+  --amber: var(--mx-amber);
+  --amber-soft: var(--mx-amber-soft);
+  --h0: #26241b;
+  --h1: #3f6f4f;
+  --h2: #7AB87A;
+  --h3: #D4A04A;
+  --h4: #C8392D;
+  --on-ink: #15140e;
+}
+
+#app .mexion-dashboard-shell {
+  font-size: 14px !important;
+  line-height: normal !important;
+  --section-gap: clamp(40px, 6vw, 72px);
+  --block-gap: clamp(24px, 4vw, 40px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+/* Dashboard tabs must keep the exact static dashboard rhythm.
+   Tailwind/base button styles otherwise make .tab 28px tall instead of 22px. */
+#app .mexion-dashboard-shell .tabs {
+  gap: 0 !important;
+}
+
+#app .mexion-dashboard-shell .tab {
+  line-height: normal !important;
+  min-height: 0 !important;
+}
+
+/* Old static frame: .app grid + .side sticky + .main content column */
+#app .app {
+  display: grid !important;
+  grid-template-columns: 216px minmax(0, 1fr) !important;
+  min-height: 100vh !important;
+  background: transparent !important;
+  transition: grid-template-columns 360ms cubic-bezier(.22, 1, .36, 1) !important;
+}
+
+#app .app.is-rail {
+  grid-template-columns: 56px minmax(0, 1fr) !important;
+}
+
+#app .app > .main {
+  min-width: 0 !important;
+  padding: 0 34px 60px !important;
+  background: transparent !important;
+}
+
+@media (min-width: 1024px) {
+  #app .app > .sidebar.side {
+    position: sticky !important;
+    inset: auto !important;
+    top: 0 !important;
+    left: auto !important;
+    z-index: 40 !important;
+    height: 100vh !important;
+    width: var(--mx-sidebar-width) !important;
+    transform: none !important;
+    transition: width 360ms cubic-bezier(.22, 1, .36, 1), padding 360ms cubic-bezier(.22, 1, .36, 1) !important;
+  }
+
+  #app .app.is-rail > .sidebar.side {
+    width: var(--mx-sidebar-rail-width) !important;
+    padding: 18px 0 !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  #app .app {
+    display: block !important;
+  }
+
+  #app .app > .main {
+    padding: 0 16px 40px !important;
+  }
+}
+
+/* Sidebar brand: match old .brand horizontal logo / Newsreader italic / version pill */
+#app .sidebar.side {
+  background: var(--bg) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+#app .sidebar-header.brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  padding: 6px 10px 18px !important;
+  min-height: 0 !important;
+  border-bottom: 0 !important;
+}
+
+#app .sidebar-logo.brand__mark {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  flex: 0 0 28px !important;
+}
+
+#app .sidebar-brand {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding-top: 0 !important;
+}
+
+#app .sidebar-brand-title {
+  max-width: 86px !important;
+  font-family: var(--f-display) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.025em !important;
+}
+
+#app .sidebar-brand > .relative {
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
+}
+
+#app .sidebar-brand > .relative > button,
+#app .sidebar-brand > .relative > span {
+  text-transform: none !important;
+  letter-spacing: 0.04em !important;
+}
+
+#app .brand__plan {
+  margin-left: auto !important;
+  padding: 2px 7px !important;
+  border: 1px solid color-mix(in oklab, var(--verm) 22%, transparent) !important;
+  border-radius: 999px !important;
+  background: var(--verm-soft) !important;
+  color: var(--verm) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+#app .app.is-rail .sidebar-header.brand {
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 6px 0 18px !important;
+}
+
+#app .app.is-rail .sidebar-brand {
+  max-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+#app .app.is-rail .brand__plan {
+  opacity: 0 !important;
+  width: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  border-width: 0 !important;
+}
+
+/* Old nav rail details */
+#app .sidebar-section-title {
+  text-transform: uppercase !important;
+}
+
+#app .app.is-rail .sidebar-nav {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  overflow: visible !important;
+}
+
+#app .app.is-rail .sidebar-section {
+  margin-bottom: 14px !important;
+}
+
+#app .app.is-rail .sidebar-section-title {
+  height: 22px !important;
+  padding: 14px 0 8px !important;
+  margin: 0 !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  overflow: hidden !important;
+}
+
+#app .app.is-rail .sidebar-section-title::after {
+  left: 50% !important;
+  right: auto !important;
+  width: 18px !important;
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+#app .app.is-rail .sidebar-link {
+  justify-content: center !important;
+  margin-left: 6px !important;
+  margin-right: 6px !important;
+  padding: 9px 0 !important;
+  gap: 0 !important;
+  border-radius: 9px !important;
+}
+
+#app .app.is-rail .sidebar-link-active::before {
+  left: -6px !important;
+  top: 9px !important;
+  bottom: 9px !important;
+}
+
+#app .nav-item__ext {
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: auto !important;
+  color: var(--mute-3) !important;
+  flex: 0 0 auto !important;
+}
+
+#app .sidebar-svg-icon svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* Sidebar bottom mirrors old .side__collapse instead of Sub2API footer */
+#app .side__bottom {
+  margin-top: auto !important;
+  padding: 8px 0 0 !important;
+  border-top: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+#app .side__bottom .sidebar-link,
+#app .side__collapse {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 4px 6px !important;
+  padding: 9px 11px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  color: var(--mute-2) !important;
+  font: 500 12px/1 var(--f-sans) !important;
+  cursor: pointer !important;
+  letter-spacing: -0.005em !important;
+  transition: background .16s ease, color .16s ease, border-color .16s ease, transform .14s ease !important;
+}
+
+#app .side__collapse-label {
+  flex: 1 1 auto !important;
+  text-align: left !important;
+}
+
+#app .side__collapse-shortcut {
+  color: var(--mute-3) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em !important;
+  font-feature-settings: "tnum" !important;
+  transition: opacity 180ms ease-out, color .16s ease !important;
+}
+
+#app .side__collapse:hover .side__collapse-shortcut {
+  color: var(--mute-2) !important;
+}
+
+#app .side__bottom .sidebar-link:hover,
+#app .side__collapse:hover {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border-color: var(--border) !important;
+}
+
+#app .app.is-rail .side__bottom .sidebar-link,
+#app .app.is-rail .side__collapse {
+  justify-content: center !important;
+  padding: 9px 0 !important;
+  margin: 6px 6px 4px !important;
+  gap: 0 !important;
+}
+
+#app .app.is-rail .side__collapse-shortcut {
+  display: none !important;
+}
+
+/* Topbar copied from old static .topbar contract */
+#app .topbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 66px !important;
+  padding: 16px 0 !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  margin-bottom: -1px !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  background: color-mix(in oklab, var(--bg) 86%, transparent) !important;
+  box-shadow: none !important;
+}
+
+#app .topbar__spacer { flex: 1 1 auto !important; }
+#app .topbar__sep { width: 1px !important; height: 20px !important; background: var(--border) !important; margin: 0 2px !important; flex-shrink: 0 !important; }
+
+#app .iconbtn,
+#app .notif-bell-wrap > div > button {
+  width: 34px !important;
+  height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  color: var(--ink-2) !important;
+  cursor: pointer !important;
+  position: relative !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background .12s, color .12s, border-color .12s !important;
+}
+
+#app .iconbtn:hover,
+#app .notif-bell-wrap > div > button:hover {
+  background: var(--bg-2) !important;
+  color: var(--ink) !important;
+  border-color: var(--mute-3) !important;
+}
+
+#app .iconbtn--labeled {
+  width: auto !important;
+  padding: 0 10px !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  font-family: var(--f-mono) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+}
+
+#app .notif-bell-wrap > div > button.iconbtn--labeled {
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 10px !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  font-family: var(--f-mono) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+}
+
+#app .notif-bell__label {
+  display: inline !important;
+  line-height: 1 !important;
+}
+
+#app .lang-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  height: 34px !important;
+  padding: 2px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+}
+
+#app .lang-toggle button {
+  height: 28px !important;
+  min-width: 28px !important;
+  padding: 0 9px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: none !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  font-family: var(--f-mono) !important;
+  font-size: 12px !important;
+  line-height: 28px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  transition: all .14s !important;
+}
+
+#app .lang-toggle button:hover { color: var(--ink) !important; }
+#app .lang-toggle button[aria-pressed='true'] { background: var(--ink) !important; color: var(--on-ink) !important; }
+
+#app .mexion-balance {
+  align-items: center !important;
+  gap: 7px !important;
+  height: 34px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--ink-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+}
+
+#app .mexion-balance svg { color: var(--verm) !important; }
+
+#app .user-menu { position: relative !important; }
+#app .user {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 4px 10px 4px 4px !important;
+  min-height: 36px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  color: var(--ink) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: border-color .15s, background .15s !important;
+}
+
+#app .user:hover { border-color: var(--mute-3) !important; }
+#app .user__avatar,
+#app .user-menu__avatar-lg {
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #2A2520 0%, #3F3A33 100%) !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: var(--f-display) !important;
+  font-style: italic !important;
+  letter-spacing: -0.03em !important;
+  overflow: hidden !important;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+}
+
+#app .user__avatar { width: 26px !important; height: 26px !important; font-size: 14px !important; }
+#app .user__avatar img,
+#app .user-menu__avatar-lg img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+#app .user__name { font-size: 13px !important; font-weight: 500 !important; min-width: 32px !important; max-width: 120px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
+#app .user__caret { color: var(--mute-2) !important; margin-left: 2px !important; }
+
+#app .user-menu__panel {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  min-width: 248px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 14px 36px -12px rgba(20,18,14,0.22), 0 2px 6px rgba(20,18,14,0.05) !important;
+  padding: 6px !important;
+  transform-origin: top right !important;
+  z-index: 200 !important;
+}
+
+#app .user-menu__head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 11px !important;
+  padding: 10px 10px 12px !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  margin-bottom: 6px !important;
+}
+
+#app .user-menu__avatar-lg { width: 36px !important; height: 36px !important; font-size: 19px !important; flex-shrink: 0 !important; }
+#app .user-menu__id { min-width: 0 !important; flex: 1 1 auto !important; }
+#app .user-menu__name { font-size: 13px !important; font-weight: 500 !important; color: var(--ink) !important; line-height: 1.2 !important; }
+#app .user-menu__email { margin-top: 2px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; color: var(--mute-2) !important; font: 12px/1.25 var(--f-mono) !important; letter-spacing: 0.01em !important; }
+#app .user-menu__list { display: flex !important; flex-direction: column !important; gap: 1px !important; }
+#app .user-menu__item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 11px !important;
+  width: 100% !important;
+  padding: 9px 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--ink-2) !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  text-align: left !important;
+  text-decoration: none !important;
+  transition: background .12s, color .12s !important;
+}
+
+#app .user-menu__item svg { color: var(--mute-2) !important; flex-shrink: 0 !important; transition: color .12s !important; }
+#app .user-menu__item:hover,
+#app .user-menu__item:focus-visible { background: var(--bg-2) !important; color: var(--ink) !important; outline: none !important; }
+#app .user-menu__item:hover svg,
+#app .user-menu__item:focus-visible svg { color: var(--ink) !important; }
+#app .user-menu__sep { height: 1px !important; background: var(--hairline) !important; margin: 5px 4px !important; }
+#app .user-menu__item--danger { color: var(--verm) !important; }
+#app .user-menu__item--danger svg { color: var(--verm) !important; }
+#app .user-menu__item--danger:hover { background: var(--verm-tint, var(--verm-soft)) !important; color: var(--verm-2) !important; }
+#app .user-menu__support,
+#app .user-menu__balance {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  color: var(--mute-2) !important;
+  font-size: 12px !important;
+}
+#app .user-menu__support strong,
+#app .user-menu__balance strong { color: var(--ink-2) !important; font-weight: 500 !important; }
+
+/* Page head copied from old static. AppHeader no longer owns the page title. */
+#app .page-head {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  padding: 28px 0 22px !important;
+  flex-wrap: wrap !important;
+}
+
+#app .page-head__crumb {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 9px !important;
+  color: var(--mute-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+#app .page-head__crumb a { color: var(--mute-2) !important; transition: color .15s !important; }
+#app .page-head__crumb a:hover { color: var(--ink) !important; }
+#app .page-head__crumb .sep { color: var(--mute-3) !important; }
+#app .page-head__crumb-current { color: var(--ink) !important; }
+#app .page-head__title {
+  color: var(--ink) !important;
+  font-family: var(--f-display) !important;
+  font-size: 36px !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.05 !important;
+}
+#app .page-head__title em { color: var(--verm) !important; font-style: italic !important; }
+#app .page-head__sub { margin-top: 8px !important; max-width: 620px !important; color: var(--muted) !important; font-size: 14px !important; line-height: 1.5 !important; }
+
+/* Make table pages fit below the static page-head. */
+#app .table-page-layout {
+  gap: 16px !important;
+  height: calc(100vh - 66px - 128px - 44px) !important;
+}
+
+#app .table-scroll-container,
+#app .table-page-layout .card {
+  border-radius: var(--r-md) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+#app .table-scroll-container th,
+#app .table-wrapper th,
+#app table th {
+  background: var(--surface-2) !important;
+  border-color: var(--border-2) !important;
+  color: var(--mute-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+}
+
+#app .table-scroll-container td,
+#app .table-wrapper td,
+#app table td {
+  border-color: var(--border-2) !important;
+  color: var(--ink-2) !important;
+}
+
+/* Old button contract: black primary, paper secondary, vermillion hover. */
+#app .btn {
+  border-radius: 8px !important;
+  font-family: var(--f-sans) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+#app .btn-primary,
+#app button[class*='bg-primary-'],
+#app a[class*='bg-primary-'] {
+  background: var(--ink) !important;
+  color: var(--on-ink) !important;
+  border: 1px solid var(--ink) !important;
+  box-shadow: none !important;
+}
+
+#app .btn-primary:hover,
+#app button[class*='bg-primary-']:hover,
+#app a[class*='bg-primary-']:hover {
+  background: var(--verm) !important;
+  border-color: var(--verm) !important;
+  color: #fff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px -8px rgba(200,57,45,0.4) !important;
+}
+
+#app .btn-secondary,
+#app .btn-ghost {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border) !important;
+}
+
+#app .btn-secondary:hover,
+#app .btn-ghost:hover {
+  background: var(--bg-2) !important;
+  border-color: var(--mute-3) !important;
+}
+
+/* Re-map vivid Tailwind blues/purples/emeralds into the old warm palette where possible. */
+html:not(.dark) #app .bg-blue-50,
+html:not(.dark) #app .bg-blue-100 { background-color: var(--blue-soft) !important; }
+html:not(.dark) #app .text-blue-500,
+html:not(.dark) #app .text-blue-600,
+html:not(.dark) #app .text-blue-700 { color: var(--blue) !important; }
+html:not(.dark) #app .bg-purple-50,
+html:not(.dark) #app .bg-purple-100,
+html:not(.dark) #app .bg-violet-50,
+html:not(.dark) #app .bg-violet-100 { background-color: #efe4ef !important; }
+html:not(.dark) #app .text-purple-500,
+html:not(.dark) #app .text-purple-600,
+html:not(.dark) #app .text-purple-700,
+html:not(.dark) #app .text-violet-500,
+html:not(.dark) #app .text-violet-600 { color: #6e3d6e !important; }
+html:not(.dark) #app .bg-emerald-50,
+html:not(.dark) #app .bg-emerald-100,
+html:not(.dark) #app .bg-green-50,
+html:not(.dark) #app .bg-green-100 { background-color: var(--green-soft) !important; }
+html:not(.dark) #app .text-emerald-500,
+html:not(.dark) #app .text-emerald-600,
+html:not(.dark) #app .text-green-500,
+html:not(.dark) #app .text-green-600 { color: var(--green) !important; }
+html:not(.dark) #app .bg-amber-50,
+html:not(.dark) #app .bg-amber-100 { background-color: var(--amber-soft) !important; }
+html:not(.dark) #app .text-amber-500,
+html:not(.dark) #app .text-amber-600,
+html:not(.dark) #app .text-amber-700 { color: var(--amber) !important; }
+html:not(.dark) #app .bg-red-50,
+html:not(.dark) #app .bg-red-100 { background-color: var(--verm-soft) !important; }
+html:not(.dark) #app .text-red-500,
+html:not(.dark) #app .text-red-600,
+html:not(.dark) #app .text-red-700 { color: var(--verm) !important; }
+
+@media (max-width: 760px) {
+  #app .topbar { min-height: 56px !important; padding: 10px 0 !important; }
+  #app .page-head { padding: 22px 0 18px !important; }
+  #app .page-head__title { font-size: 30px !important; }
+  #app .table-page-layout { height: auto !important; }
+  #app .mexion-balance { display: none !important; }
+  #app .user__name { display: none !important; }
+}
+/* Desktop topbar should match static site: no hamburger on wide screens. */
+@media (min-width: 1024px) {
+  #app .topbar-mobile-menu { display: none !important; }
+}
+
+/* Keep full brand word visible beside the version capsule. */
+#app .sidebar-brand-title {
+  flex: 0 0 auto !important;
+  max-width: none !important;
+  overflow: visible !important;
+}
+
+#app .sidebar-brand > .relative > button,
+#app .sidebar-brand > .relative > span {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+/* ========= Polish pass: fewer "stacked cards", continuous old-paper surface =========
+   旧静态皮肤不是把每个功能块都做成一张重卡片，而是：
+   - 页面背景连续；
+   - 操作区/筛选区贴在纸面上；
+   - 只保留表格、弹窗、关键详情面板这一层主容器；
+   - 用细线分区，避免大面积粉/灰/白色块形成颜色断层。
+*/
+#app .app:not(.mexion-dashboard-shell) > .main {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(20,18,14,0.024) 1px, transparent 0) 0 0 / 22px 22px,
+    linear-gradient(180deg, color-mix(in oklab, var(--bg) 96%, #fff 4%), var(--bg)) !important;
+}
+
+html.dark #app .app:not(.mexion-dashboard-shell) > .main {
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.022) 1px, transparent 0) 0 0 / 22px 22px,
+    linear-gradient(180deg, color-mix(in oklab, var(--bg) 94%, #fff 3%), var(--bg)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .page-head {
+  border-bottom: 1px solid var(--border) !important;
+  margin-bottom: 18px !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-page-layout {
+  gap: 12px !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed {
+  position: relative !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed + .layout-section-fixed {
+  margin-top: -2px !important;
+}
+
+/* 操作和筛选按钮保持“纸面控件”，不要额外包一层卡片感。 */
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn,
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .input,
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .select-trigger {
+  min-height: 40px !important;
+  border-radius: 8px !important;
+  background: color-mix(in oklab, var(--surface) 88%, transparent) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn-primary {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn-primary:hover {
+  background: var(--verm) !important;
+  border-color: var(--verm) !important;
+}
+
+/* 表格页只保留一个主纸盒；表内再用细线，不要多层卡片和阴影。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container {
+  background: color-mix(in oklab, var(--surface) 94%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper table,
+#app .app:not(.mexion-dashboard-shell) .table-body,
+#app .app:not(.mexion-dashboard-shell) tbody {
+  background: var(--surface) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .table-header,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell,
+#app .app:not(.mexion-dashboard-shell) thead,
+#app .app:not(.mexion-dashboard-shell) thead tr,
+#app .app:not(.mexion-dashboard-shell) thead th {
+  background: color-mix(in oklab, var(--surface-2) 78%, var(--surface)) !important;
+  border-color: var(--border-2) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody .sticky-col,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover .sticky-col {
+  background: var(--surface) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover,
+#app .app:not(.mexion-dashboard-shell) .table tbody tr:hover {
+  background: color-mix(in oklab, var(--warm) 58%, var(--surface)) !important;
+}
+
+/* 批量操作条以前是整条粉色块，视觉断层很明显；改成旧皮肤细线工具条。 */
+#app .account-bulk-bar {
+  margin: 0 !important;
+  min-height: 46px !important;
+  padding: 9px 14px !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border-2) !important;
+  background: transparent !important;
+  color: var(--ink-2) !important;
+  box-shadow: none !important;
+}
+
+#app .account-bulk-bar.is-idle {
+  background: color-mix(in oklab, var(--surface) 72%, transparent) !important;
+}
+
+#app .account-bulk-bar.is-active {
+  background: color-mix(in oklab, var(--verm-soft) 42%, var(--surface)) !important;
+  border-bottom-color: color-mix(in oklab, var(--verm) 18%, var(--border-2)) !important;
+}
+
+#app .account-bulk-bar span {
+  color: var(--ink-2) !important;
+}
+
+#app .account-bulk-bar button:not(.btn) {
+  color: var(--verm) !important;
+}
+
+#app .account-bulk-bar .btn {
+  border-radius: 7px !important;
+  min-height: 30px !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* 通用后台/用户页：压掉 Sub2API 的大圆角白卡、灰卡、ring 阴影，减少“到处都是卡片”的观感。 */
+#app .app:not(.mexion-dashboard-shell) .card:not(.table-scroll-container):not(.chart-card),
+#app .app:not(.mexion-dashboard-shell) .glass-card,
+#app .app:not(.mexion-dashboard-shell) .card-glass,
+#app .app:not(.mexion-dashboard-shell) .stat-card,
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='bg-white'] {
+  background: color-mix(in oklab, var(--surface) 88%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  --tw-ring-color: var(--border) !important;
+  --tw-ring-shadow: 0 0 0 1px var(--border) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='dark:bg-dark-900'] {
+  background: color-mix(in oklab, var(--warm) 42%, transparent) !important;
+  border-color: var(--border-2) !important;
+  box-shadow: none !important;
+}
+
+/* 旧皮肤的色块更克制：把蓝/紫/绿/红背景断层压成浅纸色提示。 */
+#app .app:not(.mexion-dashboard-shell) [class*='bg-primary-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-blue-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-purple-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-violet-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-emerald-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-green-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-amber-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-red-50'] {
+  background-color: color-mix(in oklab, var(--warm) 58%, var(--surface)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+#app .app:not(.mexion-dashboard-shell) .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-2) !important;
+}
+
+/* Teleport 出去的下拉不在 #app 内，单独统一成旧皮肤纸盒。 */
+.select-dropdown-portal {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 14px 36px -12px rgba(20,18,14,0.20), 0 2px 6px rgba(20,18,14,0.04) !important;
+}
+
+.select-dropdown-portal .select-search {
+  border-color: var(--hairline) !important;
+}
+
+.select-dropdown-portal .select-option {
+  color: var(--ink-2) !important;
+}
+
+.select-dropdown-portal .select-option:hover,
+.select-dropdown-portal .select-option-focused {
+  background: var(--bg-2) !important;
+  color: var(--ink) !important;
+}
+
+.select-dropdown-portal .select-option-selected {
+  background: var(--verm-tint) !important;
+  color: var(--verm-2) !important;
+}
+
+@media (max-width: 760px) {
+  #app .account-bulk-bar {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  #app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn,
+  #app .app:not(.mexion-dashboard-shell) .layout-section-fixed .input,
+  #app .app:not(.mexion-dashboard-shell) .layout-section-fixed .select-trigger {
+    min-height: 38px !important;
+  }
+}
+
+/* ========= Polish pass v2: flatten admin/user inner panels =========
+   名称/菜单文案不动，只继续修 UI：
+   - 非表格主容器不再像一张张独立卡片；
+   - 设置/备份/渠道这类页面改成旧皮肤的“纸面分区 + 细线”；
+   - 表格、弹窗、下拉仍保留容器，但颜色更贴近背景，避免白/灰断层。
+*/
+#app .app:not(.mexion-dashboard-shell) main,
+#app .app:not(.mexion-dashboard-shell) .main {
+  color: var(--ink) !important;
+}
+
+/* 绝大多数内容卡片降级为纸面分区；表格、弹窗、图表不在这里处理。 */
+#app .app:not(.mexion-dashboard-shell) .card:not(.table-scroll-container):not(.chart-card):not(.modal-panel):not(.dialog-panel),
+#app .app:not(.mexion-dashboard-shell) .card-hover:not(.table-scroll-container):not(.chart-card),
+#app .app:not(.mexion-dashboard-shell) .glass-card:not(.modal-panel):not(.dialog-panel),
+#app .app:not(.mexion-dashboard-shell) .card-glass:not(.modal-panel):not(.dialog-panel) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .card:not(.table-scroll-container):not(.chart-card):not(.modal-panel):not(.dialog-panel) + .card:not(.table-scroll-container):not(.chart-card):not(.modal-panel):not(.dialog-panel),
+#app .app:not(.mexion-dashboard-shell) .glass-card + .glass-card,
+#app .app:not(.mexion-dashboard-shell) .card-glass + .card-glass {
+  margin-top: 4px !important;
+}
+
+/* 统计卡/信息卡保留分组感，但不再是重白卡。 */
+#app .app:not(.mexion-dashboard-shell) .stat-card,
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class*='border'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='border'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='border'][class*='bg-white'] {
+  background: color-mix(in oklab, var(--surface) 50%, transparent) !important;
+  border-color: var(--border) !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+/* 设置页/详情页里常见的灰底内嵌块，改成很浅的纸色，不再灰白断层。 */
+#app .app:not(.mexion-dashboard-shell) [class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class*='dark:bg-dark-900'] {
+  background-color: color-mix(in oklab, var(--warm) 44%, transparent) !important;
+}
+
+/* 弹窗、下拉、浮层仍然需要“浮起来”，但用旧皮肤弱阴影。 */
+#app .app:not(.mexion-dashboard-shell) [class*='shadow-lg'],
+#app .app:not(.mexion-dashboard-shell) [class*='shadow-xl'],
+#app .app:not(.mexion-dashboard-shell) [class*='shadow-2xl'],
+#app .app:not(.mexion-dashboard-shell) [class*='shadow-card'],
+#app .app:not(.mexion-dashboard-shell) [class*='shadow-glass'] {
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) [role='dialog'],
+#app .app:not(.mexion-dashboard-shell) .modal,
+#app .app:not(.mexion-dashboard-shell) .dropdown,
+#app .app:not(.mexion-dashboard-shell) [class*='absolute'][class*='z-50'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='fixed'][class*='z-50'][class*='bg-white'] {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 18px 42px -18px rgba(20,18,14,0.26), 0 1px 0 rgba(255,255,255,0.62) inset !important;
+}
+
+/* 表格主纸盒比纯白更暖，减少和页面背景的断层。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper table,
+#app .app:not(.mexion-dashboard-shell) .table-body,
+#app .app:not(.mexion-dashboard-shell) tbody {
+  background: color-mix(in oklab, var(--surface) 86%, var(--bg)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) thead,
+#app .app:not(.mexion-dashboard-shell) thead tr,
+#app .app:not(.mexion-dashboard-shell) thead th,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell {
+  background: color-mix(in oklab, var(--warm) 68%, var(--surface)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody td,
+#app .app:not(.mexion-dashboard-shell) tbody th {
+  background-color: transparent !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody .sticky-col,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover .sticky-col {
+  background: color-mix(in oklab, var(--surface) 86%, var(--bg)) !important;
+}
+
+/* 分页条贴合表格主纸盒底部，不再像第二张卡片。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container + *,
+#app .app:not(.mexion-dashboard-shell) .layout-section-scrollable + .layout-section-fixed {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed > [class*='border-t'][class*='bg-white'] {
+  background: transparent !important;
+  border-top-color: var(--border) !important;
+}
+
+/* 控件统一：旧皮肤是细边框纸面控件，不是彩色/亮白控件。 */
+#app .app:not(.mexion-dashboard-shell) input:not([type='checkbox']):not([type='radio']):not(.date-picker-input),
+#app .app:not(.mexion-dashboard-shell) textarea,
+#app .app:not(.mexion-dashboard-shell) select,
+#app .app:not(.mexion-dashboard-shell) .input,
+#app .app:not(.mexion-dashboard-shell) .select-trigger,
+#app .app:not(.mexion-dashboard-shell) .date-picker-trigger {
+  background: color-mix(in oklab, var(--surface) 74%, transparent) !important;
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) input:focus,
+#app .app:not(.mexion-dashboard-shell) textarea:focus,
+#app .app:not(.mexion-dashboard-shell) select:focus,
+#app .app:not(.mexion-dashboard-shell) .input:focus,
+#app .app:not(.mexion-dashboard-shell) .select-trigger:focus,
+#app .app:not(.mexion-dashboard-shell) .date-picker-trigger:focus,
+#app .app:not(.mexion-dashboard-shell) .date-picker-trigger-open {
+  border-color: color-mix(in oklab, var(--verm) 42%, var(--border)) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--verm-soft) 54%, transparent) !important;
+  outline: none !important;
+}
+
+/* 彩色提示块降饱和，避免一块蓝/绿/红直接切断旧纸面。 */
+#app .app:not(.mexion-dashboard-shell) [class*='border-l-4'][class*='bg-blue-'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-l-4'][class*='bg-emerald-'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-l-4'][class*='bg-amber-'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-l-4'][class*='bg-red-'] {
+  background: color-mix(in oklab, var(--warm) 58%, transparent) !important;
+  border-left-width: 2px !important;
+}
+
+/* ========= Polish pass v3: modal/table/background seam fixes =========
+   - 弹窗遮罩必须盖过 topbar/sidebar，避免上方残留色块；
+   - 表格行、固定列、操作列统一继承同一暖纸色，避免列背景断层；
+   - 固定列阴影降噪，不再形成明显灰色竖带。
+*/
+:root {
+  --mx-table-bg: color-mix(in oklab, var(--surface, var(--mx-surface)) 86%, var(--bg, var(--mx-bg))) !important;
+  --mx-table-head-bg: color-mix(in oklab, var(--warm, var(--mx-warm)) 68%, var(--surface, var(--mx-surface))) !important;
+  --mx-table-hover-bg: color-mix(in oklab, var(--warm, var(--mx-warm)) 64%, var(--surface, var(--mx-surface))) !important;
+}
+
+/* BaseDialog Teleport 在 body 下，不能写在 #app 下面；强制高于 topbar(z=100) 和所有后台浮层。 */
+body > .modal-overlay,
+.modal-overlay,
+.dialog-overlay,
+[class*='fixed'][class*='inset-0'][class*='bg-black'],
+[class*='fixed'][class*='inset-0'][class*='bg-gray-950'] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  background: rgba(20, 18, 14, 0.48) !important;
+  backdrop-filter: blur(7px) saturate(.82) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(.82) !important;
+}
+
+.modal-content,
+.dialog-container,
+[role='dialog'] .modal-content {
+  position: relative !important;
+  z-index: 1 !important;
+  background: var(--surface, var(--mx-surface)) !important;
+  border: 1px solid var(--border, var(--mx-border)) !important;
+  box-shadow: 0 24px 70px -30px rgba(20,18,14,.42), 0 1px 0 rgba(255,255,255,.58) inset !important;
+}
+
+.modal-header,
+.modal-footer,
+.dialog-header,
+.dialog-footer {
+  background: color-mix(in oklab, var(--surface, var(--mx-surface)) 92%, var(--warm, var(--mx-warm))) !important;
+  border-color: var(--border-2, var(--mx-border-2)) !important;
+}
+
+.modal-body,
+.dialog-body {
+  background: var(--surface, var(--mx-surface)) !important;
+}
+
+/* 表格整行统一底色：tr 定义变量，所有单元格/固定列/操作列继承同一个值。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper table,
+#app .app:not(.mexion-dashboard-shell) .table-body,
+#app .app:not(.mexion-dashboard-shell) table,
+#app .app:not(.mexion-dashboard-shell) tbody {
+  background: var(--mx-table-bg) !important;
+  background-color: var(--mx-table-bg) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) thead,
+#app .app:not(.mexion-dashboard-shell) thead tr,
+#app .app:not(.mexion-dashboard-shell) thead th,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .table-header,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell.sticky-col {
+  background: var(--mx-table-head-bg) !important;
+  background-color: var(--mx-table-head-bg) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr {
+  --mx-current-row-bg: var(--mx-table-bg);
+  background: var(--mx-current-row-bg) !important;
+  background-color: var(--mx-current-row-bg) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover {
+  --mx-current-row-bg: var(--mx-table-hover-bg);
+  background: var(--mx-current-row-bg) !important;
+  background-color: var(--mx-current-row-bg) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr > td,
+#app .app:not(.mexion-dashboard-shell) tbody tr > th,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col-left,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col-left-first,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col-left-second,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col-right,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > td,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > th,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left-first,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left-second,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-right {
+  background: var(--mx-current-row-bg) !important;
+  background-color: var(--mx-current-row-bg) !important;
+  box-shadow: none !important;
+}
+
+/* Tailwind 的 bg-white/bg-gray-50 出现在表格内部时也跟随行色，不再单独白一块。 */
+#app .app:not(.mexion-dashboard-shell) .table-wrapper tbody tr > td[class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) .table-wrapper tbody tr > td[class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) .table-wrapper tbody tr > th[class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) .table-wrapper tbody tr > th[class*='bg-gray-50'] {
+  background: var(--mx-current-row-bg) !important;
+  background-color: var(--mx-current-row-bg) !important;
+}
+
+/* 固定列左右阴影太重会像颜色断层；改成极弱暖色暗示，必要时等同无阴影。 */
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .sticky-col-left::after,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .sticky-col-left-second::after,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .sticky-col-right::before,
+#app .app:not(.mexion-dashboard-shell) .is-scrollable .sticky-col-left::after,
+#app .app:not(.mexion-dashboard-shell) .is-scrollable .sticky-col-left-second::after,
+#app .app:not(.mexion-dashboard-shell) .is-scrollable .sticky-col-right::before {
+  background: linear-gradient(to right, rgba(20,18,14,.025), transparent) !important;
+  opacity: .45 !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .sticky-col-right::before,
+#app .app:not(.mexion-dashboard-shell) .is-scrollable .sticky-col-right::before {
+  background: linear-gradient(to left, rgba(20,18,14,.025), transparent) !important;
+}
+
+/* ========= Polish pass v4: table paper merge + old primary actions =========
+   用户截图里的表格空白区偏白、弹窗确认按钮偏 Sub2API 绿色；这里统一回旧皮肤主体暖纸/黑色主按钮。
+*/
+:root {
+  --mx-table-bg: color-mix(in oklab, var(--bg, var(--mx-bg)) 92%, var(--surface, var(--mx-surface))) !important;
+  --mx-table-head-bg: color-mix(in oklab, var(--warm, var(--mx-warm)) 72%, var(--bg, var(--mx-bg))) !important;
+  --mx-table-hover-bg: color-mix(in oklab, var(--warm, var(--mx-warm)) 70%, var(--surface, var(--mx-surface))) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-scrollable,
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper,
+#app .app:not(.mexion-dashboard-shell) .table-body,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper table,
+#app .app:not(.mexion-dashboard-shell) table,
+#app .app:not(.mexion-dashboard-shell) tbody {
+  background: var(--mx-table-bg) !important;
+  background-color: var(--mx-table-bg) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container {
+  border-color: color-mix(in oklab, var(--border, var(--mx-border)) 92%, var(--bg, var(--mx-bg))) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper {
+  background-image: radial-gradient(circle at 1px 1px, rgba(20,18,14,.018) 1px, transparent 0) !important;
+  background-size: var(--mx-paper-grid-size) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr,
+#app .app:not(.mexion-dashboard-shell) tbody tr > td,
+#app .app:not(.mexion-dashboard-shell) tbody tr > th,
+#app .app:not(.mexion-dashboard-shell) tbody tr > .sticky-col {
+  background-image: none !important;
+}
+
+/* 旧皮肤主操作按钮：黑底；不用 Sub2API 的亮绿/蓝色块。 */
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-emerald-600'],
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-emerald-500'],
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-green-600'],
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-green-500'],
+.modal-footer button[class*='bg-emerald-600'],
+.modal-footer button[class*='bg-emerald-500'],
+.modal-footer button[class*='bg-green-600'],
+.modal-footer button[class*='bg-green-500'] {
+  background: var(--ink, var(--mx-ink)) !important;
+  border-color: var(--ink, var(--mx-ink)) !important;
+  color: var(--on-ink, #fff) !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-emerald-600']:hover,
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-emerald-500']:hover,
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-green-600']:hover,
+#app .app:not(.mexion-dashboard-shell) button[class*='bg-green-500']:hover,
+.modal-footer button[class*='bg-emerald-600']:hover,
+.modal-footer button[class*='bg-emerald-500']:hover,
+.modal-footer button[class*='bg-green-600']:hover,
+.modal-footer button[class*='bg-green-500']:hover {
+  background: var(--verm, var(--mx-verm)) !important;
+  border-color: var(--verm, var(--mx-verm)) !important;
+  color: #fff !important;
+}
+
+/* ========= Polish pass v5: settings/empty/dropdown/detail panels =========
+   继续旧皮肤收口：设置页标签与分区、空状态、操作菜单、工具提示、彩色提示块都改成纸面细线。
+*/
+#app .app:not(.mexion-dashboard-shell) .settings-tabs-shell {
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tabs-scroll {
+  overflow-x: auto !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tabs {
+  display: flex !important;
+  gap: 4px !important;
+  padding: 0 0 8px !important;
+  background: transparent !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab {
+  min-height: 34px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab:hover {
+  background: color-mix(in oklab, var(--warm) 44%, transparent) !important;
+  border-color: var(--border-2) !important;
+  color: var(--ink) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab-active,
+#app .app:not(.mexion-dashboard-shell) .settings-tab[aria-selected='true'] {
+  background: color-mix(in oklab, var(--surface) 48%, transparent) !important;
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab-icon {
+  color: inherit !important;
+}
+
+/* 设置页分区：保留分隔线，不做一张张厚卡片。 */
+#app .app:not(.mexion-dashboard-shell) form .card > [class*='border-b'][class*='px-6'][class*='py-4'] {
+  padding: 18px 0 14px !important;
+  border-bottom-color: var(--border) !important;
+  background: transparent !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) form .card > [class*='space-y-'][class*='p-6'],
+#app .app:not(.mexion-dashboard-shell) form .card > .p-6 {
+  padding: 16px 0 22px !important;
+  background: transparent !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) form .card h2,
+#app .app:not(.mexion-dashboard-shell) form .card h3 {
+  font-family: var(--f-display) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em !important;
+}
+
+/* 内嵌面板/空状态：从白卡改成纸面细边框。 */
+#app .app:not(.mexion-dashboard-shell) .empty-state,
+#app .app:not(.mexion-dashboard-shell) [class*='border-dashed'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='border'][class*='p-4'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='border'][class*='p-4'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='border'][class*='p-6'] {
+  background: color-mix(in oklab, var(--surface) 38%, transparent) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .empty-state > div:first-child,
+#app .app:not(.mexion-dashboard-shell) .empty-state [class*='bg-gray-100'] {
+  background: color-mix(in oklab, var(--warm) 54%, transparent) !important;
+  border: 1px solid var(--border-2) !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .empty-state-title {
+  color: var(--ink) !important;
+  font-family: var(--f-display) !important;
+  font-weight: 500 !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .empty-state-description {
+  color: var(--muted) !important;
+}
+
+/* 彩色提示块全部降成旧纸面的提示条，只保留左侧或文字颜色区分。 */
+#app .app:not(.mexion-dashboard-shell) [class*='bg-amber-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-yellow-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-green-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-emerald-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-blue-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-violet-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-purple-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-red-50'] {
+  background: color-mix(in oklab, var(--warm) 58%, transparent) !important;
+  border-color: var(--border) !important;
+}
+
+/* 操作菜单/portal 浮层：暖纸、细边框、弱阴影。 */
+.action-menu-content,
+.user-menu__panel,
+.dropdown,
+[role='menu'],
+body > [class*='fixed'][class*='z-[9999]'],
+body > [class*='fixed'][class*='z-[100000020]'],
+#app [class*='absolute'][class*='z-50'][class*='bg-white'],
+#app [class*='fixed'][class*='z-[9999]'][class*='bg-white'] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 16px 38px -18px rgba(20,18,14,.28), 0 1px 0 rgba(255,255,255,.6) inset !important;
+  color: var(--ink-2) !important;
+}
+
+.action-menu-content button,
+.user-menu__item,
+.dropdown-item,
+[role='menu'] button,
+[role='menuitem'] {
+  color: var(--ink-2) !important;
+}
+
+.action-menu-content button:hover,
+.user-menu__item:hover,
+.dropdown-item:hover,
+[role='menu'] button:hover,
+[role='menuitem']:hover {
+  background: color-mix(in oklab, var(--warm) 54%, transparent) !important;
+  color: var(--ink) !important;
+}
+
+/* 深色 tooltip 太突兀，改成旧纸面小注释。 */
+#app .app:not(.mexion-dashboard-shell) [class*='bg-gray-900'][class*='text-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='dark:bg-dark-600'][class*='text-white'] {
+  background: var(--ink) !important;
+  color: var(--on-ink) !important;
+  border: 1px solid color-mix(in oklab, var(--ink) 82%, #fff) !important;
+  box-shadow: 0 10px 24px -16px rgba(20,18,14,.45) !important;
+}
+
+/* 代码/只读值块不要亮白或冷灰。 */
+#app .app:not(.mexion-dashboard-shell) code,
+#app .app:not(.mexion-dashboard-shell) pre,
+#app .app:not(.mexion-dashboard-shell) [class*='font-mono'][class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='font-mono'][class*='bg-gray-100'] {
+  background: color-mix(in oklab, var(--warm) 54%, transparent) !important;
+  border-color: var(--border-2) !important;
+  color: var(--ink-2) !important;
+}
+
+/* 分隔线统一，避免冷灰线。 */
+#app .app:not(.mexion-dashboard-shell) [class*='border-t'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-b'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-l'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-r'] {
+  border-color: var(--border) !important;
+}
+
+/* ========= Polish pass v6: exact-token surface parity =========
+   旧静态皮肤使用少量明确色值（body=#F4F3EE、card=#FFF、head=#FAF9F4），
+   之前大量半透明 color-mix 在叠加后生成 #F5F4EF/#F9F8F5 等近似色，
+   会在主背景、表格空白区和空状态之间形成肉眼可见的色带。 */
+
+/* 后台主体直接透出 body 的统一纸张背景，不再额外叠一层纵向渐变。 */
+#app .app:not(.mexion-dashboard-shell) > .main,
+#app .app:not(.mexion-dashboard-shell) > main,
+#app .app:not(.mexion-dashboard-shell) .main-content {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 表格外层不染色；唯一主纸盒及其内部全部使用旧版精确 surface。 */
+:root {
+  --mx-table-bg: var(--surface, var(--mx-surface)) !important;
+  --mx-table-head-bg: var(--surface-2, var(--mx-surface-2)) !important;
+  --mx-table-hover-bg: var(--bg, var(--mx-bg)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-scrollable {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper table,
+#app .app:not(.mexion-dashboard-shell) .table-body,
+#app .app:not(.mexion-dashboard-shell) table,
+#app .app:not(.mexion-dashboard-shell) tbody,
+#app .app:not(.mexion-dashboard-shell) tbody tr,
+#app .app:not(.mexion-dashboard-shell) tbody tr > td,
+#app .app:not(.mexion-dashboard-shell) tbody tr > th {
+  background: var(--mx-table-bg) !important;
+  background-color: var(--mx-table-bg) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper {
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) thead,
+#app .app:not(.mexion-dashboard-shell) thead tr,
+#app .app:not(.mexion-dashboard-shell) thead th,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .table-header,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell,
+#app .app:not(.mexion-dashboard-shell) .sticky-header-cell.sticky-col {
+  background: var(--mx-table-head-bg) !important;
+  background-color: var(--mx-table-head-bg) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > td,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > th,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left-first,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-left-second,
+#app .app:not(.mexion-dashboard-shell) tbody tr:hover > .sticky-col-right {
+  --mx-current-row-bg: var(--mx-table-hover-bg);
+  background: var(--mx-current-row-bg) !important;
+  background-color: var(--mx-current-row-bg) !important;
+  background-image: none !important;
+}
+
+/* 空状态位于表格主纸盒内时必须继承同一底色，禁止再叠半透明白卡。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container .empty-state,
+#app .app:not(.mexion-dashboard-shell) .table-wrapper .empty-state,
+#app .app:not(.mexion-dashboard-shell) td .empty-state {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 独立空状态使用旧版明确的 surface-2，不再产生半透明合成色。 */
+#app .app:not(.mexion-dashboard-shell) .empty-state {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .empty-state > div:first-child,
+#app .app:not(.mexion-dashboard-shell) .empty-state [class*='bg-gray-100'] {
+  background: var(--warm, var(--mx-warm)) !important;
+  background-color: var(--warm, var(--mx-warm)) !important;
+}
+
+/* 弹窗头、正文、底部保持同一张白纸，仅用分隔线区分，消除顶部残色。 */
+.modal-content,
+.dialog-container,
+.modal-header,
+.modal-body,
+.modal-footer,
+.dialog-header,
+.dialog-body,
+.dialog-footer {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+}
+
+/* ========= Polish pass v7: collapse short tables, remove oversized blank cards =========
+   TablePageLayout 默认强制填满视口；数据为空或只有少量行时会留下大块白色空区，
+   既比旧静态页多一张巨型卡片，也会被误认为背景断层。短表按内容收缩，长表仍保留滚动。 */
+#app .app:not(.mexion-dashboard-shell) .table-scroll-container:has(.table-wrapper.is-compact) {
+  height: auto !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-scrollable:has(.table-wrapper.is-compact) {
+  flex: 0 0 auto !important;
+  min-height: 0 !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper.is-compact {
+  flex: 0 1 auto !important;
+  min-height: 0 !important;
+  max-height: min(62vh, 620px) !important;
+}
+
+/* 空表减少原 Sub2API 的超大留白，尺寸更接近旧静态页的紧凑空状态。 */
+#app .app:not(.mexion-dashboard-shell) .table-wrapper.is-empty .empty-state {
+  min-height: 0 !important;
+  padding-top: 22px !important;
+  padding-bottom: 22px !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper.is-empty .empty-state > div:first-child {
+  width: var(--mx-sidebar-rail-width) !important;
+  height: 56px !important;
+  margin-bottom: 12px !important;
+  border-radius: 10px !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .table-wrapper.is-empty .empty-state-icon {
+  width: 28px !important;
+  height: 28px !important;
+  margin-bottom: 0 !important;
+}
+
+/* ========= Polish pass v8: remove translucent surface seams =========
+   旧静态主题的功能面只使用明确的三层色值：body=#F4F3EE、surface=#FFF、surface-2=#FAF9F4。
+   Vue 原主题中的 bg-white/xx、bg-gray-50/xx 以及前几轮的 transparent color-mix 会随父背景
+   合成出 #F9F8F5、#F6F4EE 等近似色，卡片相邻或滚动时就会出现截图中的色块断层。 */
+
+/* 顶层功能卡、统计卡和白色容器统一为纯 surface，禁止半透明叠色。 */
+#app .app:not(.mexion-dashboard-shell) .card:not(.table-scroll-container):not(.chart-card),
+#app .app:not(.mexion-dashboard-shell) .glass-card,
+#app .app:not(.mexion-dashboard-shell) .card-glass,
+#app .app:not(.mexion-dashboard-shell) .stat-card,
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='bg-white/'] {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+}
+
+/* 内嵌灰面板使用纯 surface-2；不再用透明暖色覆盖父卡片。 */
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class~='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class~='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class~='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class~='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class~='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class~='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class~='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class~='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class^='bg-gray-50/'],
+#app .app:not(.mexion-dashboard-shell) [class*=' bg-gray-50/'],
+#app .app:not(.mexion-dashboard-shell) [class^='bg-gray-100/'],
+#app .app:not(.mexion-dashboard-shell) [class*=' bg-gray-100/'],
+#app .app:not(.mexion-dashboard-shell) [class*='border-dashed'] {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+/* 通用 border+p 面板此前由 38% 白色合成，直接改为 surface-2，避免边缘一圈异色。 */
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='border'][class*='p-4']:not([class*='bg-white']),
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='border'][class*='p-4']:not([class*='bg-white']),
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='border'][class*='p-6']:not([class*='bg-white']) {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+/* 输入框、选择器和工具栏按钮使用同一张纯白纸，焦点前后不产生综合色差。 */
+#app .app:not(.mexion-dashboard-shell) input:not([type='checkbox']):not([type='radio']):not(.date-picker-input),
+#app .app:not(.mexion-dashboard-shell) textarea,
+#app .app:not(.mexion-dashboard-shell) select,
+#app .app:not(.mexion-dashboard-shell) .input,
+#app .app:not(.mexion-dashboard-shell) .select-trigger,
+#app .app:not(.mexion-dashboard-shell) .date-picker-trigger,
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn:not(.btn-primary) {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+}
+
+/* 设置页标签与只读/代码面同样只用明确 token。 */
+#app .app:not(.mexion-dashboard-shell) .settings-tab:hover,
+#app .app:not(.mexion-dashboard-shell) .settings-tab-active,
+#app .app:not(.mexion-dashboard-shell) .settings-tab[aria-selected='true'],
+#app .app:not(.mexion-dashboard-shell) code,
+#app .app:not(.mexion-dashboard-shell) pre,
+#app .app:not(.mexion-dashboard-shell) [class*='font-mono'][class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class*='font-mono'][class*='bg-gray-100'] {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+/* hover 也使用明确色值，浮层移入移出后不会留下半透明色斑。 */
+.action-menu-content button:hover,
+.user-menu__item:hover,
+.dropdown-item:hover,
+[role='menu'] button:hover,
+[role='menuitem']:hover {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+/* v8.1 specificity lock: 覆盖早期高权重的透明色规则。 */
+#app .app:not(.mexion-dashboard-shell) .stat-card,
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-3xl'][class*='border'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='border'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-xl'][class*='border'][class*='bg-white'],
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-lg'][class*='border'][class*='bg-white'] {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+}
+
+/* 只匹配实际 light 背景 token，不能误伤 hover:bg-gray-50 / dark:bg-* 变体。 */
+#app .app:not(.mexion-dashboard-shell) [class~='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) [class^='bg-gray-50/'],
+#app .app:not(.mexion-dashboard-shell) [class*=' bg-gray-50/'],
+#app .app:not(.mexion-dashboard-shell) [class~='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) [class^='bg-gray-100/'],
+#app .app:not(.mexion-dashboard-shell) [class*=' bg-gray-100/'] {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+/* 早期 [class*='bg-gray-50'] 会把 hover/dark 变体也当成常驻底色；在非 hover 状态清掉。 */
+#app .app:not(.mexion-dashboard-shell) [class*='hover:bg-gray-50']:not([class~='bg-white']):not([class*='bg-white/']):not([class~='bg-gray-50']):not([class*=' bg-gray-50/']),
+#app .app:not(.mexion-dashboard-shell) [class~='dark:bg-dark-900']:not([class~='bg-white']):not([class*='bg-white/']):not([class~='bg-gray-50']):not([class*=' bg-gray-50/']) {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 表格精确色必须高于通用 Tailwind 类映射。 */
+#app .app:not(.mexion-dashboard-shell) .table-wrapper [class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) .table-wrapper [class*='bg-gray-100'],
+#app .app:not(.mexion-dashboard-shell) thead[class*='bg-gray-50'],
+#app .app:not(.mexion-dashboard-shell) thead[class*='bg-gray-100'] {
+  background: var(--mx-table-head-bg) !important;
+  background-color: var(--mx-table-head-bg) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .btn:not(.btn-primary),
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .input,
+#app .app:not(.mexion-dashboard-shell) .layout-section-fixed .select-trigger {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+}
+
+
+
+/* ========= Polish pass v9: solid bulk/profile secondary surfaces =========
+   取消批量工具条的透明混色，避免与表格/页面底色叠加后出现色带；
+   认证绑定行按旧静态 profile.css 的 .bind 规格收紧。 */
+#app .app:not(.mexion-dashboard-shell) .account-bulk-bar.is-idle {
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .account-bulk-bar.is-active {
+  background: var(--verm-soft, var(--mx-verm-soft)) !important;
+  background-color: var(--verm-soft, var(--mx-verm-soft)) !important;
+  background-image: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) [class*='rounded-2xl'][class*='border'][class*='bg-white'].profile-binding-row {
+  padding: 10px 12px !important;
+  background: var(--surface-2, var(--mx-surface-2)) !important;
+  background-color: var(--surface-2, var(--mx-surface-2)) !important;
+  background-image: none !important;
+  border: 1px solid var(--border-2, var(--mx-border-2)) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+
+
+/* v8.3: pagination is part of the table surface, not a separate dark-gray strip. */
+#app .app:not(.mexion-dashboard-shell) .border-t.bg-white.dark\:bg-dark-800 {
+  background: var(--surface, var(--mx-surface)) !important;
+  background-color: var(--surface, var(--mx-surface)) !important;
+  background-image: none !important;
+  border-color: var(--border, var(--mx-border)) !important;
+}
+/* ========= Mexion design-DNA guard: settings index tabs =========
+   Settings is an archive/index page. The active index must use the same
+   vermilion brush/stamp grammar as the publication, never the upstream
+   cyan-to-blue SaaS gradient. */
+#app .app:not(.mexion-dashboard-shell) .settings-tab-active::after,
+#app .app:not(.mexion-dashboard-shell) .settings-tab[aria-selected='true']::after {
+  background: var(--verm, var(--mx-verm)) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--verm, var(--mx-verm)) 32%, transparent) !important;
+  transform-origin: left center !important;
+  animation: mx-scale-x 220ms var(--mx-ease-brush) both !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab-active .settings-tab-icon,
+#app .app:not(.mexion-dashboard-shell) .settings-tab[aria-selected='true'] .settings-tab-icon {
+  background: var(--verm-soft, var(--mx-verm-soft)) !important;
+  color: var(--verm, var(--mx-verm)) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .settings-tab:focus-visible {
+  outline: 1px solid var(--verm, var(--mx-verm)) !important;
+  outline-offset: 2px !important;
+}
+

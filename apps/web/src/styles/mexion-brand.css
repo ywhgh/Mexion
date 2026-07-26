@@ -1,0 +1,15 @@
+/* Mexion brand assets deliberately keep the legacy Axiom/Mexion visual language:
+   transparent Newsreader ink letterform with a vermilion printer's diamond.
+   Homepage and auth-page brand ornaments remain the original 8px diamond and
+   are defined in mexion-static-pages.css; do not replace them with the full logo. */
+
+#app .sidebar-logo.brand__mark {
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app .sidebar-logo.brand__mark img {
+  display: block !important;
+  border-radius: 0 !important;
+}

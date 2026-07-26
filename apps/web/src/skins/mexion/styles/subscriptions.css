@@ -1,0 +1,1043 @@
+/*
+ * Mexion subscription catalogue overlay
+ *
+ * Reconstructs the archived subscription folio as an isolated skin surface.
+ * Business data and navigation stay in Sub2API views/stores; this file owns
+ * only editorial composition, paper hierarchy, controls and restrained motion.
+ */
+
+#app .main:has(> .mexion-subscriptions-chrome) > .page-head {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#app .mexion-subscriptions-chrome {
+  --mx-sub-paper: var(--mx-app-surface);
+  --mx-sub-paper-soft: var(--mx-app-surface-2);
+  --mx-sub-rule: var(--mx-app-border);
+  --mx-sub-rule-soft: var(--mx-app-border-2);
+  color: var(--mx-app-ink);
+  padding: 6px 0 36px;
+}
+
+#app .mexion-subscriptions-hero {
+  border-bottom: 1px solid var(--mx-sub-rule);
+  padding: 24px 4px;
+}
+
+#app .mexion-subscriptions-hero__crumb {
+  align-items: center;
+  color: var(--mx-app-mute-2);
+  display: flex;
+  font-family: var(--mx-font-meta);
+  font-size: 11px;
+  gap: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#app .mexion-subscriptions-hero__crumb::before {
+  background: var(--mx-app-verm);
+  border-radius: 50%;
+  content: "";
+  flex: 0 0 auto;
+  height: 5px;
+  opacity: 0.86;
+  width: 5px;
+}
+
+#app .mexion-subscriptions-hero__crumb a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--mx-motion-quick) var(--mx-ease-brush);
+}
+
+#app .mexion-subscriptions-hero__crumb a:hover,
+#app .mexion-subscriptions-hero__crumb a:focus-visible,
+#app .mexion-subscriptions-hero__crumb span:last-child {
+  color: var(--mx-app-ink);
+}
+
+#app .mexion-subscriptions-hero__row {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+#app .mexion-subscriptions-hero__copy {
+  max-width: 650px;
+}
+
+#app .mexion-subscriptions-hero h1 {
+  color: var(--mx-app-ink);
+  font-family: var(--mx-font-display);
+  font-size: clamp(40px, 4vw, 52px);
+  font-weight: 400;
+  letter-spacing: -0.028em;
+  line-height: 1.02;
+  margin: 0;
+}
+
+#app .mexion-subscriptions-hero h1 em {
+  color: var(--mx-app-verm);
+  font-family: var(--mx-font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+#app .mexion-subscriptions-hero__copy p {
+  color: var(--mx-app-muted);
+  font-size: 14px;
+  line-height: 1.62;
+  margin: 10px 0 0;
+  max-width: 58ch;
+}
+
+#app .mexion-subscriptions-hero__copy strong {
+  color: var(--mx-app-ink);
+  font-weight: 560;
+}
+
+#app .mexion-subscriptions-hero__quick {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 3px 4px 0;
+}
+
+#app .mexion-subscriptions-hero__quick > span {
+  color: var(--mx-app-mute-3);
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#app .mexion-subscriptions-hero__quick p {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+#app .mexion-subscriptions-hero__quick b {
+  color: var(--mx-app-ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+#app .mexion-subscriptions-tabs {
+  align-items: center;
+  border-bottom: 1px solid var(--mx-sub-rule);
+  display: flex;
+  margin: 22px 0 24px;
+  position: relative;
+}
+
+#app .mexion-subscriptions-tabs > button {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--mx-app-muted);
+  cursor: pointer;
+  display: flex;
+  font: 500 14px/1 var(--mx-font-interface);
+  gap: 8px;
+  margin-right: 28px;
+  min-height: 41px;
+  padding: 13px 4px;
+  position: relative;
+  transition: color var(--mx-motion-quick) var(--mx-ease-brush);
+  z-index: 1;
+}
+
+#app .mexion-subscriptions-tabs > button:hover,
+#app .mexion-subscriptions-tabs > button:focus-visible,
+#app .mexion-subscriptions-tabs > button[aria-selected="true"] {
+  color: var(--mx-app-ink);
+}
+
+#app .mexion-subscriptions-tabs > button[aria-selected="true"] {
+  font-weight: 650;
+}
+
+#app .mexion-subscriptions-tabs__count {
+  background: var(--mx-app-bg-2);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: 999px;
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  padding: 2px 7px;
+  transition:
+    background var(--mx-motion-quick),
+    border-color var(--mx-motion-quick),
+    color var(--mx-motion-quick);
+}
+
+#app .mexion-subscriptions-tabs > button[aria-selected="true"] .mexion-subscriptions-tabs__count {
+  background: var(--mx-app-verm-soft);
+  border-color: color-mix(in oklab, var(--mx-app-verm) 24%, transparent);
+  color: var(--mx-app-verm);
+}
+
+#app .mexion-subscriptions-tabs__note {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 11px;
+  margin: 0 0 6px auto;
+}
+
+#app .mexion-subscriptions-tabs__indicator {
+  background: var(--mx-app-verm);
+  border-radius: 3px 3px 0 0;
+  bottom: -1px;
+  height: 2px;
+  left: 4px;
+  position: absolute;
+  transform: translateX(0);
+  transition:
+    transform var(--mx-motion-structure) var(--mx-ease-ink),
+    width var(--mx-motion-base) var(--mx-ease-ink);
+  width: 80px;
+}
+
+#app .mexion-subscriptions-tabs__indicator.is-browse {
+  transform: translateX(115px);
+  width: 82px;
+}
+
+#app .mexion-subscriptions-panel {
+  min-width: 0;
+}
+
+#app .mexion-subscriptions-controls {
+  align-items: center;
+  background: color-mix(in oklab, var(--mx-sub-paper-soft) 74%, transparent);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: var(--mx-radius-md);
+  display: flex;
+  gap: 13px;
+  min-height: 54px;
+  padding: 10px 12px;
+}
+
+#app .mexion-subscriptions-controls__group {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+#app .mexion-subscriptions-controls__label {
+  color: var(--mx-app-mute-2);
+  flex: 0 0 auto;
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#app .mexion-subscriptions-controls__divider {
+  background: var(--mx-sub-rule);
+  height: 22px;
+  width: 1px;
+}
+
+#app .mexion-subscriptions-chips {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+#app .mexion-subscriptions-chips button,
+#app .mexion-subscriptions-view-toggle button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--mx-app-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font: 520 12px/1 var(--mx-font-interface);
+  gap: 6px;
+  min-height: 30px;
+  padding: 6px 10px;
+  position: relative;
+  transition:
+    background var(--mx-motion-quick) var(--mx-ease-brush),
+    color var(--mx-motion-quick) var(--mx-ease-brush),
+    transform var(--mx-motion-quick) var(--mx-ease-brush);
+}
+
+#app .mexion-subscriptions-chips button:hover,
+#app .mexion-subscriptions-view-toggle button:hover {
+  color: var(--mx-app-ink);
+  transform: translateY(-1px);
+}
+
+#app .mexion-subscriptions-chips button[aria-pressed="true"],
+#app .mexion-subscriptions-view-toggle button[aria-pressed="true"] {
+  background: linear-gradient(180deg, #2a2820 0%, #1b1a12 62%, #100f0a 100%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 5%),
+    0 2px 7px -4px rgb(0 0 0 / 60%);
+  color: #fff;
+}
+
+#app .mexion-subscriptions-chips small {
+  color: currentColor;
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  opacity: 0.66;
+}
+
+#app .mexion-subscriptions-view-toggle {
+  align-items: center;
+  background: var(--mx-sub-paper);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: 8px;
+  display: flex;
+  margin-left: auto;
+  padding: 3px;
+}
+
+#app .mexion-subscriptions-view-toggle button {
+  border-radius: 5px;
+  padding-inline: 10px;
+}
+
+#app .mexion-subscriptions-result-index {
+  align-items: center;
+  color: var(--mx-app-mute-2);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--mx-font-meta);
+  font-size: 11px;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 4px 7px;
+}
+
+#app .mexion-subscriptions-result-index b {
+  color: var(--mx-app-ink);
+  font-weight: 620;
+}
+
+#app .mexion-subscriptions-result-index__hint {
+  margin-left: auto;
+}
+
+#app .mexion-plan-shelf {
+  min-width: 0;
+}
+
+#app .mexion-plan-shelf__loading,
+#app .mexion-plan-shelf__empty {
+  align-items: center;
+  background: var(--mx-sub-paper);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: var(--mx-radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 164px;
+  overflow: hidden;
+  padding: 30px 24px;
+  position: relative;
+  text-align: center;
+}
+
+#app .mexion-plan-shelf__empty::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--mx-app-verm) 12%, transparent),
+    transparent
+  );
+  content: "";
+  height: 1px;
+  left: 10%;
+  position: absolute;
+  right: 10%;
+  top: 0;
+}
+
+#app .mexion-plan-shelf__empty-mark {
+  align-items: center;
+  color: var(--mx-app-verm);
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  margin-bottom: 8px;
+  opacity: 0.76;
+  width: 38px;
+}
+
+#app .mexion-plan-shelf__empty h2 {
+  color: var(--mx-app-ink);
+  font-family: var(--mx-font-display);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+#app .mexion-plan-shelf__empty p,
+#app .mexion-plan-shelf__loading p {
+  color: var(--mx-app-muted);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+#app .mexion-plan-shelf__loading {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  text-align: left;
+}
+
+#app .mexion-plan-shelf__loading span {
+  animation: mexion-subscription-skeleton 1.4s var(--mx-ease-ink) infinite alternate;
+  background: linear-gradient(
+    100deg,
+    var(--mx-app-bg-2),
+    var(--mx-sub-paper-soft),
+    var(--mx-app-bg-2)
+  );
+  border: 1px solid var(--mx-sub-rule-soft);
+  border-radius: var(--mx-radius-md);
+  height: 108px;
+}
+
+#app .mexion-plan-shelf__loading p {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+#app .mexion-plan-shelf__cards {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#app .mexion-plan-card {
+  animation: mexion-plan-rise var(--mx-motion-slow) var(--mx-ease-ink) both;
+  animation-delay: calc(var(--mexion-plan-index, 0) * 45ms);
+  background: linear-gradient(180deg, var(--mx-sub-paper) 0%, var(--mx-sub-paper-soft) 100%);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: var(--mx-radius-md);
+  box-shadow: 0 1px 2px rgb(20 18 14 / 2%);
+  display: flex;
+  flex-direction: column;
+  min-height: 330px;
+  overflow: hidden;
+  padding: 20px;
+  position: relative;
+  transition:
+    border-color var(--mx-motion-base) var(--mx-ease-brush),
+    box-shadow var(--mx-motion-base) var(--mx-ease-brush),
+    transform var(--mx-motion-base) var(--mx-ease-brush);
+}
+
+#app .mexion-plan-card::after {
+  background: linear-gradient(108deg, transparent 28%, rgb(255 255 255 / 35%) 47%, transparent 66%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-130%);
+  transition: transform 720ms var(--mx-ease-ink);
+}
+
+#app .mexion-plan-card:hover {
+  border-color: color-mix(in oklab, var(--mx-app-ink) 22%, var(--mx-sub-rule));
+  box-shadow: var(--mx-shadow-raised);
+  transform: translateY(-3px);
+}
+
+#app .mexion-plan-card:hover::after {
+  transform: translateX(130%);
+}
+
+#app .mexion-plan-card.is-current {
+  background: linear-gradient(180deg, var(--mx-app-verm-tint) 0%, var(--mx-sub-paper) 48%);
+  border-color: color-mix(in oklab, var(--mx-app-verm) 35%, var(--mx-sub-rule));
+}
+
+#app .mexion-plan-card__series {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#app .mexion-plan-card__heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+#app .mexion-plan-card__eyebrow {
+  color: var(--mx-app-verm);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+#app .mexion-plan-card h2,
+#app .mexion-plan-ladder h2 {
+  color: var(--mx-app-ink);
+  font-family: var(--mx-font-display);
+  font-size: 24px;
+  font-weight: 450;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
+}
+
+#app .mexion-plan-card__current {
+  background: var(--mx-app-green-soft);
+  border: 1px solid color-mix(in oklab, var(--mx-app-green) 30%, transparent);
+  border-radius: 999px;
+  color: var(--mx-app-green);
+  flex: 0 0 auto;
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  padding: 4px 7px;
+}
+
+#app .mexion-plan-card__description {
+  color: var(--mx-app-muted);
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 10px 0 0;
+}
+
+#app .mexion-plan-card__price {
+  align-items: baseline;
+  border-bottom: 1px solid var(--mx-sub-rule-soft);
+  border-top: 1px solid var(--mx-sub-rule-soft);
+  display: flex;
+  gap: 7px;
+  margin-top: 17px;
+  padding: 14px 0 12px;
+}
+
+#app .mexion-plan-card__price > span {
+  color: var(--mx-app-mute-3);
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  text-decoration: line-through;
+}
+
+#app .mexion-plan-card__price strong {
+  color: var(--mx-app-ink);
+  font-family: var(--mx-font-display);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+#app .mexion-plan-card__price small {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+}
+
+#app .mexion-plan-card__ledger {
+  margin: 0;
+  padding: 8px 0;
+}
+
+#app .mexion-plan-card__ledger > div {
+  align-items: baseline;
+  border-bottom: 1px solid var(--mx-sub-rule-soft);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(72px, auto) 1fr;
+  padding: 8px 0;
+}
+
+#app .mexion-plan-card__ledger > div:last-child {
+  border-bottom: 0;
+}
+
+#app .mexion-plan-card__ledger dt {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+#app .mexion-plan-card__ledger dd {
+  color: var(--mx-app-ink-2);
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+#app .mexion-plan-card__features {
+  color: var(--mx-app-muted);
+  display: grid;
+  font-size: 11px;
+  gap: 5px;
+  list-style: none;
+  margin: 3px 0 15px;
+  padding: 0;
+}
+
+#app .mexion-plan-card__features li::before {
+  color: var(--mx-app-verm);
+  content: "—";
+  margin-right: 7px;
+}
+
+#app .mexion-plan-card__action {
+  align-items: center;
+  background: linear-gradient(180deg, #2a2820 0%, #16150f 100%);
+  border: 0;
+  border-radius: 7px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font: 620 12px/1 var(--mx-font-interface);
+  justify-content: space-between;
+  margin-top: auto;
+  min-height: 38px;
+  padding: 0 13px;
+  transition:
+    background var(--mx-motion-base) var(--mx-ease-brush),
+    transform var(--mx-motion-quick) var(--mx-ease-brush);
+}
+
+#app .mexion-plan-card__action:hover,
+#app .mexion-plan-card__action:focus-visible {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--mx-app-verm) 84%, #fff) 0%, var(--mx-app-verm) 62%, var(--mx-app-verm-2) 100%);
+  transform: translateY(-1px);
+}
+
+#app .mexion-plan-ladder {
+  background: var(--mx-sub-paper);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: var(--mx-radius-md);
+  overflow: hidden;
+}
+
+#app .mexion-plan-ladder__head,
+#app .mexion-plan-ladder__row {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns:
+    minmax(220px, 1.6fr) minmax(90px, 0.7fr) minmax(180px, 1.2fr) minmax(90px, 0.6fr)
+    minmax(100px, auto);
+}
+
+#app .mexion-plan-ladder__head {
+  background: var(--mx-sub-paper-soft);
+  border-bottom: 1px solid var(--mx-sub-rule);
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 10px 16px;
+  text-transform: uppercase;
+}
+
+#app .mexion-plan-ladder__row {
+  animation: mexion-plan-rise var(--mx-motion-structure) var(--mx-ease-ink) both;
+  animation-delay: calc(var(--mexion-plan-index, 0) * 35ms);
+  border-bottom: 1px solid var(--mx-sub-rule-soft);
+  min-height: 102px;
+  padding: 14px 16px;
+  transition: background var(--mx-motion-quick) var(--mx-ease-brush);
+}
+
+#app .mexion-plan-ladder__row:last-child {
+  border-bottom: 0;
+}
+
+#app .mexion-plan-ladder__row:hover,
+#app .mexion-plan-ladder__row.is-current {
+  background: var(--mx-app-verm-tint);
+}
+
+#app .mexion-plan-ladder__identity > span {
+  color: var(--mx-app-verm);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#app .mexion-plan-ladder h2 {
+  font-size: 18px;
+  margin-top: 3px;
+}
+
+#app .mexion-plan-ladder__identity p,
+#app .mexion-plan-ladder__row > p {
+  color: var(--mx-app-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  margin: 4px 0 0;
+}
+
+#app .mexion-plan-ladder__price {
+  color: var(--mx-app-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 18px !important;
+}
+
+#app .mexion-plan-ladder__row > button {
+  background: var(--mx-app-ink);
+  border: 0;
+  border-radius: 6px;
+  color: var(--mx-app-on-ink);
+  cursor: pointer;
+  font: 600 11px/1 var(--mx-font-interface);
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+#app .mexion-subscriptions-notes {
+  background: color-mix(in oklab, var(--mx-sub-paper-soft) 70%, transparent);
+  border: 1px solid var(--mx-sub-rule);
+  border-radius: var(--mx-radius-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 28px;
+}
+
+#app .mexion-subscriptions-notes article {
+  min-width: 0;
+  padding: 18px 20px;
+}
+
+#app .mexion-subscriptions-notes article + article {
+  border-left: 1px solid var(--mx-sub-rule);
+}
+
+#app .mexion-subscriptions-notes article > span {
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#app .mexion-subscriptions-notes h2 {
+  color: var(--mx-app-ink);
+  font-family: var(--mx-font-display);
+  font-size: 17px;
+  font-weight: 500;
+  margin: 5px 0 0;
+}
+
+#app .mexion-subscriptions-notes p {
+  color: var(--mx-app-muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 5px 0 0;
+}
+
+#app .mexion-subscriptions-notes a {
+  color: var(--mx-app-verm);
+  margin-left: 6px;
+  text-decoration: none;
+}
+
+#app .mexion-subscriptions-panel--my .mexion-subscriptions-page {
+  margin-top: 0;
+}
+
+#app .mexion-subscriptions-panel--my .mexion-subscriptions-empty.card {
+  min-height: 210px;
+}
+
+.mexion-subscription-panel-enter-active,
+.mexion-subscription-panel-leave-active {
+  transition:
+    opacity var(--mx-motion-base) var(--mx-ease-ink),
+    transform var(--mx-motion-base) var(--mx-ease-ink);
+}
+
+.mexion-subscription-panel-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.mexion-subscription-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes mexion-plan-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mexion-subscription-skeleton {
+  from {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 0.82;
+  }
+}
+
+html.dark[data-mexion-skin="mexion"] #app .mexion-plan-card::after {
+  background: linear-gradient(108deg, transparent 28%, rgb(255 255 255 / 7%) 47%, transparent 66%);
+}
+
+html.dark[data-mexion-skin="mexion"] #app .mexion-subscriptions-chips button[aria-pressed="true"],
+html.dark[data-mexion-skin="mexion"]
+  #app
+  .mexion-subscriptions-view-toggle
+  button[aria-pressed="true"],
+html.dark[data-mexion-skin="mexion"] #app .mexion-plan-card__action {
+  /* On the dark canvas the pressed-ink pill would sink in; lift it to a warm
+     charcoal plate with a hairline ring so the active/CTA state still reads. */
+  background: linear-gradient(180deg, var(--mx-app-surface-2) 0%, var(--mx-app-warm) 100%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--mx-app-ink) 16%, transparent),
+    0 2px 8px -4px rgb(0 0 0 / 70%);
+  color: var(--mx-app-ink);
+}
+
+/* Keep the vermilion press on hover in dark mode — the plate override above
+   is more specific than the base :hover, so restore the CTA stamp here. */
+html.dark[data-mexion-skin="mexion"] #app .mexion-plan-card__action:hover,
+html.dark[data-mexion-skin="mexion"] #app .mexion-plan-card__action:focus-visible {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--mx-app-verm) 84%, #fff) 0%, var(--mx-app-verm) 62%, var(--mx-app-verm-2) 100%);
+  box-shadow: 0 2px 10px -5px rgb(0 0 0 / 70%);
+  color: #fff;
+}
+
+@media (max-width: 1120px) {
+  #app .mexion-plan-shelf__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #app .mexion-subscriptions-controls {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  #app .mexion-subscriptions-view-toggle {
+    margin-left: 0;
+  }
+
+  #app .mexion-subscriptions-result-index__hint {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  #app .mexion-subscriptions-hero {
+    padding: 16px 0 22px;
+  }
+
+  #app .mexion-subscriptions-hero__row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #app .mexion-subscriptions-hero__quick {
+    align-items: flex-start;
+    padding-bottom: 0;
+  }
+
+  #app .mexion-subscriptions-tabs {
+    margin-bottom: 38px;
+  }
+
+  #app .mexion-subscriptions-tabs__note {
+    left: 0;
+    margin: 8px 0 0;
+    position: absolute;
+    right: 0;
+    top: 100%;
+  }
+
+  #app .mexion-subscriptions-controls__divider {
+    display: none;
+  }
+
+  #app .mexion-subscriptions-controls__group {
+    align-items: flex-start;
+    flex: 1 1 100%;
+  }
+
+  #app .mexion-subscriptions-controls__label {
+    min-width: 38px;
+    padding-top: 10px;
+  }
+
+  #app .mexion-subscriptions-view-toggle {
+    min-height: 40px;
+    width: 100%;
+  }
+
+  #app .mexion-subscriptions-view-toggle button {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 32px;
+  }
+
+  #app .mexion-plan-shelf__cards,
+  #app .mexion-subscriptions-notes {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-subscriptions-notes article + article {
+    border-left: 0;
+    border-top: 1px solid var(--mx-sub-rule);
+  }
+
+  #app .mexion-plan-ladder__head {
+    display: none;
+  }
+
+  #app .mexion-plan-ladder__row {
+    align-items: stretch;
+    gap: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #app .mexion-plan-ladder__identity {
+    grid-column: 1 / -1;
+  }
+
+  #app .mexion-plan-ladder__row > p::before {
+    color: var(--mx-app-mute-2);
+    content: attr(data-label) " · ";
+    font-family: var(--mx-font-meta);
+    font-size: 9px;
+    text-transform: uppercase;
+  }
+
+  #app .mexion-plan-ladder__row > button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  #app .mexion-subscriptions-chrome {
+    padding-top: 0;
+  }
+
+  #app .mexion-subscriptions-hero h1 {
+    font-size: clamp(36px, 12vw, 46px);
+  }
+
+  #app .mexion-subscriptions-hero__copy p {
+    font-size: 13px;
+  }
+
+  #app .mexion-subscriptions-tabs > button {
+    font-size: 12px;
+    margin-right: 10px;
+    padding-inline: 2px;
+  }
+
+  #app .mexion-subscriptions-tabs__indicator {
+    left: 2px;
+    width: 76px;
+  }
+
+  #app .mexion-subscriptions-tabs__indicator.is-browse {
+    transform: translateX(98px);
+    width: 76px;
+  }
+
+  #app .mexion-subscriptions-tabs__note {
+    font-size: 9px;
+  }
+
+  #app .mexion-subscriptions-controls {
+    padding: 10px;
+  }
+
+  #app .mexion-subscriptions-controls__group {
+    display: block;
+  }
+
+  #app .mexion-subscriptions-controls__label {
+    display: block;
+    margin-bottom: 7px;
+    min-width: 0;
+    padding: 0;
+  }
+
+  #app .mexion-subscriptions-chips button {
+    min-height: 32px;
+    padding: 6px 11px;
+  }
+
+  #app .mexion-plan-card {
+    min-height: 0;
+    padding: 17px;
+  }
+
+  #app .mexion-plan-shelf__loading {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-plan-shelf__loading span:not(:first-child) {
+    display: none;
+  }
+
+  #app .mexion-plan-ladder__row {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-plan-ladder__identity,
+  #app .mexion-plan-ladder__row > button {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app .mexion-subscriptions-tabs__indicator,
+  #app .mexion-plan-card,
+  #app .mexion-plan-card::after,
+  #app .mexion-plan-ladder__row,
+  #app .mexion-plan-shelf__loading span,
+  .mexion-subscription-panel-enter-active,
+  .mexion-subscription-panel-leave-active {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  #app .mexion-plan-card:hover,
+  #app .mexion-plan-card__action:hover,
+  #app .mexion-subscriptions-chips button:hover,
+  #app .mexion-subscriptions-view-toggle button:hover {
+    transform: none;
+  }
+}

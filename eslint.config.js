@@ -14,7 +14,11 @@ export default [
       "apps/web/public/**",
       "apps/web/dist/**",
       "data/**",
-      "*.db*"
+      "*.db*",
+      // Legacy eslintrc-mode tooling, superseded by this flat config (kept only as an
+      // escape hatch). Not application code, so not linted by the flat pipeline.
+      "**/.eslintrc.cjs",
+      "apps/web/scripts/eslint-legacy.cjs"
     ]
   },
   js.configs.recommended,
@@ -37,6 +41,20 @@ export default [
         "error",
         { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
       ]
+    }
+  },
+  {
+    // Tests legitimately use `any` and loose function types for mocks/stubs.
+    // Relax only these type-strictness rules here; runtime rules (no-console,
+    // no-unused-vars, etc.) stay on.
+    files: [
+      "**/*.spec.{ts,tsx}",
+      "**/*.test.{ts,tsx}",
+      "**/__tests__/**/*.{ts,tsx}"
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off"
     }
   }
 ];

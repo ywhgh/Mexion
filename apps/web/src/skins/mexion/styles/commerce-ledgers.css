@@ -1,0 +1,1131 @@
+/*
+ * Commerce / ledger extension for the Mexion skin.
+ *
+ * Design translation, not a second business implementation:
+ * - paper owns grouping and breathing room;
+ * - ink and rules own hierarchy;
+ * - vermillion is reserved for indices and decisive actions;
+ * - real platform/status colors remain data semantics;
+ * - empty space is framed as an intentional archive leaf.
+ */
+
+:root[data-mexion-skin='mexion'] {
+  --mx-commerce-paper: color-mix(in oklab, var(--mx-app-surface) 92%, var(--mx-app-bg));
+  --mx-commerce-paper-muted: color-mix(in oklab, var(--mx-app-warm) 64%, var(--mx-app-surface));
+  --mx-commerce-ledger-paper: color-mix(in oklab, var(--mx-commerce-paper) 88%, var(--mx-app-bg));
+  --mx-commerce-rule: var(--mx-app-border);
+  --mx-commerce-rule-soft: var(--mx-app-border-2);
+  --mx-commerce-index: var(--mx-app-verm);
+  --mx-commerce-ink: var(--mx-app-ink);
+  --mx-commerce-copy: var(--mx-app-ink-2);
+  --mx-commerce-muted: var(--mx-app-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Affiliate: a recommendation voucher followed by protocol and register.
+   -------------------------------------------------------------------------- */
+
+#app .mexion-affiliate-page {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: clamp(22px, 3vw, 34px) !important;
+}
+
+#app .mexion-affiliate-index {
+  counter-reset: mexion-affiliate-metric;
+  gap: 0 !important;
+  border-block: 1px solid var(--mx-commerce-rule);
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-index__item.card {
+  position: relative;
+  min-width: 0;
+  min-height: 132px;
+  counter-increment: mexion-affiliate-metric;
+  padding: 22px clamp(18px, 2.2vw, 28px) 20px 48px !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-right: 1px solid var(--mx-commerce-rule-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-affiliate-index__item:last-child {
+  border-right: 0 !important;
+}
+
+#app .mexion-affiliate-index__item::before {
+  position: absolute;
+  top: 23px;
+  left: 18px;
+  color: var(--mx-commerce-index);
+  content: counter(mexion-affiliate-metric, decimal-leading-zero);
+  font-family: var(--mx-font-display);
+  font-size: 18px;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+#app .mexion-affiliate-index__item::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--mx-commerce-index), transparent 58%);
+  content: '';
+  opacity: .16;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+#app .mexion-affiliate-index__item > p:first-of-type {
+  min-height: 20px;
+  margin: 0 !important;
+  color: var(--mx-commerce-muted) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: .08em;
+  line-height: 1.55;
+}
+
+#app .mexion-affiliate-index__item > p:first-of-type svg {
+  color: var(--mx-commerce-index) !important;
+}
+
+#app .mexion-affiliate-index__item > p:nth-of-type(2) {
+  margin-top: 9px !important;
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-meta);
+  font-size: clamp(24px, 2.5vw, 34px) !important;
+  font-style: normal;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700 !important;
+  letter-spacing: -.045em;
+  line-height: 1;
+}
+
+#app .mexion-affiliate-index__item > p:nth-of-type(2) span {
+  color: var(--mx-commerce-index) !important;
+  font-family: var(--mx-font-display);
+  font-style: italic;
+}
+
+#app .mexion-affiliate-index__item > p:nth-of-type(n + 3) {
+  margin-top: 9px !important;
+  color: var(--mx-app-mute-2) !important;
+  font-size: 11px !important;
+  line-height: 1.55;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-folio.card {
+  position: relative;
+  padding: clamp(24px, 3vw, 38px) !important;
+  overflow: hidden;
+  border: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background:
+    linear-gradient(90deg, transparent 0, transparent calc(100% - 44px), color-mix(in oklab, var(--mx-commerce-rule-soft) 62%, transparent) calc(100% - 44px), transparent calc(100% - 43px)),
+    var(--mx-commerce-paper) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-affiliate-folio::before,
+#app .mexion-subscriptions-empty::before {
+  position: absolute;
+  top: 0;
+  left: clamp(24px, 3vw, 38px);
+  width: 58px;
+  height: 4px;
+  background: var(--mx-commerce-index);
+  content: '';
+}
+
+#app .mexion-affiliate-folio::after {
+  position: absolute;
+  top: 17px;
+  right: 16px;
+  width: 11px;
+  height: 11px;
+  border-top: 1px solid var(--mx-commerce-ink);
+  border-right: 1px solid var(--mx-commerce-ink);
+  content: '';
+  opacity: .72;
+}
+
+#app .mexion-affiliate-folio__title {
+  margin: 0 !important;
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: clamp(27px, 3.2vw, 42px) !important;
+  font-style: normal;
+  font-weight: 430 !important;
+  letter-spacing: -.035em;
+  line-height: 1.04;
+}
+
+#app .mexion-affiliate-folio__title::first-letter {
+  color: var(--mx-commerce-index);
+}
+
+#app .mexion-affiliate-folio__lead {
+  max-width: var(--mx-measure-copy);
+  margin-top: 9px !important;
+  color: var(--mx-commerce-muted) !important;
+  font-size: 13px !important;
+  line-height: 1.7;
+}
+
+#app .mexion-affiliate-credentials {
+  gap: 0 !important;
+  margin-top: 24px !important;
+  border-block: 1px solid var(--mx-commerce-rule-soft);
+}
+
+#app .mexion-affiliate-credential {
+  min-width: 0;
+  padding: 18px 20px 20px 0;
+}
+
+#app .mexion-affiliate-credential + .mexion-affiliate-credential {
+  padding-right: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--mx-commerce-rule-soft);
+}
+
+#app .mexion-affiliate-credential > p {
+  margin: 0 !important;
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: .1em;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-credential__box {
+  min-height: 46px;
+  margin-top: 9px;
+  padding: 6px 7px 6px 12px !important;
+  border: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+  background: color-mix(in oklab, var(--mx-commerce-paper-muted) 66%, transparent) !important;
+  box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mx-commerce-index) 72%, transparent) !important;
+}
+
+#app .mexion-affiliate-credential__box code {
+  min-width: 0;
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 12px !important;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+  user-select: text;
+}
+
+#app .mexion-affiliate-credential__box .btn {
+  min-height: 32px !important;
+  padding: 6px 10px !important;
+  border-radius: 5px !important;
+  font-size: 11px !important;
+  white-space: nowrap;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-protocol {
+  margin-top: 24px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--mx-commerce-ink) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#app .mexion-affiliate-protocol > p {
+  margin: 0 !important;
+  padding: 14px 0 12px;
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: .12em;
+}
+
+#app .mexion-affiliate-protocol__steps {
+  margin: 0 !important;
+  counter-reset: mexion-affiliate-step;
+  color: var(--mx-commerce-copy) !important;
+}
+
+#app .mexion-affiliate-protocol__steps li {
+  display: grid;
+  min-width: 0;
+  counter-increment: mexion-affiliate-step;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  padding: 15px 0;
+  border-top: 1px solid var(--mx-commerce-rule-soft);
+  color: var(--mx-commerce-copy) !important;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+#app .mexion-affiliate-protocol__steps li::before {
+  color: var(--mx-commerce-index);
+  content: counter(mexion-affiliate-step, decimal-leading-zero);
+  font-family: var(--mx-font-display);
+  font-size: 23px;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-transfer.card,
+#app .app:not(.mexion-dashboard-shell) .mexion-affiliate-register.card {
+  padding: 22px 24px !important;
+  border: 0 !important;
+  border-top: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-affiliate-transfer h3,
+#app .mexion-affiliate-register > h3 {
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 21px !important;
+  font-weight: 500 !important;
+  letter-spacing: -.02em;
+}
+
+#app .mexion-affiliate-transfer p,
+#app .mexion-affiliate-register {
+  color: var(--mx-commerce-muted);
+}
+
+#app .mexion-affiliate-transfer .btn-primary {
+  position: relative;
+  overflow: hidden;
+  min-height: 40px;
+  padding-inline: 18px !important;
+}
+
+#app .mexion-affiliate-transfer .btn-primary:not(:disabled)::after {
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border: 1px solid color-mix(in oklab, currentColor 32%, transparent);
+  border-radius: 4px;
+  content: '';
+}
+
+#app .mexion-affiliate-register > div:last-child {
+  border-color: var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+}
+
+#app .mexion-affiliate-register table {
+  border-top: 1px solid var(--mx-commerce-rule);
+}
+
+#app .mexion-affiliate-register thead th {
+  padding-block: 11px !important;
+  background: var(--mx-commerce-paper-muted) !important;
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta) !important;
+  font-size: 9px !important;
+  font-weight: 650 !important;
+  letter-spacing: .09em !important;
+}
+
+#app .mexion-affiliate-register tbody td {
+  padding-block: 13px !important;
+  background: transparent !important;
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-affiliate-register tbody td:nth-last-child(-n + 2) {
+  font-family: var(--mx-font-meta);
+  font-size: 11px !important;
+}
+
+/* --------------------------------------------------------------------------
+   User subscriptions: empty archive leaf or subscription folios.
+   -------------------------------------------------------------------------- */
+
+#app .mexion-subscriptions-page {
+  min-width: 0;
+}
+
+#app .mexion-subscriptions-loading {
+  min-height: clamp(300px, 46vh, 520px);
+  align-items: center;
+  border-block: 1px solid var(--mx-commerce-rule-soft);
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-subscriptions-empty.card {
+  position: relative;
+  display: flex;
+  min-height: clamp(390px, 54vh, 610px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(46px, 8vw, 96px) clamp(24px, 5vw, 72px) !important;
+  overflow: hidden;
+  border: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background:
+    linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 34px 34px / calc(100% - 68px) 1px no-repeat,
+    linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 34px calc(100% - 34px) / calc(100% - 68px) 1px no-repeat,
+    linear-gradient(90deg, color-mix(in oklab, var(--mx-commerce-rule-soft) 70%, transparent) 1px, transparent 1px) 0 0 / 42px 100%,
+    var(--mx-commerce-paper) !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+#app .mexion-subscriptions-empty::before {
+  z-index: 1;
+}
+
+#app .mexion-subscriptions-empty::after {
+  position: absolute;
+  inset: 22px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid color-mix(in oklab, var(--mx-commerce-rule-soft) 72%, transparent);
+  content: '';
+  clip-path: polygon(0 0, 42px 0, 42px 1px, 1px 1px, 1px 42px, 0 42px, 0 0, 100% 0, 100% 42px, calc(100% - 1px) 42px, calc(100% - 1px) 1px, calc(100% - 42px) 1px, calc(100% - 42px) 0, 100% 0, 100% 100%, calc(100% - 42px) 100%, calc(100% - 42px) calc(100% - 1px), calc(100% - 1px) calc(100% - 1px), calc(100% - 1px) calc(100% - 42px), 100% calc(100% - 42px), 100% 100%, 0 100%, 0 calc(100% - 42px), 1px calc(100% - 42px), 1px calc(100% - 1px), 42px calc(100% - 1px), 42px 100%, 0 100%);
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-subscriptions-empty__seal {
+  position: relative;
+  width: 74px !important;
+  height: 74px !important;
+  margin-bottom: 22px !important;
+  border: 1px solid color-mix(in oklab, var(--mx-commerce-index) 38%, var(--mx-commerce-rule)) !important;
+  border-radius: 10px !important;
+  background: var(--mx-app-verm-tint) !important;
+  color: var(--mx-commerce-index) !important;
+  transform: rotate(-2deg);
+}
+
+#app .mexion-subscriptions-empty__seal::after {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid color-mix(in oklab, var(--mx-commerce-index) 38%, transparent);
+  border-radius: 5px;
+  content: '';
+}
+
+#app .mexion-subscriptions-empty__seal svg {
+  position: relative;
+  z-index: 1;
+  color: var(--mx-commerce-index) !important;
+}
+
+#app .mexion-subscriptions-empty h3 {
+  margin: 0 !important;
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: clamp(28px, 3.2vw, 42px) !important;
+  font-weight: 430 !important;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+}
+
+#app .mexion-subscriptions-empty p {
+  max-width: 42ch;
+  margin-top: 13px !important;
+  color: var(--mx-commerce-muted) !important;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+#app .mexion-subscriptions-grid {
+  gap: clamp(16px, 2vw, 24px) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-subscription-folio {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-width: 1px !important;
+  border-color: var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-commerce-paper) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-subscription-folio::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 3px;
+  background: currentColor;
+  content: '';
+  opacity: .52;
+  pointer-events: none;
+}
+
+#app .mexion-subscription-folio__header {
+  min-height: 94px;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid var(--mx-commerce-rule) !important;
+  background: var(--mx-commerce-paper-muted) !important;
+}
+
+#app .mexion-subscription-folio__header h3 {
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 21px !important;
+  font-weight: 520 !important;
+  letter-spacing: -.02em;
+}
+
+#app .mexion-subscription-folio__header p,
+#app .mexion-subscription-folio__header [class*='text-[11px]'] {
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-subscription-folio__header [class*='rounded-full'],
+#app .mexion-subscription-folio__header [class*='rounded-md'][class*='border'] {
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-subscription-folio__ledger {
+  padding: 0 20px 20px !important;
+}
+
+#app .mexion-subscription-folio__ledger > div {
+  margin: 0 !important;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mx-commerce-rule-soft);
+}
+
+#app .mexion-subscription-folio__ledger > div:last-child {
+  border-bottom: 0;
+}
+
+#app .mexion-subscription-folio__ledger > div > div:first-child span:last-child,
+#app .mexion-subscription-folio__ledger > div > span:last-child {
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-subscription-folio__ledger [class*='h-2'][class*='rounded-full'] {
+  height: 3px !important;
+  border-radius: 0 !important;
+  background: var(--mx-commerce-rule-soft) !important;
+}
+
+#app .mexion-subscription-folio__ledger [class*='h-2'][class*='rounded-full'] > div {
+  border-radius: 0 !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-subscription-folio__ledger > div[class*='bg-gradient'] {
+  justify-content: flex-start !important;
+  padding-inline: 16px !important;
+  border: 1px dashed var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-commerce-paper-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Shared admin/user ledgers: toolbars are index bars, tables are continuous.
+   -------------------------------------------------------------------------- */
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) {
+  gap: 10px !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) {
+  --mx-ledger-paper: var(--mx-commerce-ledger-paper);
+  min-width: 0;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) .layout-section-fixed {
+  padding-block: 7px 10px !important;
+  border-bottom: 1px solid var(--mx-commerce-rule-soft) !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) .layout-section-fixed:first-child,
+#app :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > .card:first-child {
+  position: relative;
+  padding-left: 40px !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) .layout-section-fixed:first-child::before,
+#app :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > .card:first-child::before {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  display: inline-flex;
+  width: 28px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklab, var(--mx-commerce-index) 28%, var(--mx-commerce-rule));
+  border-radius: 999px;
+  background: var(--mx-app-verm-tint);
+  color: var(--mx-commerce-index);
+  content: 'I';
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) .layout-section-fixed:first-child > *,
+#app :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > .card:first-child > * {
+  display: flex;
+  width: 100%;
+}
+
+#app .app:not(.mexion-dashboard-shell) :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > .card:first-child {
+  padding: 8px 0 12px 40px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) :is(.input, .select-trigger, .btn) {
+  min-height: 36px !important;
+  border-radius: 5px !important;
+  box-shadow: none !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger
+) .table-scroll-container,
+#app :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > .table-wrapper,
+#app :is(
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) > div > .table-wrapper {
+  border: 1px solid var(--mx-commerce-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-ledger-paper) !important;
+  box-shadow: none !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) thead th {
+  padding-block: 11px !important;
+  background: var(--mx-commerce-paper-muted) !important;
+  border-bottom-color: var(--mx-commerce-rule) !important;
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta) !important;
+  font-size: 9px !important;
+  font-weight: 650 !important;
+  letter-spacing: .09em !important;
+  text-transform: uppercase;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) tbody td {
+  padding-block: 12px !important;
+  border-bottom-color: var(--mx-commerce-rule-soft) !important;
+  background: transparent !important;
+  font-variant-numeric: tabular-nums;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) tbody tr:hover td {
+  background: color-mix(in oklab, var(--mx-commerce-paper-muted) 58%, transparent) !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) :is(code, .font-mono) {
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-meta) !important;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) .empty-state,
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) .table-wrapper > div[class*='text-center'] {
+  min-height: 280px;
+  justify-content: center;
+  padding: 48px 24px !important;
+  background:
+    linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 24px 24px / calc(100% - 48px) 1px no-repeat,
+    linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 24px calc(100% - 24px) / calc(100% - 48px) 1px no-repeat,
+    var(--mx-ledger-paper) !important;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) .empty-state-title {
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 24px;
+  font-weight: 480;
+}
+
+#app :is(
+  .mexion-announcements-ledger,
+  .mexion-admin-subscriptions-ledger,
+  .mexion-admin-affiliate-ledger,
+  .mexion-user-orders-ledger,
+  .mexion-admin-orders-ledger,
+  .mexion-admin-plans-ledger
+) .empty-state-description {
+  max-width: 48ch;
+  color: var(--mx-commerce-muted) !important;
+  line-height: 1.7;
+}
+
+/* Payment analytics is a report folio; real method colors remain chart semantics. */
+#app .mexion-payment-dashboard {
+  gap: clamp(18px, 2.4vw, 28px) !important;
+}
+
+#app .mexion-payment-dashboard > div:first-child {
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--mx-commerce-rule);
+}
+
+#app .mexion-payment-dashboard > div:first-child > div > div:first-child {
+  border-color: var(--mx-commerce-rule) !important;
+  border-radius: 5px !important;
+  background: var(--mx-commerce-paper) !important;
+}
+
+#app .mexion-payment-dashboard > div:first-child button {
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-payment-dashboard > div:first-child button[class*='bg-primary'] {
+  background: var(--mx-commerce-ink) !important;
+  color: var(--mx-app-on-ink) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-payment-dashboard > template + *,
+#app .app:not(.mexion-dashboard-shell) .mexion-payment-dashboard .grid > .card {
+  border-radius: var(--mx-radius-sm) !important;
+}
+
+#app .app:not(.mexion-dashboard-shell) .mexion-payment-dashboard .grid > .card {
+  padding: 18px 20px !important;
+  border: 1px solid var(--mx-commerce-rule) !important;
+  background: var(--mx-commerce-paper) !important;
+}
+
+#app .mexion-payment-dashboard .grid > .card h3 {
+  margin-bottom: 12px !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--mx-commerce-rule-soft);
+  color: var(--mx-commerce-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 19px !important;
+  font-weight: 500 !important;
+}
+
+#app .mexion-payment-dashboard .grid > .card [class*='text-right'] {
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive editorial rhythm.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1023px) {
+  #app .mexion-affiliate-index__item:nth-child(2) {
+    border-right: 0 !important;
+  }
+
+  #app .mexion-affiliate-index__item:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--mx-commerce-rule-soft) !important;
+  }
+
+  #app .mexion-subscription-folio__header {
+    align-items: flex-start;
+  }
+
+  #app :is(
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger
+  ) {
+    height: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  #app .mexion-affiliate-page {
+    gap: 18px !important;
+  }
+
+  #app .mexion-affiliate-index {
+    border-bottom: 0;
+  }
+
+  #app .app:not(.mexion-dashboard-shell) .mexion-affiliate-index__item.card {
+    min-height: 108px;
+    padding: 18px 16px 17px 46px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--mx-commerce-rule-soft) !important;
+  }
+
+  #app .mexion-affiliate-index__item::before {
+    top: 20px;
+    left: 15px;
+  }
+
+  #app .app:not(.mexion-dashboard-shell) .mexion-affiliate-folio.card {
+    padding: 24px 18px !important;
+    background: var(--mx-commerce-paper) !important;
+  }
+
+  #app .mexion-affiliate-folio::before {
+    left: 18px;
+  }
+
+  #app .mexion-affiliate-credentials {
+    grid-template-columns: 1fr !important;
+  }
+
+  #app .mexion-affiliate-credential,
+  #app .mexion-affiliate-credential + .mexion-affiliate-credential {
+    padding: 16px 0 !important;
+    border-left: 0;
+  }
+
+  #app .mexion-affiliate-credential + .mexion-affiliate-credential {
+    border-top: 1px solid var(--mx-commerce-rule-soft);
+  }
+
+  #app .mexion-affiliate-credential__box {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #app .mexion-affiliate-credential__box code {
+    width: 100%;
+    padding: 5px 4px;
+  }
+
+  #app .mexion-affiliate-credential__box .btn {
+    justify-content: center;
+  }
+
+  #app .mexion-affiliate-protocol__steps li {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  #app .app:not(.mexion-dashboard-shell) .mexion-affiliate-transfer.card,
+  #app .app:not(.mexion-dashboard-shell) .mexion-affiliate-register.card {
+    padding-inline: 0 !important;
+  }
+
+  #app .mexion-affiliate-transfer .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #app .app:not(.mexion-dashboard-shell) .mexion-subscriptions-empty.card {
+    min-height: 420px;
+    padding-inline: 28px !important;
+    background:
+      linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 22px 24px / calc(100% - 44px) 1px no-repeat,
+      linear-gradient(var(--mx-commerce-rule-soft), var(--mx-commerce-rule-soft)) 22px calc(100% - 24px) / calc(100% - 44px) 1px no-repeat,
+      var(--mx-commerce-paper) !important;
+  }
+
+  #app .mexion-subscriptions-empty::after {
+    inset: 14px;
+  }
+
+  #app .mexion-subscription-folio__header {
+    gap: 14px;
+    padding: 16px !important;
+  }
+
+  #app .mexion-subscription-folio__header > div:last-child {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+
+  #app .mexion-subscription-folio__ledger {
+    padding-inline: 16px !important;
+  }
+
+  #app :is(
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger
+  ) .layout-section-fixed:first-child::before,
+  #app :is(
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger
+  ) > .card:first-child::before {
+    display: none;
+  }
+
+  #app :is(
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger
+  ) .layout-section-fixed:first-child,
+  #app :is(
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger
+  ) > .card:first-child {
+    padding-left: 0 !important;
+  }
+
+  #app :is(
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger
+  ) .layout-section-fixed:first-child > *,
+  #app :is(
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger
+  ) > .card:first-child > * {
+    display: flex;
+    width: 100%;
+  }
+
+  #app .mexion-announcements-ledger .layout-section-fixed:first-child > div > div:last-child {
+    flex: 1 1 100% !important;
+  }
+
+  #app .mexion-announcements-ledger .layout-section-fixed:first-child .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  #app :is(
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger,
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger
+  ) > div:not(.layout-section-scrollable):not(.layout-section-fixed) {
+    min-width: 0;
+  }
+
+  #app .mexion-payment-dashboard .grid > .card {
+    padding-inline: 16px !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #app .mexion-affiliate-index__item::after {
+    animation: mexion-commerce-rule-write 540ms var(--mx-ease-brush) both;
+    animation-delay: calc(90ms + var(--mx-commerce-order, 0) * 70ms);
+  }
+
+  #app .mexion-affiliate-index__item:nth-child(1) { --mx-commerce-order: 0; }
+  #app .mexion-affiliate-index__item:nth-child(2) { --mx-commerce-order: 1; }
+  #app .mexion-affiliate-index__item:nth-child(3) { --mx-commerce-order: 2; }
+  #app .mexion-affiliate-index__item:nth-child(4) { --mx-commerce-order: 3; }
+
+  #app .mexion-affiliate-folio,
+  #app .mexion-subscriptions-empty,
+  #app .mexion-subscription-folio {
+    animation: mexion-commerce-paper-in 420ms var(--mx-ease-ink) both;
+  }
+
+  #app .mexion-affiliate-transfer .btn-primary:not(:disabled) {
+    animation: mexion-commerce-stamp-in 340ms var(--mx-ease-stamp) 220ms both;
+  }
+}
+
+@keyframes mexion-commerce-rule-write {
+  to { transform: scaleX(1); }
+}
+
+@keyframes mexion-commerce-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mexion-commerce-stamp-in {
+  from {
+    opacity: .45;
+    transform: translateY(3px) scale(.96) rotate(-1deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app :is(
+    .mexion-affiliate-page,
+    .mexion-subscriptions-page,
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger,
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger,
+    .mexion-payment-dashboard
+  ),
+  #app :is(
+    .mexion-affiliate-page,
+    .mexion-subscriptions-page,
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger,
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger,
+    .mexion-payment-dashboard
+  ) *,
+  #app :is(
+    .mexion-affiliate-page,
+    .mexion-subscriptions-page,
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger,
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger,
+    .mexion-payment-dashboard
+  ) *::before,
+  #app :is(
+    .mexion-affiliate-page,
+    .mexion-subscriptions-page,
+    .mexion-announcements-ledger,
+    .mexion-admin-subscriptions-ledger,
+    .mexion-admin-affiliate-ledger,
+    .mexion-user-orders-ledger,
+    .mexion-admin-orders-ledger,
+    .mexion-admin-plans-ledger,
+    .mexion-payment-dashboard
+  ) *::after {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+
+  #app .mexion-affiliate-index__item::after {
+    transform: scaleX(1);
+  }
+}
+

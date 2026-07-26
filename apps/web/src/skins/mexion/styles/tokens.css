@@ -1,0 +1,190 @@
+/*
+ * Mexion design tokens
+ *
+ * This is the executable counterpart of DESIGN_DNA.md. Keep semantic roles
+ * stable even when a route has no legacy static equivalent. Page-specific
+ * geometry belongs in scoped styles, not in this file.
+ */
+
+:root[data-mexion-skin='mexion'] {
+  /* Public/editorial palette — cover, auth plates, editorial public pages. */
+  --mx-public-ink: #0f0e0c;
+  --mx-public-ink-soft: #1a1612;
+  --mx-public-lead: #5c564e;
+  --mx-public-lead-2: #6b655c;
+  --mx-public-mist: #9a938a;
+  --mx-public-hair: #c9c2b6;
+  --mx-public-verm: #b5392d;
+  --mx-public-verm-deep: #8e2a21;
+  --mx-public-forest: #2d5f3f;
+  --mx-public-gold: #a0763a;
+  --mx-public-paper: #f8f4ea;
+  --mx-public-paper-2: #efe8d6;
+  --mx-public-paper-3: #fbf8f0;
+  --mx-public-rule: rgb(15 14 12 / 10%);
+  --mx-public-rule-soft: rgb(15 14 12 / 6%);
+
+  /* Application palette — dashboard, admin, tables, settings and overlays. */
+  --mx-app-bg: #f4f3ee;
+  --mx-app-bg-2: #efeee8;
+  --mx-app-surface: #fff;
+  --mx-app-surface-2: #faf9f4;
+  --mx-app-warm: #f2efe6;
+  --mx-app-border: #e6e2d6;
+  --mx-app-border-2: #efece2;
+  --mx-app-hairline: #f4f1e8;
+  --mx-app-ink: #14140f;
+  --mx-app-ink-2: #2e2d26;
+  --mx-app-muted: #6b6859;
+  --mx-app-mute-2: #94917f;
+  --mx-app-mute-3: #bbb7a4;
+  --mx-app-on-ink: #fff;
+  --mx-app-verm: #c8392d;
+  --mx-app-verm-2: #a82e22;
+  --mx-app-verm-soft: #fae7e1;
+  --mx-app-verm-tint: #fcefea;
+  --mx-app-green: #3d7a55;
+  --mx-app-green-2: #2f5f42;
+  --mx-app-green-soft: #e6efe7;
+  --mx-app-blue: #2f5c8c;
+  --mx-app-blue-soft: #e5ecf3;
+  --mx-app-amber: #b57a1b;
+  --mx-app-amber-2: #956213;
+  --mx-app-amber-soft: #f6ecd3;
+  --mx-app-plum: #6e3d6e;
+  --mx-app-plum-soft: #efe4ef;
+  --mx-app-teal: #2c6f70;
+  --mx-app-teal-soft: #dceaea;
+  --mx-app-rose: #a0476a;
+  --mx-app-rose-soft: #f2dde5;
+
+  /* Typography roles. */
+  --mx-font-interface: 'Geist', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --mx-font-cn: 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+  --mx-font-meta: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mx-font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --mx-font-serif: var(--mx-font-display);
+  --mx-type-display: clamp(36px, 4.8vw, 76px);
+  --mx-type-h1: clamp(32px, 5.2vw, 56px);
+  --mx-type-h2: clamp(24px, 3.4vw, 36px);
+  --mx-type-h3: clamp(18px, 2.2vw, 22px);
+  --mx-type-body: clamp(14px, 1.4vw, 16px);
+  --mx-type-caption: clamp(11px, 1vw, 12px);
+  --mx-leading-tight: 1.05;
+  --mx-leading-body: 1.6;
+  --mx-leading-reading: 1.78;
+  --mx-tracking-meta: .12em;
+  --mx-measure-copy: 56ch;
+  --mx-measure-wide: 68ch;
+
+  /* Editorial grid: a six-pixel baseline with deliberate larger jumps. */
+  --mx-baseline: 6px;
+  --mx-space-1: 6px;
+  --mx-space-2: 12px;
+  --mx-space-3: 18px;
+  --mx-space-4: 24px;
+  --mx-space-5: 36px;
+  --mx-space-6: 48px;
+  --mx-space-7: 72px;
+  --mx-page-gutter: clamp(28px, 6vw, 92px);
+  --mx-section-gap: clamp(40px, 6vw, 72px);
+  --mx-block-gap: clamp(24px, 4vw, 40px);
+  --mx-sidebar-width: 216px;
+  --mx-sidebar-rail-width: 56px;
+
+  /* Rules, paper shapes and restrained elevation. */
+  --mx-rule-thin: 1px;
+  --mx-rule-ink: 1px solid var(--mx-app-border);
+  --mx-rule-soft: 1px solid var(--mx-app-border-2);
+  --mx-radius-none: 0;
+  --mx-radius-sm: 6px;
+  --mx-radius-md: 10px;
+  --mx-radius-lg: 14px;
+  --mx-shadow-paper: 0 1px 2px rgb(20 18 14 / 3%), 0 0 0 1px var(--mx-app-border);
+  --mx-shadow-raised: 0 6px 22px -10px rgb(20 18 14 / 10%), 0 1px 2px rgb(20 18 14 / 4%);
+  --mx-shadow-float: 0 24px 72px -28px rgb(20 18 14 / 34%), 0 10px 30px -18px rgb(20 18 14 / 22%);
+  --mx-paper-grid: radial-gradient(circle at 1px 1px, rgb(20 18 14 / 2.5%) 1px, transparent 0);
+  --mx-paper-grid-size: 22px 22px;
+
+  /* Semantic motion: brush writes, ink soaks, stamp lands. */
+  --mx-motion-instant: 100ms;
+  --mx-motion-quick: 140ms;
+  --mx-motion-base: 220ms;
+  --mx-motion-structure: 380ms;
+  --mx-motion-slow: 420ms;
+  --mx-ease-brush: cubic-bezier(.65, 0, .35, 1);
+  --mx-ease-ink: cubic-bezier(.22, 1, .36, 1);
+  --mx-ease-stamp: cubic-bezier(.16, 1, .3, 1);
+  /* Compatibility aliases for existing rail code; do not use spring/bounce for new work. */
+  --mx-ease-rail: var(--mx-ease-ink);
+
+  /* Layer contract. */
+  --mx-z-content: 1;
+  --mx-z-sticky: 40;
+  --mx-z-header: 50;
+  --mx-z-drawer: 1000;
+  --mx-z-modal: 2147483000;
+  --mx-z-dropdown: 2147483646;
+}
+
+html.dark[data-mexion-skin='mexion'] {
+  color-scheme: dark;
+
+  /* Warm ink, never blue-black. */
+  --mx-public-ink: #f1efe6;
+  --mx-public-ink-soft: #d8d5c9;
+  --mx-public-lead: #a6a291;
+  --mx-public-lead-2: #918d7e;
+  --mx-public-mist: #7c7869;
+  --mx-public-hair: #57544a;
+  --mx-public-verm: #e45c4f;
+  --mx-public-verm-deep: #c8392d;
+  --mx-public-paper: #15140e;
+  --mx-public-paper-2: #1b1a12;
+  --mx-public-paper-3: #1f1d15;
+  --mx-public-rule: rgb(241 239 230 / 14%);
+  --mx-public-rule-soft: rgb(241 239 230 / 8%);
+
+  --mx-app-bg: #15140e;
+  --mx-app-bg-2: #1b1a12;
+  --mx-app-surface: #1f1d15;
+  --mx-app-surface-2: #25231a;
+  --mx-app-warm: #1b1a12;
+  --mx-app-border: #35322a;
+  --mx-app-border-2: #2b2820;
+  --mx-app-hairline: #242117;
+  --mx-app-ink: #f1efe6;
+  --mx-app-ink-2: #d8d5c9;
+  --mx-app-muted: #a6a291;
+  --mx-app-mute-2: #7c7869;
+  --mx-app-mute-3: #57544a;
+  --mx-app-on-ink: #15140e;
+  --mx-app-verm: #e45c4f;
+  --mx-app-verm-2: #c8392d;
+  --mx-app-verm-soft: #38201b;
+  --mx-app-verm-tint: #2d1916;
+  --mx-app-green: #5cae78;
+  --mx-app-green-2: #3d7a55;
+  --mx-app-green-soft: #1c2c21;
+  --mx-app-blue: #5e91c2;
+  --mx-app-blue-soft: #1b2733;
+  --mx-app-amber: #d69b3c;
+  --mx-app-amber-2: #b57a1b;
+  --mx-app-amber-soft: #2c2415;
+  --mx-app-plum: #a770a7;
+  --mx-app-plum-soft: #281d28;
+  --mx-app-teal: #4fa1a2;
+  --mx-app-teal-soft: #14282a;
+  --mx-app-rose: #c56f8f;
+  --mx-app-rose-soft: #2c1a21;
+
+  --mx-shadow-paper: 0 1px 2px rgb(0 0 0 / 40%), 0 0 0 1px var(--mx-app-border);
+  --mx-shadow-raised: 0 6px 22px -10px rgb(0 0 0 / 60%), 0 1px 2px rgb(0 0 0 / 40%);
+  --mx-shadow-float: 0 24px 72px -28px rgb(0 0 0 / 70%), 0 10px 30px -18px rgb(0 0 0 / 58%);
+  --mx-paper-grid: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 2.2%) 1px, transparent 0);
+}
+
+.mexion-overlay-host {
+  display: contents;
+}
+

@@ -1,0 +1,1226 @@
+/*
+ * Mexion application design extensions
+ *
+ * These styles translate Sub2API features that did not exist in the static
+ * reference into Mexion's editorial system. Hooks live beside the feature;
+ * API, stores, permissions, thresholds and chart logic remain untouched.
+ */
+
+:root[data-mexion-skin='mexion'] {
+  --mx-ops-rule: var(--mx-app-border);
+  --mx-ops-rule-soft: var(--mx-app-border-2);
+  --mx-ops-paper: var(--mx-app-surface);
+  --mx-ops-paper-muted: var(--mx-app-surface-2);
+  --mx-ops-paper-warm: var(--mx-app-warm);
+  --mx-ops-index: var(--mx-app-verm);
+}
+
+/* Ops is a telemetry plate: one reading sequence, not a field of floating cards. */
+#app .mexion-ops-surface {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--mx-space-3);
+}
+
+#app .mexion-ops-surface > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0 !important;
+}
+
+#app .mexion-ops-notice {
+  border: 1px solid color-mix(in oklab, var(--mx-app-verm) 22%, var(--mx-ops-rule));
+  border-left: 2px solid color-mix(in oklab, var(--mx-app-verm) 72%, transparent);
+  border-radius: var(--mx-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* The header behaves like the title block of a technical folio. */
+#app .mexion-ops-header {
+  position: relative;
+  gap: var(--mx-space-3) !important;
+  overflow: visible;
+  padding: clamp(16px, 2vw, 24px) !important;
+  border: 1px solid var(--mx-ops-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-ops-paper) !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#app .mexion-ops-header::before {
+  position: absolute;
+  inset: -1px auto auto 22px;
+  width: 48px;
+  height: 3px;
+  background: var(--mx-ops-index);
+  content: '';
+}
+
+#app .mexion-ops-toolbar {
+  min-width: 0;
+  padding-bottom: var(--mx-space-2) !important;
+  border-color: var(--mx-ops-rule-soft) !important;
+}
+
+#app .mexion-ops-toolbar h1 {
+  font-family: var(--mx-font-interface) !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+  letter-spacing: -.01em;
+}
+
+#app .mexion-ops-toolbar.mexion-ops-toolbar h1 > svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--mx-ops-index) !important;
+}
+
+#app .mexion-ops-toolbar h1 + div,
+#app .mexion-ops-toolbar h1 ~ div {
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-ops-toolbar .select-trigger,
+#app .mexion-ops-toolbar button {
+  min-height: 32px;
+  border-radius: var(--mx-radius-sm) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-ops-toolbar button:not(.mexion-ops-stamp-action) {
+  border: 1px solid var(--mx-ops-rule-soft) !important;
+  background: var(--mx-ops-paper-muted) !important;
+  color: var(--mx-app-ink-2) !important;
+}
+
+#app .mexion-ops-toolbar button:not(.mexion-ops-stamp-action):hover {
+  border-color: var(--mx-app-mute-3) !important;
+  background: var(--mx-ops-paper-warm) !important;
+  color: var(--mx-app-ink) !important;
+}
+
+/* Alert rules are a decisive stamp action, not decorative SaaS blue. */
+#app .mexion-ops-toolbar.mexion-ops-toolbar .mexion-ops-stamp-action {
+  border: 1px solid var(--mx-app-verm-2) !important;
+  background-color: var(--mx-app-verm) !important;
+  color: var(--mx-app-on-ink) !important;
+}
+
+#app .mexion-ops-toolbar.mexion-ops-toolbar .mexion-ops-stamp-action > svg {
+  color: currentColor !important;
+}
+
+#app .mexion-ops-toolbar.mexion-ops-toolbar .mexion-ops-stamp-action:hover {
+  background-color: var(--mx-app-verm-2) !important;
+}
+
+/* Overview: health, realtime, SLA and latency form a ruled ledger. */
+#app .mexion-ops-overview {
+  gap: 1px !important;
+  overflow: visible;
+  align-items: stretch;
+  border: 1px solid var(--mx-ops-rule);
+  border-radius: var(--mx-radius-md);
+  background: var(--mx-ops-rule);
+}
+
+#app .mexion-ops-realtime-sheet {
+  min-width: 0;
+  border: 0 !important;
+  border-radius: calc(var(--mx-radius-md) - 1px) 0 0 calc(var(--mx-radius-md) - 1px) !important;
+  background: var(--mx-ops-paper-muted) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-ops-realtime-sheet.mexion-ops-realtime-sheet .text-blue-500,
+#app .mexion-ops-health-index.mexion-ops-health-index .text-blue-500 {
+  color: var(--mx-ops-index) !important;
+}
+
+#app .mexion-ops-health-index {
+  border-color: var(--mx-ops-rule) !important;
+  border-radius: 0 !important;
+}
+
+#app .mexion-ops-health-index:hover {
+  background: color-mix(in oklab, var(--mx-ops-paper) 72%, transparent) !important;
+}
+
+#app .mexion-ops-metrics-ledger {
+  min-width: 0;
+  gap: 1px !important;
+  align-content: stretch !important;
+  background: var(--mx-ops-rule);
+}
+
+#app .mexion-ops-metric-cell {
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--mx-ops-paper) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-ops-metric-cell [class*='uppercase'],
+#app .mexion-ops-system-cell [class*='uppercase'] {
+  font-family: var(--mx-font-meta) !important;
+  letter-spacing: var(--mx-tracking-meta) !important;
+}
+
+#app .mexion-ops-metric-cell .font-black,
+#app .mexion-ops-metric-cell .font-bold,
+#app .mexion-ops-system-cell .font-black,
+#app .mexion-ops-realtime-sheet .font-black {
+  font-style: normal !important;
+  font-weight: 700 !important;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-ops-metric-cell .text-3xl,
+#app .mexion-ops-system-cell .text-lg,
+#app .mexion-ops-realtime-sheet .text-2xl,
+#app .mexion-ops-realtime-sheet .text-3xl {
+  font-family: var(--mx-font-meta) !important;
+  font-style: normal !important;
+  letter-spacing: -.025em;
+}
+
+#app .mexion-ops-metric-cell button,
+#app .mexion-ops-system-cell button {
+  color: var(--mx-ops-index) !important;
+}
+
+#app .mexion-ops-system-ledger {
+  margin-top: 0 !important;
+  padding-top: var(--mx-space-3) !important;
+  border-color: var(--mx-ops-rule) !important;
+}
+
+#app .mexion-ops-system-grid {
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid var(--mx-ops-rule);
+  border-radius: var(--mx-radius-sm);
+  background: var(--mx-ops-rule);
+}
+
+#app .mexion-ops-system-cell {
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--mx-ops-paper-muted) !important;
+  box-shadow: none !important;
+}
+
+/* Chart rows become ruled plates. A chart may keep blue/green data series when
+ * color identifies real measurements; decorative frame color stays ink/verm. */
+#app .mexion-ops-plate {
+  min-width: 0;
+  gap: 1px !important;
+  overflow: hidden;
+  border: 1px solid var(--mx-ops-rule);
+  border-radius: var(--mx-radius-md);
+  background: var(--mx-ops-rule);
+  box-shadow: none;
+}
+
+#app .mexion-ops-plate-cell {
+  min-width: 0;
+  background: var(--mx-ops-paper);
+}
+
+#app .mexion-ops-panel {
+  min-width: 0;
+  border: 1px solid var(--mx-ops-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-ops-paper) !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#app .mexion-ops-plate-cell > .mexion-ops-panel {
+  height: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+#app .mexion-ops-panel > :first-child {
+  border-color: var(--mx-ops-rule-soft) !important;
+}
+
+#app .mexion-ops-panel h3 {
+  font-family: var(--mx-font-interface) !important;
+  font-size: 13px !important;
+  font-weight: 760 !important;
+  letter-spacing: -.005em;
+}
+
+#app .mexion-ops-panel.mexion-ops-panel h3 > svg {
+  color: var(--mx-ops-index) !important;
+}
+
+#app .mexion-ops-panel.mexion-ops-panel button[class*='text-blue-'],
+#app .mexion-ops-panel.mexion-ops-panel button[class*='text-primary-'] {
+  color: var(--mx-ops-index) !important;
+}
+
+#app .mexion-ops-panel--chart,
+#app .mexion-ops-panel--signal {
+  padding: clamp(16px, 1.7vw, 22px) !important;
+}
+
+#app .mexion-ops-panel--chart > :first-child,
+#app .mexion-ops-panel--signal > :first-child {
+  padding-bottom: var(--mx-space-2);
+  border-bottom: 1px solid var(--mx-ops-rule-soft);
+}
+
+#app .mexion-ops-panel--events,
+#app .mexion-ops-panel--ledger,
+#app .mexion-ops-panel--logs {
+  padding: clamp(16px, 2vw, 22px) !important;
+}
+
+#app .mexion-ops-panel--events > :first-child,
+#app .mexion-ops-panel--ledger > :first-child,
+#app .mexion-ops-panel--logs > :first-child {
+  flex-wrap: wrap;
+  padding-bottom: var(--mx-space-2);
+  border-bottom: 1px solid var(--mx-ops-rule-soft);
+}
+
+#app .mexion-ops-panel--events > :first-child > :last-child,
+#app .mexion-ops-panel--ledger > :first-child > :last-child,
+#app .mexion-ops-panel--logs > :first-child > :last-child {
+  flex-wrap: wrap;
+}
+
+#app .mexion-ops-panel--logs input,
+#app .mexion-ops-panel--logs .select-trigger,
+#app .mexion-ops-panel--ledger .select-trigger,
+#app .mexion-ops-panel--events .select-trigger {
+  border-radius: var(--mx-radius-sm) !important;
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-ops-panel--logs table {
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-ops-panel--logs thead {
+  background: var(--mx-ops-paper-muted) !important;
+}
+
+#app .mexion-ops-panel--logs th {
+  font-family: var(--mx-font-meta) !important;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+#app .mexion-ops-panel--logs [class*='rounded-xl'][class*='border'] {
+  border-radius: var(--mx-radius-sm) !important;
+  border-color: var(--mx-ops-rule) !important;
+}
+
+/* Loading preserves the final reading rhythm instead of reintroducing cards. */
+#app .mexion-ops-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-3);
+}
+
+#app .mexion-ops-skeleton > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0 !important;
+}
+
+#app .mexion-ops-skeleton [class*='rounded-3xl'][class*='bg-white'] {
+  border: 1px solid var(--mx-ops-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-ops-paper) !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#app .mexion-ops-skeleton [class*='rounded-2xl'][class*='bg-gray-50'],
+#app .mexion-ops-skeleton [class*='rounded-xl'][class*='bg-gray-100'] {
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-ops-paper-muted) !important;
+}
+
+@media (max-width: 1023px) {
+  #app .mexion-ops-realtime-sheet {
+    border-radius: calc(var(--mx-radius-md) - 1px) calc(var(--mx-radius-md) - 1px) 0 0 !important;
+  }
+
+  #app .mexion-ops-plate-cell {
+    height: auto !important;
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 639px) {
+  #app .mexion-ops-surface {
+    gap: var(--mx-space-2);
+  }
+
+  #app .mexion-ops-header,
+  #app .mexion-ops-panel--events,
+  #app .mexion-ops-panel--ledger,
+  #app .mexion-ops-panel--logs,
+  #app .mexion-ops-panel--chart,
+  #app .mexion-ops-panel--signal {
+    padding: 14px !important;
+  }
+
+  #app .mexion-ops-toolbar {
+    align-items: flex-start;
+  }
+
+  #app .mexion-ops-toolbar > :last-child {
+    width: 100%;
+  }
+
+  #app .mexion-ops-overview,
+  #app .mexion-ops-plate,
+  #app .mexion-ops-panel,
+  #app .mexion-ops-system-grid {
+    border-radius: var(--mx-radius-sm) !important;
+  }
+
+  #app .mexion-ops-realtime-sheet {
+    padding: 14px !important;
+    border-radius: calc(var(--mx-radius-sm) - 1px) calc(var(--mx-radius-sm) - 1px) 0 0 !important;
+  }
+
+  #app .mexion-ops-health-index {
+    padding-right: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--mx-ops-rule) !important;
+    padding-bottom: var(--mx-space-3) !important;
+  }
+
+  #app .mexion-ops-metric-cell,
+  #app .mexion-ops-system-cell {
+    padding: 12px !important;
+  }
+
+  #app .mexion-ops-panel--events > :first-child > :last-child,
+  #app .mexion-ops-panel--ledger > :first-child > :last-child,
+  #app .mexion-ops-panel--logs > :first-child > :last-child {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app .mexion-ops-surface animate {
+    display: none;
+  }
+}
+
+
+/* Mexion profile archive extension */
+#app .mexion-profile-surface {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 38px);
+  --mx-profile-rule: var(--mx-app-border);
+  --mx-profile-rule-soft: var(--mx-app-border-2);
+  --mx-profile-paper: var(--mx-app-surface);
+  --mx-profile-paper-muted: var(--mx-app-surface-2);
+  --mx-profile-ink: var(--mx-app-ink);
+  --mx-profile-muted: var(--mx-app-muted);
+  --mx-profile-index: var(--mx-app-verm);
+  /* Seal is an ink stamp: dark disc on light paper, and it flips to a light
+     chip on the dark canvas so the avatar never sinks into the surface. */
+  --mx-profile-seal: var(--mx-app-ink);
+  --mx-profile-seal-ink: var(--mx-app-on-ink);
+}
+
+#app .mexion-profile-dossier {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 34px);
+}
+
+/* The identity block is a membership dossier: seal, name plate and a ruled 2x2 fact plaque. */
+#app .mexion-profile-identity-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.18fr) minmax(380px, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-profile-paper) !important;
+  box-shadow: none !important;
+  animation: mexion-profile-sheet-in 360ms cubic-bezier(.22, .8, .28, 1) both;
+}
+
+#app .mexion-profile-identity-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--mx-profile-index) 0%,
+    var(--mx-profile-index) 38%,
+    transparent 38%,
+    transparent 62%,
+    var(--mx-profile-ink) 62%
+  );
+  content: '';
+}
+
+#app .mexion-profile-identity-card__left {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: clamp(18px, 2.4vw, 28px);
+  padding: clamp(24px, 3vw, 38px);
+  border-right: 1px dashed var(--mx-profile-rule);
+}
+
+#app .mexion-profile-avatar-seal {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--mx-profile-paper);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, color-mix(in oklab, var(--mx-profile-paper) 18%, transparent), transparent 45%),
+    var(--mx-profile-seal) !important;
+  box-shadow:
+    0 0 0 1px var(--mx-profile-rule);
+  color: var(--mx-profile-seal-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+#app .mexion-profile-identity-copy {
+  min-width: 0;
+  padding-top: 4px;
+}
+
+#app .mexion-profile-identity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 10px;
+  letter-spacing: .16em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+#app .mexion-profile-index-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mx-profile-index);
+}
+
+#app .mexion-profile-identity-copy h2 {
+  max-width: 100%;
+  margin: 8px 0 0;
+  overflow: hidden;
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-display) !important;
+  font-size: clamp(34px, 4vw, 48px) !important;
+  font-weight: 430 !important;
+  letter-spacing: -.035em;
+  line-height: 1.04;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#app .mexion-profile-primary-email {
+  margin-top: 8px;
+  overflow: hidden;
+  color: var(--mx-profile-muted) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#app .mexion-profile-identity-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+#app .mexion-profile-identity-badges .badge {
+  min-height: 21px;
+  padding: 3px 8px !important;
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: 999px !important;
+  background: var(--mx-profile-paper-muted) !important;
+  box-shadow: none !important;
+  color: var(--mx-profile-muted) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 9px !important;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+
+#app .mexion-profile-identity-badges .badge-primary {
+  border-color: color-mix(in oklab, var(--mx-profile-index) 28%, var(--mx-profile-rule)) !important;
+  background: var(--mx-app-verm-tint) !important;
+  color: var(--mx-profile-index) !important;
+}
+
+#app .mexion-profile-source-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 12px;
+  color: var(--mx-app-mute-2);
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+#app .mexion-profile-source-notes span::before {
+  margin-right: 7px;
+  color: var(--mx-profile-index);
+  content: '↳';
+}
+
+#app .mexion-profile-plaque-grid {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
+  background: var(--mx-profile-paper-muted);
+}
+
+#app .mexion-profile-plaque-grid::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 11px,
+    color-mix(in oklab, var(--mx-profile-rule-soft) 72%, transparent) 11px,
+    color-mix(in oklab, var(--mx-profile-rule-soft) 72%, transparent) 12px
+  );
+  content: '';
+}
+
+#app .mexion-profile-plaque {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 112px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px clamp(20px, 2.5vw, 32px);
+}
+
+#app .mexion-profile-plaque:nth-child(odd) {
+  border-right: 1px solid var(--mx-profile-rule-soft);
+}
+
+#app .mexion-profile-plaque:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--mx-profile-rule-soft);
+}
+
+#app .mexion-profile-plaque p {
+  margin: 0;
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  font-weight: 560;
+  letter-spacing: .14em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+#app .mexion-profile-plaque strong {
+  display: block;
+  max-width: 100%;
+  margin-top: 7px;
+  overflow: hidden;
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-meta);
+  font-size: clamp(17px, 2vw, 22px);
+  font-style: normal;
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Lower content is two archive leaves, not cards nested inside cards. */
+#app .mexion-profile-archive-grid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.18fr) minmax(360px, 1fr);
+  gap: clamp(18px, 2.2vw, 26px);
+  align-items: start;
+}
+
+#app .mexion-profile-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: var(--mx-radius-md) !important;
+  background: var(--mx-profile-paper) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-profile-panel__header,
+#app .mexion-profile-security-archive__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--mx-profile-rule-soft);
+}
+
+#app .mexion-profile-panel__header > span,
+#app .mexion-profile-security-archive__header > span {
+  color: var(--mx-app-mute-3);
+  font-family: var(--mx-font-meta);
+  font-size: 12px;
+}
+
+#app .mexion-profile-panel__header h3,
+#app .mexion-profile-security-archive__header h2 {
+  margin: 4px 0 0;
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-interface) !important;
+  font-size: 16px !important;
+  font-weight: 760 !important;
+  letter-spacing: -.015em;
+}
+
+#app .mexion-profile-panel__header p,
+#app .mexion-profile-security-archive__header p {
+  max-width: 62ch;
+  margin: 5px 0 0;
+  color: var(--mx-profile-muted) !important;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+#app .mexion-profile-panel__folio {
+  color: var(--mx-profile-index) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+#app .mexion-profile-basics-ledger {
+  padding: 0 22px;
+}
+
+#app .mexion-profile-avatar-editor,
+#app .mexion-profile-edit-form,
+#app .mexion-profile-bindings {
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-profile-avatar-editor {
+  display: block;
+  padding: 22px 0;
+}
+
+#app .mexion-profile-avatar-editor > div:last-child {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 18px !important;
+  align-items: start;
+}
+
+#app .mexion-profile-avatar-preview {
+  width: 72px !important;
+  height: 72px !important;
+  border: 2px solid var(--mx-profile-paper) !important;
+  border-radius: 50% !important;
+  background: var(--mx-profile-seal) !important;
+  box-shadow: 0 0 0 1px var(--mx-profile-rule) !important;
+  color: var(--mx-profile-seal-ink) !important;
+  font-family: var(--mx-font-display);
+  font-size: 24px !important;
+}
+
+
+#app .mexion-profile-avatar-editor p:first-child,
+#app .mexion-profile-edit-form p:first-child {
+  color: var(--mx-profile-ink) !important;
+  font-weight: 720 !important;
+}
+
+#app .mexion-profile-avatar-editor p,
+#app .mexion-profile-edit-form p {
+  color: var(--mx-profile-muted) !important;
+  line-height: 1.65;
+}
+
+#app .mexion-profile-edit-form {
+  padding: 20px 0 22px;
+  border-top: 1px solid var(--mx-profile-rule-soft) !important;
+}
+
+#app .mexion-profile-form .input-label,
+#app .mexion-profile-notify-card .input-label,
+#app .mexion-profile-bindings .input-label {
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 9px !important;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+#app .mexion-profile-form .input,
+#app .mexion-profile-notify-card .input,
+#app .mexion-profile-bindings .input {
+  border-color: var(--mx-profile-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-profile-paper-muted) !important;
+  box-shadow: none !important;
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#app .mexion-profile-form .input:focus,
+#app .mexion-profile-notify-card .input:focus,
+#app .mexion-profile-bindings .input:focus {
+  border-color: var(--mx-profile-index) !important;
+  outline: 2px solid color-mix(in oklab, var(--mx-profile-index) 15%, transparent) !important;
+  outline-offset: 1px;
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+#app .mexion-profile-avatar-editor .btn,
+#app .mexion-profile-edit-form .btn,
+#app .mexion-profile-bindings .btn,
+#app .mexion-profile-security-archive .btn {
+  min-height: 32px;
+  border-radius: var(--mx-radius-sm) !important;
+  box-shadow: none !important;
+  font-family: var(--mx-font-interface);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+#app .mexion-profile-avatar-editor .btn-primary,
+#app .mexion-profile-edit-form .btn-primary,
+#app .mexion-profile-bindings .btn-primary,
+#app .mexion-profile-security-archive .btn-primary {
+  border-color: var(--mx-profile-ink) !important;
+  background: var(--mx-profile-ink) !important;
+  color: var(--mx-app-on-ink) !important;
+}
+
+#app .mexion-profile-avatar-editor .btn-secondary,
+#app .mexion-profile-bindings .btn-secondary,
+#app .mexion-profile-security-archive .btn-secondary {
+  border-color: var(--mx-profile-rule) !important;
+  background: var(--mx-profile-paper) !important;
+  color: var(--mx-profile-ink) !important;
+}
+
+#app .mexion-profile-bindings {
+  padding: 0 22px 8px;
+}
+
+#app .mexion-profile-bindings__intro {
+  display: none;
+}
+
+#app .mexion-profile-bindings.mexion-profile-bindings .mexion-profile-binding-entry.mexion-profile-binding-entry.mexion-profile-binding-entry.profile-binding-row {
+  margin: 0 !important;
+  padding: 16px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--mx-profile-rule-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-profile-bindings .mexion-profile-binding-entry:last-child {
+  border-bottom: 0 !important;
+}
+
+#app .mexion-profile-binding-entry [class*='h-11'][class*='w-11'] {
+  width: 36px !important;
+  height: 36px !important;
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-profile-paper-muted) !important;
+  color: var(--mx-profile-ink) !important;
+}
+
+#app .mexion-profile-binding-entry h3 {
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-interface);
+  font-size: 13px;
+  font-weight: 720 !important;
+}
+
+#app .mexion-profile-binding-entry p {
+  color: var(--mx-profile-muted) !important;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+#app .mexion-profile-binding-entry .badge {
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: 999px !important;
+  background: var(--mx-profile-paper-muted) !important;
+  color: var(--mx-profile-muted) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 8px !important;
+  letter-spacing: .06em;
+}
+
+#app .mexion-profile-binding-entry .badge-success {
+  border-color: color-mix(in oklab, var(--mx-app-green) 25%, var(--mx-profile-rule)) !important;
+  color: var(--mx-app-green) !important;
+}
+
+/* Security is filed as a full-width appendix with two primary leaves. */
+#app .mexion-profile-security-archive {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--mx-profile-rule);
+  border-radius: var(--mx-radius-md);
+  background: var(--mx-profile-paper);
+  animation: mexion-profile-sheet-in 420ms 70ms cubic-bezier(.22, .8, .28, 1) both;
+}
+
+#app .mexion-profile-security-grid {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  background: var(--mx-profile-rule);
+}
+
+#app .mexion-profile-security-card,
+#app .mexion-profile-notify-card,
+#app .mexion-profile-support-sheet {
+  min-width: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--mx-profile-paper) !important;
+  box-shadow: none !important;
+}
+
+#app .mexion-profile-security-card,
+#app .mexion-profile-notify-card {
+  display: grid;
+  grid-template-columns: minmax(210px, .34fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+#app .mexion-profile-security-card__header,
+#app .mexion-profile-notify-card > div:first-child {
+  min-height: 0;
+  padding: 18px 22px 14px !important;
+  border-right: 1px solid var(--mx-profile-rule-soft) !important;
+  border-bottom: 0 !important;
+  border-color: var(--mx-profile-rule-soft) !important;
+  background: var(--mx-profile-paper-muted);
+}
+
+#app .mexion-profile-security-card__header h2,
+#app .mexion-profile-notify-card > div:first-child h2 {
+  color: var(--mx-profile-ink) !important;
+  font-family: var(--mx-font-interface) !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+}
+
+#app .mexion-profile-security-card__header p,
+#app .mexion-profile-notify-card > div:first-child p {
+  color: var(--mx-profile-muted) !important;
+  font-size: 11px !important;
+  line-height: 1.55;
+}
+
+#app .mexion-profile-security-card__body,
+#app .mexion-profile-notify-card > div:last-child {
+  min-width: 0;
+  padding: 20px 22px !important;
+}
+
+#app .mexion-profile-password-card .mexion-profile-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: start;
+  gap: 16px;
+}
+
+#app .mexion-profile-password-card .mexion-profile-form > * {
+  margin-top: 0 !important;
+}
+
+#app .mexion-profile-password-actions {
+  align-self: start;
+  padding-top: 23px !important;
+}
+
+#app .mexion-profile-password-card .input-hint {
+  color: var(--mx-app-mute-2) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 9px;
+}
+
+#app .mexion-profile-totp-card > .mexion-profile-security-card__body > div:not([class*='animate-spin']) {
+  gap: 14px;
+}
+
+#app .mexion-profile-totp-card [class*='rounded-full'][class*='p-3'] {
+  border: 1px solid var(--mx-profile-rule) !important;
+  border-radius: 50% !important;
+  background: var(--mx-profile-paper-muted) !important;
+}
+
+#app .mexion-profile-totp-card .btn-outline-danger {
+  border-color: color-mix(in oklab, var(--mx-profile-index) 38%, var(--mx-profile-rule)) !important;
+  background: transparent !important;
+  color: var(--mx-profile-index) !important;
+}
+
+#app .mexion-profile-notify-card {
+  grid-column: 1 / -1;
+}
+
+#app .mexion-profile-notify-card > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px clamp(24px, 4vw, 54px) !important;
+}
+
+#app .mexion-profile-notify-card [class*='rounded-lg'][class*='bg-gray-50'] {
+  border: 1px solid var(--mx-profile-rule-soft);
+  border-radius: var(--mx-radius-sm) !important;
+  background: var(--mx-profile-paper-muted) !important;
+}
+
+#app .mexion-profile-support-sheet {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+}
+
+#app .mexion-profile-support-sheet__mark {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklab, var(--mx-profile-index) 28%, var(--mx-profile-rule));
+  border-radius: 50%;
+  background: var(--mx-app-verm-tint);
+  color: var(--mx-profile-index);
+}
+
+#app .mexion-profile-support-sheet h3 {
+  margin: 4px 0 0;
+  color: var(--mx-profile-ink) !important;
+  font-size: 14px;
+  font-weight: 740;
+}
+
+#app .mexion-profile-support-sheet p {
+  margin: 4px 0 0;
+  color: var(--mx-profile-muted) !important;
+  font-family: var(--mx-font-meta);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes mexion-profile-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  #app .mexion-profile-security-card,
+  #app .mexion-profile-notify-card {
+    grid-template-columns: minmax(190px, .3fr) minmax(0, 1fr);
+  }
+
+  #app .mexion-profile-password-card .mexion-profile-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #app .mexion-profile-password-actions {
+    padding-top: 0 !important;
+  }
+}
+
+@media (max-width: 1050px) {
+  #app .mexion-profile-identity-card,
+  #app .mexion-profile-archive-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-profile-identity-card__left {
+    border-right: 0;
+    border-bottom: 1px dashed var(--mx-profile-rule);
+  }
+
+  #app .mexion-profile-archive-grid {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  #app .mexion-profile-surface,
+  #app .mexion-profile-dossier {
+    gap: 18px;
+  }
+
+  #app .mexion-profile-identity-card,
+  #app .mexion-profile-panel,
+  #app .mexion-profile-security-archive {
+    border-radius: var(--mx-radius-sm) !important;
+  }
+
+  #app .mexion-profile-identity-card__left {
+    padding: 22px 18px;
+  }
+
+  #app .mexion-profile-avatar-seal {
+    width: 78px;
+    height: 78px;
+    border-width: 2px;
+    font-size: 30px;
+  }
+
+  #app .mexion-profile-identity-copy h2 {
+    font-size: clamp(30px, 9vw, 40px) !important;
+  }
+
+  #app .mexion-profile-plaque {
+    min-height: 94px;
+    padding: 16px 18px;
+  }
+
+  #app .mexion-profile-panel__header,
+  #app .mexion-profile-security-archive__header {
+    padding: 16px 18px 14px;
+  }
+
+  #app .mexion-profile-basics-ledger,
+  #app .mexion-profile-bindings {
+    padding-inline: 18px;
+  }
+
+  #app .mexion-profile-security-grid,
+  #app .mexion-profile-security-card,
+  #app .mexion-profile-notify-card,
+  #app .mexion-profile-notify-card > div:last-child,
+  #app .mexion-profile-password-card .mexion-profile-form {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-profile-security-card__header,
+  #app .mexion-profile-notify-card > div:first-child {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--mx-profile-rule-soft) !important;
+  }
+
+  #app .mexion-profile-password-actions {
+    justify-content: flex-end;
+  }
+
+  #app .mexion-profile-notify-card,
+  #app .mexion-profile-support-sheet {
+    grid-column: auto;
+  }
+
+  #app .mexion-profile-totp-card > .mexion-profile-security-card__body > div {
+    flex-wrap: wrap;
+  }
+
+  #app .mexion-profile-support-sheet {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 479px) {
+  #app .mexion-profile-identity-card__left {
+    flex-direction: column;
+  }
+
+  #app .mexion-profile-plaque-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-profile-plaque:nth-child(odd) {
+    border-right: 0;
+  }
+
+  #app .mexion-profile-plaque:nth-child(-n + 3) {
+    border-bottom: 1px solid var(--mx-profile-rule-soft);
+  }
+
+  #app .mexion-profile-avatar-editor > div:last-child {
+    grid-template-columns: 1fr;
+  }
+
+  #app .mexion-profile-binding-entry > div {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app .mexion-profile-surface,
+  #app .mexion-profile-surface * {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}

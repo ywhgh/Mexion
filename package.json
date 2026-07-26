@@ -1,6 +1,6 @@
 {
   "name": "mexion",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.2",
@@ -15,7 +15,9 @@
     "test": "pnpm --filter @mexion/web test",
     "typecheck": "pnpm --filter @mexion/web typecheck",
     "format": "prettier --write .",
-    "audit:ui": "bash scripts/audit.sh"
+    "audit:ui": "bash scripts/audit.sh",
+    "skin:vue:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-mexion-vue-preview.ps1 -Port 5515",
+    "skin:verify:vue-preview": "node scripts/verify-mexion-vue-preview.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

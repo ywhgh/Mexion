@@ -1,0 +1,3013 @@
+/* Static Mexion HTML parity layer: home + unauthenticated pages. */
+
+.mexion-index-page,
+.mexion-auth-page {
+  --ink: var(--mx-public-ink, #0f0e0c);
+  --ink-soft: var(--mx-public-ink-soft, #1a1612);
+  --lead: var(--mx-public-lead, #5c564e);
+  --lead-2: var(--mx-public-lead-2, #6b655c);
+  --mist: var(--mx-public-mist, #9a938a);
+  --hair: var(--mx-public-hair, #c9c2b6);
+  --verm: var(--mx-public-verm, #b5392d);
+  --verm-deep: var(--mx-public-verm-deep, #8e2a21);
+  --forest: var(--mx-public-forest, #2d5f3f);
+  --gold: var(--mx-public-gold, #a0763a);
+  --paper: var(--mx-public-paper, #f8f4ea);
+  --paper-2: var(--mx-public-paper-2, #efe8d6);
+  --paper-3: var(--mx-public-paper-3, #fbf8f0);
+  --hairline: var(--mx-public-rule, rgba(15, 14, 12, 0.10));
+  --hairline-2: var(--mx-public-rule-soft, rgba(15, 14, 12, 0.06));
+  --f-sans: var(--mx-font-interface);
+  --f-cn: var(--mx-font-cn);
+  --f-mono: var(--mx-font-meta);
+  --f-display: var(--mx-font-display);
+  color: var(--ink);
+  font-family: var(--f-display);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga", "calt";
+}
+
+/* ───────────────────── Home: old public/index.html ───────────────────── */
+.mexion-index-page {
+  --px: var(--mx-page-gutter);
+  --hero: var(--mx-type-display);
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--px);
+  padding-right: var(--px);
+  max-width: 1480px;
+  margin: 0 auto;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #faf6ec 0%, #f8f4ea 40%, #ede6d2 100%);
+  position: relative;
+  isolation: isolate;
+}
+
+.mexion-index-page::before,
+.mexion-auth-page .plate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(15, 14, 12, 0.035) 0 1px, transparent 1px),
+    radial-gradient(circle at 75% 40%, rgba(15, 14, 12, 0.025) 0 1px, transparent 1px);
+  background-size: 31px 31px, 47px 47px;
+  opacity: .46;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mexion-index-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(circle at var(--mx, 30%) var(--my, 70%), rgba(181, 57, 45, .06) 0%, rgba(181, 57, 45, .012) 30%, transparent 55%),
+    radial-gradient(circle at 78% 22%, rgba(60, 40, 20, .045) 0%, transparent 45%),
+    radial-gradient(circle at 88% 84%, rgba(181, 57, 45, .035) 0%, transparent 38%);
+}
+
+.mexion-index-page .binding {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: clamp(28px, 6vw, 92px);
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(90deg, rgba(60,40,20,.10) 0%, rgba(60,40,20,.04) 30%, transparent 70%);
+}
+
+.mexion-index-page .grid-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background:
+    linear-gradient(rgba(15,14,12,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,14,12,.018) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at center, black, transparent 82%);
+}
+
+.mexion-index-page .corner-mark,
+.mexion-auth-page .cm {
+  position: fixed;
+  width: 18px;
+  height: 18px;
+  z-index: 20;
+  pointer-events: none;
+  opacity: .45;
+}
+.mexion-index-page .corner-mark::before,
+.mexion-index-page .corner-mark::after,
+.mexion-auth-page .cm::before,
+.mexion-auth-page .cm::after {
+  content: '';
+  position: absolute;
+  background: var(--ink);
+}
+.mexion-index-page .corner-mark::before,
+.mexion-auth-page .cm::before { width: 18px; height: 1px; }
+.mexion-index-page .corner-mark::after,
+.mexion-auth-page .cm::after { width: 1px; height: 18px; }
+.mexion-index-page .cm-tl,
+.mexion-auth-page .cm-tl { top: 18px; left: 18px; }
+.mexion-index-page .cm-tr,
+.mexion-auth-page .cm-tr { top: 18px; right: 18px; transform: rotate(90deg); }
+.mexion-index-page .cm-bl,
+.mexion-auth-page .cm-bl { bottom: 18px; left: 18px; transform: rotate(-90deg); }
+.mexion-index-page .cm-br,
+.mexion-auth-page .cm-br { bottom: 18px; right: 18px; transform: rotate(180deg); }
+
+.mexion-index-page .nav {
+  flex: 0 0 auto;
+  padding-top: clamp(16px, 2.2vh, 28px);
+  display: flex;
+  align-items: baseline;
+  position: relative;
+  z-index: 10;
+}
+.mexion-index-page .nav__brand {
+  font-family: var(--f-display);
+  font-size: clamp(15px, 1.4vw, 20px);
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: .005em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.mexion-index-page .nav__brand-mark,
+.mexion-auth-page .plate__brand-mark {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--verm);
+  transform: rotate(45deg) translateY(-1px);
+}
+.mexion-index-page .nav__brand:hover .nav__brand-mark { transform: rotate(225deg) translateY(-1px); }
+.mexion-index-page .nav__brand-meta {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--mist);
+  text-transform: uppercase;
+  margin-left: 10px;
+  align-self: center;
+  white-space: nowrap;
+}
+.mexion-index-page .nav__gap { flex: 1; }
+.mexion-index-page .nav__links { display: flex; align-items: baseline; gap: clamp(20px, 2.4vw, 36px); }
+.mexion-index-page .nav__links a {
+  font-family: var(--f-mono);
+  font-size: clamp(10px, .9vw, 12px);
+  letter-spacing: .13em;
+  color: var(--lead);
+  text-decoration: none;
+  text-transform: lowercase;
+  white-space: nowrap;
+  position: relative;
+}
+.mexion-index-page .nav__links a:hover { color: var(--ink); }
+.mexion-index-page .nav__links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  height: 1px;
+  width: 0;
+  background: var(--verm);
+  transition: width .25s cubic-bezier(.65,0,.35,1);
+}
+.mexion-index-page .nav__links a:hover::after { width: 100%; }
+.mexion-index-page .nav__divider {
+  width: 1px;
+  height: clamp(11px, 1.4vh, 15px);
+  background: var(--hairline);
+  margin: 0 clamp(16px, 2vw, 30px);
+  align-self: center;
+}
+.mexion-index-page .nav__signin {
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: clamp(13px, 1.2vw, 17px);
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+.mexion-index-page .nav__signin::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 100%;
+  background: var(--ink);
+}
+.mexion-index-page .nav__signin:hover { color: var(--verm); }
+.mexion-index-page .nav__rule {
+  height: 1px;
+  background: var(--hairline);
+  margin-top: clamp(12px, 1.8vh, 22px);
+  position: relative;
+  z-index: 10;
+}
+.mexion-index-page .nav__rule::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 76px;
+  height: 1px;
+  background: var(--verm);
+}
+
+.mexion-index-page .lang-toggle,
+.mexion-auth-page .lang-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  gap: 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+.mexion-index-page .lang-toggle button,
+.mexion-auth-page .lang-toggle button {
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--mist) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+.mexion-index-page .lang-toggle button[aria-pressed='true'],
+.mexion-auth-page .lang-toggle button[aria-pressed='true'] {
+  color: var(--ink) !important;
+  background: transparent !important;
+}
+.mexion-index-page .lang-toggle button + button::before,
+.mexion-auth-page .lang-toggle button + button::before {
+  content: '/';
+  margin-right: 8px;
+  color: var(--hair);
+}
+
+.mexion-index-page .stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.03fr) minmax(300px, .82fr);
+  align-items: center;
+  gap: clamp(32px, 5vw, 76px);
+  position: relative;
+  z-index: 8;
+  padding: clamp(24px, 4vh, 54px) 0 clamp(18px, 3vh, 40px);
+}
+.mexion-index-page .left { min-width: 0; }
+.mexion-index-page .sec-label {
+  font-family: var(--f-mono);
+  color: var(--mist);
+  letter-spacing: .22em;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: clamp(14px, 2.2vh, 26px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mexion-index-page .sec-label::before { content: ''; width: 24px; height: 1px; background: var(--mist); }
+.mexion-index-page .hero {
+  font-family: var(--f-display);
+  font-size: var(--hero);
+  line-height: .94;
+  letter-spacing: -.035em;
+  font-weight: 400;
+  color: var(--ink);
+}
+.mexion-index-page .hero > span { display: block; }
+.mexion-index-page .hero__l2 { margin-top: .03em; }
+.mexion-index-page .hero__l3 { margin-top: .08em; font-style: italic; }
+.mexion-index-page .hero__mark { position: relative; display: inline-block; color: var(--verm); font-style: italic; }
+.mexion-index-page .brush-svg {
+  position: absolute;
+  left: -.04em;
+  right: -.04em;
+  bottom: -.12em;
+  width: 108%;
+  height: .22em;
+  fill: var(--verm);
+  opacity: .82;
+  pointer-events: none;
+}
+.mexion-index-page .caret {
+  display: inline-block;
+  width: .08em;
+  height: .78em;
+  margin-left: .07em;
+  background: var(--verm);
+  transform: translateY(.09em);
+  animation: mx-caret 1s step-end infinite;
+}
+@keyframes mx-caret { 50% { opacity: 0; } }
+.mexion-index-page .sub {
+  margin-top: clamp(20px, 3.2vh, 34px);
+  max-width: 690px;
+  font-family: var(--f-display);
+  font-size: clamp(15px, 1.3vw, 19px);
+  line-height: 1.62;
+  color: var(--lead);
+  text-wrap: pretty;
+}
+.mexion-index-page .sub strong,
+.mexion-index-page .sub em { color: var(--ink); }
+.mexion-index-page .cta-row { display: flex; align-items: center; gap: 18px; margin-top: clamp(24px, 4vh, 44px); flex-wrap: wrap; }
+.mexion-index-page .cta,
+.mexion-auth-page .submit-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--f-display);
+  font-style: italic;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform .18s, background .18s, border-color .18s;
+}
+.mexion-index-page .cta:hover,
+.mexion-auth-page .submit-btn:hover:not(:disabled) { background: var(--verm); border-color: var(--verm); transform: translateY(-1px); }
+.mexion-index-page .cta-secondary {
+  color: var(--lead);
+  text-decoration: none;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+.mexion-index-page .cta-secondary:hover { color: var(--verm); }
+.mexion-index-page .cta-corner,
+.mexion-auth-page .submit-btn .corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: currentColor;
+  opacity: .7;
+}
+.mexion-index-page .cta-corner.tl,
+.mexion-auth-page .submit-btn .corner.tl { top: 5px; left: 5px; border-top: 1px solid; border-left: 1px solid; }
+.mexion-index-page .cta-corner.br,
+.mexion-auth-page .submit-btn .corner.br { right: 5px; bottom: 5px; border-right: 1px solid; border-bottom: 1px solid; }
+
+.mexion-index-page .plate-index { min-width: 0; align-self: center; }
+.mexion-index-page .plate__head { display: flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; color: var(--mist); text-transform: uppercase; }
+.mexion-index-page .plate__head-rule { flex: 1; height: 1px; background: var(--hairline); }
+.mexion-index-page .plate__title { margin-top: 12px; font-size: 14px; color: var(--lead); display: flex; align-items: baseline; gap: 8px; justify-content: center; }
+.mexion-index-page .plate__title-cn { font-family: var(--f-cn); color: var(--ink); font-weight: 500; }
+.mexion-index-page .plate__title-en { font-family: var(--f-display); font-style: italic; }
+.mexion-index-page .plate__frame-wrap { margin-top: 14px; display: grid; place-items: center; }
+.mexion-index-page .plate__frame {
+  width: min(390px, 34vw);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.mexion-index-page .plate__frame::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border: 1px solid rgba(15,14,12,.08);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.22), transparent 68%);
+}
+.mexion-index-page .plate__ink { width: 100%; height: 100%; object-fit: contain; filter: contrast(1.02); position: relative; z-index: 1; }
+.mexion-index-page .plate__caption { margin-top: 12px; text-align: center; font-family: var(--f-mono); color: var(--mist); font-size: 10px; letter-spacing: .08em; }
+.mexion-index-page .plate__prop { margin: 22px auto 0; max-width: 360px; border-top: 1px solid var(--hairline); padding-top: 14px; }
+.mexion-index-page .prop__eyebrow { font-family: var(--f-mono); color: var(--verm); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+.mexion-index-page .prop__body { margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--lead); }
+.mexion-index-page .prop__quote { color: var(--ink); }
+.mexion-index-page .prop__end { display: inline-block; width: 6px; height: 6px; background: var(--verm); transform: rotate(45deg); margin-left: 6px; }
+
+.mexion-index-page .foot { flex: 0 0 auto; position: relative; z-index: 10; padding-bottom: clamp(14px, 2vh, 26px); }
+.mexion-index-page .foot__rule { height: 1px; background: var(--hairline); margin-bottom: 12px; }
+.mexion-index-page .status { display: flex; align-items: center; gap: 20px; color: var(--mist); font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+.mexion-index-page .status__spacer { flex: 1; }
+.mexion-index-page .s-item { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.mexion-index-page .s-key { color: var(--mist); }
+.mexion-index-page .s-val { color: var(--lead); }
+.mexion-index-page .s-dot,
+.mexion-auth-page .s-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--forest); display: inline-block; }
+
+/* ───────────────────── Auth: old sign-in/index.html ───────────────────── */
+.mexion-auth-page {
+  min-height: 100vh;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, .72fr) minmax(0, 1fr);
+  background: var(--paper);
+  overflow-x: hidden;
+}
+.mexion-auth-page .plate {
+  position: relative;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #faf6ec 0%, #f8f4ea 45%, #ede6d2 100%);
+  padding: clamp(22px, 3vh, 40px) clamp(24px, 3vw, 44px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.mexion-auth-page .plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 75%, rgba(181,57,45,.06) 0%, transparent 50%),
+    radial-gradient(circle at 78% 22%, rgba(60,40,20,.04) 0%, transparent 45%);
+}
+.mexion-auth-page .plate-binding {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(270deg, rgba(60,40,20,.10) 0%, rgba(60,40,20,.04) 30%, transparent 80%);
+  pointer-events: none;
+  z-index: 2;
+}
+.mexion-auth-page .plate__head { display: flex; align-items: baseline; gap: 12px; position: relative; z-index: 3; }
+.mexion-auth-page .plate__brand { font-family: var(--f-display); font-size: 19px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: baseline; gap: 9px; }
+.mexion-auth-page .plate__meta { font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em; color: var(--mist); text-transform: uppercase; margin-left: auto; }
+.mexion-auth-page .plate__rule { height: 1px; background: var(--verm); margin-top: 14px; position: relative; z-index: 3; }
+.mexion-auth-page .plate__rule::after { content: ''; position: absolute; left: 32px; top: 50%; width: 5px; height: 5px; background: var(--verm); transform: translate(-50%, -50%) rotate(45deg); box-shadow: 0 0 0 2px var(--paper); }
+.mexion-auth-page .plate__body { flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 3; padding-top: clamp(12px, 2vh, 24px); min-height: 0; }
+.mexion-auth-page .plate__inner { display: flex; flex-direction: column; gap: clamp(14px, 2vh, 22px); align-items: stretch; width: 100%; }
+.mexion-auth-page .plate__sec-label { font-family: var(--f-mono); font-size: 11px; letter-spacing: .22em; color: var(--mist); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.mexion-auth-page .plate__sec-label::before { content: ''; width: 18px; height: 1px; background: var(--mist); }
+.mexion-auth-page .plate__hero { font-family: var(--f-cn); font-size: clamp(30px, 3vw, 44px); line-height: 1.2; letter-spacing: -.012em; font-weight: 500; color: #161310; }
+html[lang='en'] .mexion-auth-page .plate__hero { font-family: var(--f-display); font-size: clamp(32px, 3.2vw, 48px); line-height: 1.06; font-weight: 400; }
+.mexion-auth-page .plate__hero-mark { position: relative; display: inline-block; white-space: nowrap; }
+.mexion-auth-page .plate__hero-mark::after { content: ''; position: absolute; left: -.05em; right: -.05em; bottom: -.06em; height: .18em; background: linear-gradient(94deg, transparent 0%, rgba(181,57,45,.95) 6%, rgba(181,57,45,1) 50%, rgba(142,42,33,.92) 94%, transparent 100%); z-index: -1; border-radius: 50%; transform: rotate(-.6deg); filter: blur(.5px); opacity: .86; }
+.mexion-auth-page .plate__sub { margin-top: clamp(12px, 1.6vh, 18px); font-family: var(--f-cn); font-size: 13px; line-height: 1.78; color: var(--lead); max-width: 26em; }
+.mexion-auth-page .plate__sub em { font-style: italic; color: var(--ink); }
+.mexion-auth-page .plate__sub strong { font-weight: 600; color: var(--ink); }
+.mexion-auth-page .plate__fig { position: relative; width: 100%; max-width: 320px; align-self: center; margin-top: clamp(10px, 1.8vh, 22px); }
+.mexion-auth-page .plate__fig-cap { font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em; color: var(--mist); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.mexion-auth-page .plate__fig-cap::before,
+.mexion-auth-page .plate__fig-cap::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+.mexion-auth-page .plate__fig-img { width: 100%; max-height: clamp(160px, 26vh, 260px); aspect-ratio: 1/1; object-fit: contain; opacity: .96; display: block; filter: contrast(1.02); }
+.mexion-auth-page .plate__fig-name { margin-top: 10px; font-family: var(--f-display); font-style: italic; font-size: 12px; color: var(--lead); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mexion-auth-page .plate__fig-name span { font-family: var(--f-cn); font-style: normal; font-weight: 500; color: var(--ink); margin-right: 6px; }
+.mexion-auth-page .plate__foot { position: relative; z-index: 3; display: flex; align-items: center; gap: 16px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mist); border-top: 1px solid var(--hairline); padding-top: 12px; }
+.mexion-auth-page .plate__foot > span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.mexion-auth-page .plate__foot-spacer { flex: 1; }
+
+.mexion-auth-page .form-wrap {
+  position: relative;
+  background: var(--paper-3);
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: clamp(20px, 3vh, 38px) clamp(24px, 5vw, 74px);
+  overflow-y: auto;
+}
+.mexion-auth-page .form-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(15,14,12,.022) 1px, transparent 0);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+.mexion-auth-page .form-top { display: flex; justify-content: flex-end; position: relative; z-index: 2; min-height: 24px; }
+.mexion-auth-page .form-card-wrap { flex: 1; display: grid; place-items: center; position: relative; z-index: 2; padding: 24px 0; }
+.mexion-auth-page .form-card { width: min(100%, 440px); background: transparent; }
+.mexion-auth-page .mode-pane { display: block; }
+.mexion-auth-page .form__eyebrow { font-family: var(--f-mono); font-size: 11px; letter-spacing: .22em; color: var(--mist); text-transform: uppercase; margin-bottom: 12px; }
+.mexion-auth-page .form__title { font-family: var(--f-display); font-size: clamp(34px, 4vw, 52px); font-weight: 400; line-height: .98; letter-spacing: -.035em; color: var(--ink); }
+.mexion-auth-page .form__title em { color: var(--verm); font-style: italic; }
+.mexion-auth-page .form__lede { margin-top: 12px; color: var(--lead); font-family: var(--f-cn); font-size: 14px; line-height: 1.6; }
+.mexion-auth-page .sso-row { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 20px; }
+.mexion-auth-page .sso-row:empty { display: none; }
+.mexion-auth-page .divider { margin: 20px 0 8px; display: flex; align-items: center; gap: 12px; color: var(--mist); font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+.mexion-auth-page .divider::before,
+.mexion-auth-page .divider::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+.mexion-auth-page .mexion-auth-form { margin-top: 20px; display: grid; gap: 18px; }
+.mexion-auth-page .field { position: relative; display: grid; gap: 8px; }
+.mexion-auth-page .field__label { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; color: var(--mist); text-transform: uppercase; }
+.mexion-auth-page .field__num::before { content: attr(data-num); color: var(--verm); margin-right: 8px; }
+.mexion-auth-page .field__hint { text-transform: none; letter-spacing: .02em; color: var(--lead-2); font-family: var(--f-sans); font-size: 12px; }
+.mexion-auth-page .field__hint a { color: var(--verm); text-decoration: none; }
+.mexion-auth-page .field__input {
+  width: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 10px 0 11px !important;
+  color: var(--ink) !important;
+  font-family: var(--f-sans) !important;
+  font-size: 15px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.mexion-auth-page .field__input::placeholder { color: color-mix(in oklab, var(--mist) 78%, transparent); }
+.mexion-auth-page .field__underline { height: 1px; width: 100%; background: var(--hairline); position: relative; }
+.mexion-auth-page .field__underline::after { content: ''; position: absolute; left: 0; top: 0; height: 1px; width: 0; background: var(--verm); transition: width .22s ease; }
+.mexion-auth-page .field:focus-within .field__underline::after { width: 100%; }
+.mexion-auth-page .field__sublabel { min-height: 16px; color: var(--verm); font-family: var(--f-sans); font-size: 12px; line-height: 1.3; }
+.mexion-auth-page .field.is-ok .field__sublabel { color: var(--forest); }
+.mexion-auth-page .field__pwd-toggle { position: absolute; right: 0; bottom: 26px; border: 0; background: transparent; color: var(--mist); font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.mexion-auth-page .field--pwd .field__input { padding-right: 54px !important; }
+.mexion-auth-page .email-mark { position: absolute; right: 0; bottom: 31px; width: 7px; height: 7px; background: var(--verm); transform: rotate(45deg); opacity: .75; }
+.mexion-auth-page .turnstile-wrap { display: grid; gap: 6px; }
+.mexion-auth-page .submit-btn { width: 100%; margin-top: 4px; font-style: normal; font-family: var(--f-sans); font-weight: 500; }
+.mexion-auth-page .submit-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.mexion-auth-page .auth-footer-slot { width: min(100%, 440px); margin: -18px auto 0; position: relative; z-index: 2; }
+.mexion-auth-page .foot-note { color: var(--lead); font-size: 13px; text-align: center; font-family: var(--f-sans); }
+.mexion-auth-page .foot-note a { color: var(--verm); text-decoration: none; font-weight: 500; margin-left: 6px; }
+.mexion-auth-page .auth-error-banner { border: 1px solid color-mix(in oklab, var(--verm) 22%, transparent); background: rgba(181,57,45,.08); color: var(--verm-deep); padding: 10px 12px; font: 13px/1.45 var(--f-sans); }
+.mexion-auth-page .auth-error-banner--warn { border-color: rgba(160,118,58,.3); background: rgba(160,118,58,.1); color: var(--gold); margin-top: 20px; }
+.mexion-auth-page .auth-success-state { margin-top: 28px; border: 1px solid var(--hairline); background: rgba(255,255,255,.38); padding: 26px; text-align: center; }
+.mexion-auth-page .auth-success-seal { width: 48px; height: 48px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; background: var(--forest); color: var(--paper); font-family: var(--f-display); font-size: 24px; }
+.mexion-auth-page .auth-success-state h3 { font-family: var(--f-display); font-size: 24px; font-weight: 400; color: var(--ink); }
+.mexion-auth-page .auth-success-state p { margin-top: 8px; color: var(--lead); font: 14px/1.6 var(--f-sans); }
+.mexion-auth-page .back-link { display: inline-block; margin-top: 16px; color: var(--verm); text-decoration: none; font: 500 13px/1 var(--f-sans); }
+.mexion-auth-page .trust-strip { position: relative; z-index: 2; display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; color: var(--mist); font-family: var(--f-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; padding-bottom: 4px; }
+.mexion-auth-page .trust-strip span + span::before { content: '◆'; color: var(--verm); margin-right: 18px; font-size: 7px; vertical-align: middle; }
+
+/* Normalize OAuth button blocks inside the static auth panel. */
+.mexion-auth-page .sso-row button,
+.mexion-auth-page .sso-row a {
+  border-radius: 0 !important;
+  border: 1px solid var(--hairline) !important;
+  background: rgba(255,255,255,.36) !important;
+  color: var(--ink) !important;
+  box-shadow: none !important;
+}
+
+/* Parity refinements copied from the old static public/index.html + sign-in page.
+   These selectors intentionally beat the global app skin (#app .lang-toggle, etc.). */
+#app .mexion-index-page .lang-toggle,
+#app .mexion-auth-page .lang-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+#app .mexion-index-page .lang-toggle button,
+#app .mexion-auth-page .lang-toggle button {
+  height: auto !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--lead) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  letter-spacing: .10em !important;
+  text-transform: uppercase !important;
+}
+#app .mexion-index-page .lang-toggle button[aria-pressed='true'],
+#app .mexion-auth-page .lang-toggle button[aria-pressed='true'] {
+  background: transparent !important;
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+}
+#app .mexion-index-page .lang-toggle button + button::before,
+#app .mexion-auth-page .lang-toggle button + button::before {
+  content: '/';
+  display: inline-block;
+  margin: 0 .55em 0 .45em;
+  color: var(--mist);
+  font-weight: 400;
+}
+
+html[lang='zh'] .mexion-index-page .hero {
+  font-family: var(--f-cn);
+  font-size: clamp(34px, 4.4vw, 70px);
+  line-height: 1.16;
+  letter-spacing: -.005em;
+  font-weight: 500;
+}
+html[lang='zh'] .mexion-index-page .sub,
+html[lang='zh'] .mexion-index-page .cta,
+html[lang='zh'] .mexion-index-page .cta-secondary,
+html[lang='zh'] .mexion-index-page .prop__body {
+  font-family: var(--f-cn);
+}
+html[lang='zh'] .mexion-index-page .cta {
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: .06em;
+}
+
+html[lang='zh'] .mexion-auth-page .form__title {
+  font-family: var(--f-cn);
+  font-weight: 500;
+  font-size: clamp(32px, 3.2vw, 42px);
+  letter-spacing: -.008em;
+  line-height: 1.14;
+}
+html[lang='zh'] .mexion-auth-page .form__title em {
+  font-style: normal;
+}
+html[lang='zh'] .mexion-auth-page .form__lede,
+html[lang='zh'] .mexion-auth-page .field__label .field__hint,
+html[lang='zh'] .mexion-auth-page .submit-btn,
+html[lang='zh'] .mexion-auth-page .foot-note {
+  font-family: var(--f-cn);
+}
+.mexion-auth-page .form-top {
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline-2);
+  min-height: 24px;
+}
+.mexion-auth-page .form-card-wrap {
+  display: flex;
+  flex-direction: column;
+  place-items: unset;
+  width: 100%;
+  padding: clamp(16px, 3vh, 32px) 0;
+}
+.mexion-auth-page .form-card {
+  display: flex;
+  flex-direction: column;
+  max-width: 420px;
+  width: 100%;
+  margin: auto;
+}
+.mexion-auth-page .auth-footer-slot {
+  width: min(100%, 420px);
+  margin: -10px auto 0;
+}
+.mexion-auth-page .form__eyebrow {
+  color: var(--verm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mexion-auth-page .form__eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: var(--verm);
+}
+.mexion-auth-page .field__label {
+  align-items: baseline;
+  color: var(--lead);
+  margin-bottom: 6px;
+}
+.mexion-auth-page .field__num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.mexion-auth-page .field__num::before {
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .10em;
+}
+.mexion-auth-page .field__num::after {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 1px;
+  background: var(--hair);
+  align-self: center;
+  margin: 0 -2px;
+}
+.mexion-auth-page .field__input {
+  border-bottom: 1px solid var(--hair) !important;
+  padding: 10px 2px 11px !important;
+  font-family: var(--f-display) !important;
+  font-size: 16px !important;
+  caret-color: var(--verm);
+}
+.mexion-auth-page .field__underline {
+  display: none;
+}
+.mexion-auth-page .field__pwd-toggle {
+  bottom: 19px;
+  font-size: 9px;
+}
+
+@media (min-width: 981px) {
+  .mexion-index-page .stage {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    z-index: 10;
+    display: block;
+    padding: 0;
+  }
+  .mexion-index-page .stage::before {
+    content: '';
+    position: absolute;
+    left: 64%;
+    top: 8%;
+    bottom: 8%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent 0%, var(--hairline) 12%, var(--hairline) 88%, transparent 100%);
+    z-index: 0;
+  }
+  .mexion-index-page .left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 64%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: clamp(24px, 4vh, 48px);
+    padding-right: clamp(24px, 3vw, 48px);
+    z-index: 2;
+    min-width: 0;
+  }
+  .mexion-index-page .sec-label {
+    font-size: clamp(8px, .72vw, 10px);
+    margin-bottom: clamp(18px, 3.2vh, 40px);
+  }
+  .mexion-index-page .sec-label::before {
+    width: 16px;
+  }
+  .mexion-index-page .sec-label::after {
+    content: '';
+    flex: 0 0 auto;
+    width: 4px;
+    height: 1px;
+    background: var(--verm);
+    margin-left: 4px;
+  }
+  .mexion-index-page .hero {
+    min-height: clamp(120px, 14vw, 220px);
+    line-height: 1.09;
+    letter-spacing: -.012em;
+  }
+  .mexion-index-page .hero__l3 {
+    white-space: nowrap;
+  }
+  .mexion-index-page .sub {
+    max-width: 560px;
+    font-size: clamp(14px, 1.05vw, 17px);
+    line-height: 1.72;
+  }
+  .mexion-index-page .plate-index {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 36%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding-bottom: clamp(24px, 4vh, 48px);
+    padding-left: clamp(20px, 2.6vw, 36px);
+    z-index: 1;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .mexion-index-page .plate__head {
+    font-size: 9px;
+    letter-spacing: .18em;
+    white-space: nowrap;
+    margin-bottom: clamp(8px, 1.3vh, 13px);
+    flex-shrink: 0;
+  }
+  .mexion-index-page .plate__head-num {
+    color: var(--lead);
+    font-weight: 500;
+    margin-right: 10px;
+  }
+  .mexion-index-page .plate__head-rule {
+    margin: 0 10px;
+  }
+  .mexion-index-page .plate__title {
+    justify-content: flex-start;
+    font-family: var(--f-display);
+    font-size: clamp(12px, 1vw, 15px);
+    color: var(--ink);
+    gap: .4em;
+    flex-shrink: 0;
+    margin: 0 0 clamp(8px, 1.3vh, 14px);
+    white-space: nowrap;
+  }
+  .mexion-index-page .plate__title-cn {
+    font-style: italic;
+    font-weight: 500;
+  }
+  .mexion-index-page .plate__frame-wrap {
+    position: relative;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 0;
+    display: block;
+  }
+  .mexion-index-page .plate__frame {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    background: transparent;
+    overflow: visible;
+  }
+  .mexion-index-page .plate__frame::before {
+    display: none;
+  }
+  .mexion-index-page .plate__ink {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    opacity: .92;
+    padding: 3%;
+  }
+  .mexion-index-page .plate__caption {
+    flex-shrink: 0;
+    margin-top: clamp(9px, 1.5vh, 14px);
+    padding-top: clamp(7px, 1.1vh, 10px);
+    border-top: 1px solid var(--hairline);
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: .12em;
+    color: var(--lead);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+  }
+  .mexion-index-page .plate__caption span:last-child {
+    font-family: var(--f-cn);
+    letter-spacing: .04em;
+    text-transform: none;
+    color: var(--ink);
+  }
+  .mexion-index-page .plate__prop {
+    flex-shrink: 0;
+    margin: clamp(9px, 1.5vh, 14px) 0 0;
+    max-width: none;
+    padding-top: clamp(9px, 1.5vh, 13px);
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(5px, .9vh, 9px);
+  }
+  .mexion-index-page .prop__eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-size: 9px;
+    color: var(--mist);
+  }
+  .mexion-index-page .prop__eyebrow span {
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: .16em;
+  }
+  .mexion-index-page .prop__body {
+    margin: 0;
+    font-size: clamp(11px, .9vw, 13px);
+    line-height: 1.78;
+  }
+  .mexion-index-page .prop__end {
+    background: var(--ink);
+    margin-left: 5px;
+    transform: none;
+    position: relative;
+    top: -1px;
+  }
+}
+
+@media (max-width: 980px) {
+  .mexion-index-page { height: auto; min-height: 100vh; overflow: auto; }
+  .mexion-index-page .stage { grid-template-columns: 1fr; padding-top: 34px; }
+  .mexion-index-page .plate__frame { width: min(390px, 78vw); }
+  .mexion-index-page .status { flex-wrap: wrap; }
+  .mexion-index-page .status__spacer { display: none; }
+  .mexion-auth-page { height: auto; min-height: 100vh; grid-template-columns: 1fr; }
+  .mexion-auth-page .plate { min-height: 52vh; }
+  .mexion-auth-page .form-wrap { min-height: 70vh; }
+}
+
+@media (max-width: 640px) {
+  .mexion-index-page { padding-left: 22px; padding-right: 22px; }
+  .mexion-index-page .nav__brand-meta,
+  .mexion-index-page .nav__links,
+  .mexion-index-page .nav__divider { display: none; }
+  .mexion-index-page .nav { align-items: center; gap: 14px; }
+  .mexion-index-page .nav__gap { flex: 1; }
+  .mexion-index-page .hero { font-size: clamp(38px, 14vw, 58px); }
+  .mexion-index-page .cta-row { align-items: flex-start; flex-direction: column; }
+  .mexion-auth-page .plate { display: none; }
+  .mexion-auth-page .form-wrap { min-height: 100vh; padding: 22px; }
+  .mexion-auth-page .form-card-wrap { place-items: start center; padding-top: 54px; }
+  .mexion-auth-page .form__title { font-size: 40px; }
+}
+
+
+/* v11 exact-reference corrections: match old static page rhythm instead of generic app skin. */
+.mexion-index-page .nav__rule {
+  height: 1px;
+  background: var(--verm) !important;
+  margin-top: clamp(9px, 1.1vh, 14px) !important;
+}
+.mexion-index-page .nav__rule::after {
+  display: none !important;
+}
+.mexion-index-page .hero__mark {
+  color: var(--verm);
+  font-style: italic;
+}
+html[lang='zh'] .mexion-index-page .hero__mark {
+  font-style: italic;
+}
+.mexion-index-page .foot {
+  padding-bottom: clamp(12px, 1.8vh, 20px) !important;
+}
+.mexion-index-page .foot__rule {
+  margin-bottom: 10px !important;
+}
+.mexion-index-page .status {
+  font-size: 9px !important;
+  letter-spacing: .10em !important;
+  gap: clamp(.8em, 1.4vw, 1.8em) !important;
+}
+.mexion-index-page .s-dot,
+.mexion-auth-page .s-dot {
+  margin-right: .1em;
+}
+.mexion-auth-page .form-wrap {
+  padding: clamp(22px, 2.8vh, 38px) clamp(40px, 6vw, 88px) clamp(16px, 2vh, 24px) !important;
+  height: 100vh;
+}
+.mexion-auth-page .form-top {
+  min-height: 0 !important;
+  line-height: 1 !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+}
+.mexion-auth-page .form-card-wrap {
+  flex: 1 0 auto !important;
+  padding: clamp(16px, 3vh, 32px) 0 !important;
+}
+.mexion-auth-page .form-card {
+  max-width: 420px !important;
+  margin: clamp(58px, 7.2vh, 76px) auto auto !important;
+}
+.mexion-auth-page .form__eyebrow {
+  margin-bottom: 14px !important;
+  font-size: 11px !important;
+  letter-spacing: .20em !important;
+}
+.mexion-auth-page .form__title {
+  margin-bottom: 12px !important;
+}
+.mexion-auth-page .form__lede {
+  margin-bottom: 22px !important;
+}
+.mexion-auth-page .mexion-auth-form {
+  margin-top: 0 !important;
+  display: block !important;
+}
+.mexion-auth-page .field {
+  margin-bottom: 14px !important;
+  display: block !important;
+}
+.mexion-auth-page .field__sublabel {
+  display: block;
+  min-height: 14px;
+  margin-top: 6px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.mexion-auth-page .submit-btn {
+  margin-top: 20px !important;
+  min-height: 58px !important;
+  font-size: 16px !important;
+  letter-spacing: .03em;
+}
+.mexion-auth-page .foot-note {
+  margin-top: 16px !important;
+}
+
+/* v20 final auth parity overrides: must stay after the earlier v12-v18 blocks. */
+.mexion-auth-page .form-top {
+  height: 30px !important;
+  min-height: 30px !important;
+  flex: 0 0 30px !important;
+  align-items: center !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 13px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+.mexion-auth-page .form-top .lang-toggle { gap: .35em !important; }
+.mexion-auth-page .form-top .lang-toggle button {
+  font-size: 13px !important;
+  line-height: 1 !important;
+  letter-spacing: .10em !important;
+}
+.mexion-auth-page .form-top .lang-toggle button + button::before {
+  margin-right: .35em !important;
+}
+.mexion-auth-page .form__eyebrow {
+  height: 14px !important;
+  line-height: 14px !important;
+}
+.mexion-auth-page .form__lede {
+  margin-top: 0 !important;
+}
+.mexion-auth-page .divider {
+  height: 12px !important;
+  line-height: 12px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 22px 0 16px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .mode-pane--forgot .form__lede {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .foot-note {
+  margin-top: 14px !important;
+}
+.mexion-auth-page .trust-strip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 14px 0 13px !important;
+  border-top: 1px solid var(--hairline-2) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  letter-spacing: .24em !important;
+  text-transform: uppercase !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .trust-strip__item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  white-space: nowrap !important;
+  padding: 0 clamp(14px, 2.4vw, 28px) !important;
+  position: relative !important;
+}
+.mexion-auth-page .trust-strip__item + .trust-strip__item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  width: 1px !important;
+  height: 11px !important;
+  background: var(--hairline) !important;
+  transform: translateY(-50%) !important;
+}
+.mexion-auth-page .trust-strip__sym {
+  font-family: var(--f-display) !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  color: var(--verm) !important;
+  letter-spacing: 0 !important;
+  margin-top: -1px !important;
+}
+.mexion-auth-page .trust-strip__item:nth-child(2) .trust-strip__sym { color: var(--forest) !important; }
+.mexion-auth-page .trust-strip__item:nth-child(3) .trust-strip__sym { color: var(--lead) !important; }
+.mexion-auth-page .form-legal {
+  margin: 0 !important;
+  padding: 14px 0 0 !important;
+  border: 0 !important;
+  color: var(--mist) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .form-legal a {
+  color: var(--lead) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  margin: 0 !important;
+}
+.mexion-auth-page .form-legal a:hover {
+  color: var(--ink) !important;
+  border-color: var(--lead) !important;
+}
+.mexion-auth-page .colophon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px dotted var(--hairline) !important;
+  color: var(--mist) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 9px !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .colophon__seal {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.mexion-auth-page .colophon__seal::before {
+  width: 5px !important;
+  height: 5px !important;
+}
+.mexion-auth-page .colophon__center {
+  flex: 1 !important;
+  text-align: center !important;
+  font-style: normal !important;
+  text-transform: none !important;
+  letter-spacing: .04em !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* v23 final EOF parity: these must remain last. */
+#app .mexion-index-page .hero__l2,
+#app .mexion-index-page .hero__l3 {
+  margin-top: 0 !important;
+}
+#app .mexion-index-page .hero__l3 {
+  font-style: normal !important;
+}
+#app .mexion-index-page .nav .lang-toggle {
+  position: relative !important;
+  display: inline-block !important;
+  align-self: center !important;
+  width: 72.05px !important;
+  height: 14px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  white-space: nowrap !important;
+}
+#app .mexion-index-page .nav .lang-toggle::before {
+  content: '中文 / EN' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 72.05px !important;
+  height: 14px !important;
+  color: var(--lead) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  pointer-events: none !important;
+}
+#app .mexion-index-page .nav .lang-toggle button {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-block !important;
+  width: 36px !important;
+  min-width: 0 !important;
+  height: 14px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 14px !important;
+}
+#app .mexion-index-page .nav .lang-toggle button + button::before {
+  content: none !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 14px 0 30px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(1),
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(4) {
+  margin-bottom: 13px !important;
+}
+
+/* v22 hard parity lock:
+   The app-wide Mexion skin has a generic `main { padding: 24px 34px 60px !important; }`
+   and Tailwind's 1.5 line-height. The old static HTML home/auth pages do not.
+   These EOF overrides restore the exact old document rhythm for the unauthenticated
+   pages while leaving the logged-in Sub2API app skin untouched. */
+body:has(.mexion-index-page) {
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #FAF6EC 0%, #F8F4EA 40%, #EDE6D2 100%) !important;
+}
+body:has(.mexion-auth-page) {
+  background: #F8F4EA !important;
+  background-image: none !important;
+}
+#app .mexion-index-page,
+#app .mexion-auth-page {
+  line-height: normal !important;
+}
+#app .mexion-index-page main.stage,
+#app .mexion-index-page .stage {
+  padding: 0 !important;
+  line-height: normal !important;
+}
+#app .mexion-index-page .nav,
+#app .mexion-index-page .nav__rule,
+#app .mexion-index-page .left,
+#app .mexion-index-page .plate,
+#app .mexion-index-page .foot,
+#app .mexion-index-page .status,
+#app .mexion-auth-page .plate,
+#app .mexion-auth-page .form-wrap,
+#app .mexion-auth-page .form-card,
+#app .mexion-auth-page .field,
+#app .mexion-auth-page .trust-strip,
+#app .mexion-auth-page .form-legal,
+#app .mexion-auth-page .colophon {
+  line-height: normal !important;
+}
+#app .mexion-index-page .hero__l3 {
+  font-style: normal !important;
+}
+#app .mexion-index-page .nav .lang-toggle {
+  display: inline-block !important;
+  align-self: center !important;
+  height: 14px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--lead) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  white-space: nowrap !important;
+}
+#app .mexion-index-page .nav .lang-toggle button {
+  display: inline !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--lead) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  text-transform: none !important;
+}
+#app .mexion-index-page .nav .lang-toggle button[aria-pressed='true'] {
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+}
+#app .mexion-index-page .nav .lang-toggle button + button::before {
+  content: '/' !important;
+  display: inline !important;
+  margin: 0 .3em !important;
+  color: var(--mist) !important;
+  font-weight: 400 !important;
+}
+#app .mexion-index-page .nav__signin {
+  padding: 2px 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: normal !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 14px 0 30px !important;
+}
+@media (min-width: 981px) {
+  #app .mexion-index-page .plate-index.plate {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: auto !important;
+    height: 100% !important;
+    width: 36% !important;
+    align-self: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    padding-top: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: clamp(24px, 4vh, 48px) !important;
+    padding-left: clamp(20px, 2.6vw, 36px) !important;
+    overflow: hidden !important;
+  }
+}
+
+/* v19 auth frame parity: restore the exact old sign-in vertical frame.
+   The static page keeps a 30px language/header rule and a compact bottom
+   trust/legal/colophon stack; Vue had drifted by ~15px on the top rule and
+   ~12px on the footer, which made signup/forgot start too high. */
+.mexion-auth-page .form-top {
+  height: 30px !important;
+  min-height: 30px !important;
+  flex: 0 0 30px !important;
+  align-items: center !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 13px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+.mexion-auth-page .form-top .lang-toggle {
+  gap: .35em !important;
+  font-family: var(--f-mono) !important;
+}
+.mexion-auth-page .form-top .lang-toggle button {
+  font-size: 13px !important;
+  line-height: 1 !important;
+  letter-spacing: .10em !important;
+}
+.mexion-auth-page .form-top .lang-toggle button + button::before {
+  margin-right: .35em !important;
+}
+.mexion-auth-page .form__eyebrow {
+  line-height: 14px !important;
+}
+.mexion-auth-page .divider {
+  line-height: 12px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .mode-pane--forgot .form__lede {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .foot-note {
+  margin-top: 14px !important;
+}
+.mexion-auth-page .trust-strip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 14px 0 13px !important;
+  border-top: 1px solid var(--hairline-2) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  letter-spacing: .24em !important;
+  text-transform: uppercase !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .trust-strip__item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  white-space: nowrap !important;
+  padding: 0 clamp(14px, 2.4vw, 28px) !important;
+  position: relative !important;
+}
+.mexion-auth-page .trust-strip__item + .trust-strip__item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  width: 1px !important;
+  height: 11px !important;
+  background: var(--hairline) !important;
+  transform: translateY(-50%) !important;
+}
+.mexion-auth-page .trust-strip__sym {
+  font-family: var(--f-display) !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  color: var(--verm) !important;
+  letter-spacing: 0 !important;
+  margin-top: -1px !important;
+}
+.mexion-auth-page .trust-strip__item:nth-child(2) .trust-strip__sym {
+  color: var(--forest) !important;
+}
+.mexion-auth-page .trust-strip__item:nth-child(3) .trust-strip__sym {
+  color: var(--lead) !important;
+}
+.mexion-auth-page .form-legal {
+  margin: 0 !important;
+  padding: 14px 0 0 !important;
+  border: 0 !important;
+  color: var(--mist) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .form-legal a {
+  color: var(--lead) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  margin: 0 !important;
+}
+.mexion-auth-page .form-legal a:hover {
+  color: var(--ink) !important;
+  border-color: var(--lead) !important;
+}
+.mexion-auth-page .colophon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px dotted var(--hairline) !important;
+  color: var(--mist) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 9px !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .colophon__seal {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.mexion-auth-page .colophon__seal::before {
+  width: 5px !important;
+  height: 5px !important;
+}
+.mexion-auth-page .colophon__center {
+  flex: 1 !important;
+  text-align: center !important;
+  font-style: normal !important;
+  text-transform: none !important;
+  letter-spacing: .04em !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* v18 auth signup/forgot full static-page parity: username + password strength + confirm + email + code + terms. */
+.mexion-auth-page .form-card[data-mode="signup"] {
+  margin: auto !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .form__lede {
+  margin-bottom: 18px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .sso-row {
+  margin-bottom: 14px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 14px 0 16px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .field {
+  margin-bottom: 11px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .options-row--terms {
+  margin-top: 14px !important;
+  margin-bottom: 16px !important;
+}
+.mexion-auth-page .field__label .req {
+  color: var(--verm) !important;
+  font-family: var(--f-display) !important;
+  font-size: 12px !important;
+  margin-left: 4px !important;
+  line-height: 1 !important;
+}
+.mexion-auth-page .field--inline-row {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 10px !important;
+  align-items: end !important;
+}
+.mexion-auth-page .field--inline-row > .field__input {
+  grid-column: 1 !important;
+}
+.mexion-auth-page .field--inline-row > .code-btn {
+  grid-column: 2 !important;
+}
+.mexion-auth-page .code-btn {
+  position: relative !important;
+  height: calc(1em + 22px) !important;
+  margin-bottom: 1px !important;
+  padding: 9px 14px 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  border: 1px solid var(--hair) !important;
+  border-radius: 1px !important;
+  background: transparent !important;
+  color: var(--ink) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  letter-spacing: .20em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+}
+html[lang='zh'] .mexion-auth-page .code-btn {
+  font-family: var(--f-cn) !important;
+  font-size: 12px !important;
+  letter-spacing: .06em !important;
+}
+.mexion-auth-page .code-btn::before {
+  content: '' !important;
+  width: 5px !important;
+  height: 5px !important;
+  background: var(--verm) !important;
+  transform: rotate(45deg) !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .code-btn::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 2px !important;
+  background: var(--verm) !important;
+  transform: scaleX(0) !important;
+  transform-origin: left center !important;
+  opacity: 0 !important;
+}
+.mexion-auth-page .code-btn.is-counting,
+.mexion-auth-page .code-btn:disabled {
+  color: var(--mist) !important;
+  border-color: var(--hairline) !important;
+  cursor: not-allowed !important;
+}
+.mexion-auth-page .code-btn.is-counting::after {
+  opacity: .75 !important;
+  transform: scaleX(.55) !important;
+}
+.mexion-auth-page .code-btn.is-done::before {
+  background: var(--forest) !important;
+}
+.mexion-auth-page .pwd-strength {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  opacity: 0 !important;
+  transform: translateY(1px) !important;
+  transition: opacity .22s ease, transform .22s ease !important;
+  pointer-events: none !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .field--pwd.has-value .pwd-strength {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+.mexion-auth-page .pwd-strength__label {
+  font-family: var(--f-mono) !important;
+  font-size: 9px !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+  color: var(--mist) !important;
+  margin-right: 2px !important;
+}
+.mexion-auth-page .pwd-strength__mark {
+  width: 6px !important;
+  height: 6px !important;
+  border: 1px solid var(--hair) !important;
+  background: transparent !important;
+  transform: rotate(45deg) !important;
+}
+.mexion-auth-page .pwd-strength[data-level="1"] .pwd-strength__mark:nth-of-type(1),
+.mexion-auth-page .pwd-strength[data-level="1"] .pwd-strength__mark:nth-of-type(2),
+.mexion-auth-page .pwd-strength[data-level="2"] .pwd-strength__mark:nth-of-type(1),
+.mexion-auth-page .pwd-strength[data-level="2"] .pwd-strength__mark:nth-of-type(2) {
+  background: var(--verm) !important;
+  border-color: var(--verm) !important;
+}
+.mexion-auth-page .pwd-strength[data-level="3"] .pwd-strength__mark {
+  background: var(--forest) !important;
+  border-color: var(--forest) !important;
+}
+.mexion-auth-page .pwd-strength[data-level="3"] .pwd-strength__label {
+  color: var(--forest) !important;
+}
+.mexion-auth-page .match-msg {
+  display: inline-grid !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center !important;
+  gap: 6px !important;
+  opacity: 0 !important;
+  transform: translateY(-1px) !important;
+  color: var(--verm) !important;
+  font-family: var(--f-display) !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+html[lang='zh'] .mexion-auth-page .match-msg {
+  font-family: var(--f-cn) !important;
+  font-size: 11px !important;
+  font-style: normal !important;
+}
+.mexion-auth-page .match-msg::before {
+  content: '' !important;
+  width: 5px !important;
+  height: 5px !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  background: currentColor !important;
+  transform: rotate(45deg) !important;
+}
+.mexion-auth-page .match-msg__layer {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  line-height: 1 !important;
+  transition: opacity .24s ease !important;
+}
+.mexion-auth-page .match-msg__layer--no { opacity: 1 !important; }
+.mexion-auth-page .match-msg__layer--ok { opacity: 0 !important; }
+.mexion-auth-page .field--confirm.is-mismatch .match-msg,
+.mexion-auth-page .field--confirm.is-match .match-msg {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+.mexion-auth-page .field--confirm.is-match .match-msg {
+  color: var(--forest) !important;
+  font-style: normal !important;
+}
+.mexion-auth-page .field--confirm.is-match .match-msg__layer--no { opacity: 0 !important; }
+.mexion-auth-page .field--confirm.is-match .match-msg__layer--ok { opacity: 1 !important; }
+.mexion-auth-page .field__sublabel--ok {
+  color: var(--forest) !important;
+}
+.mexion-auth-page .field__sublabel--err {
+  color: var(--verm) !important;
+}
+.mexion-auth-page .options-row--terms {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+.mexion-auth-page .options-row--terms .checkbox {
+  align-items: flex-start !important;
+  gap: 11px !important;
+  line-height: 1.55 !important;
+  font-size: 14px !important;
+}
+html[lang='zh'] .mexion-auth-page .options-row--terms .checkbox {
+  line-height: 1.7 !important;
+}
+.mexion-auth-page .options-row--terms .checkbox__box {
+  flex-shrink: 0 !important;
+  margin-top: 3px !important;
+}
+.mexion-auth-page .options-row--terms a {
+  color: var(--ink) !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid var(--hairline) !important;
+  padding-bottom: 1px !important;
+}
+.mexion-auth-page .options-row--terms a:hover {
+  color: var(--verm) !important;
+  border-color: var(--verm) !important;
+}
+.mexion-auth-page .options-row--terms.is-error .checkbox__box {
+  border-color: var(--verm) !important;
+}
+.mexion-auth-page .form__eyebrow--forgot {
+  display: none !important;
+}
+.mexion-auth-page .mode-pane--forgot .form__lede {
+  margin-bottom: 26px !important;
+}
+@media (max-width: 520px) {
+  .mexion-auth-page .field--inline-row {
+    grid-template-columns: 1fr !important;
+  }
+  .mexion-auth-page .field--inline-row > .code-btn {
+    grid-column: 1 !important;
+    justify-content: center !important;
+    height: auto !important;
+    padding: 11px 14px !important;
+  }
+}
+.mexion-auth-page .trust-strip {
+  border-top: 1px solid var(--hairline-2);
+  border-bottom: 1px solid var(--hairline-2);
+  padding: 14px 0 !important;
+}
+.mexion-auth-page .plate__foot {
+  font-size: 9px !important;
+  letter-spacing: .10em !important;
+  color: var(--lead) !important;
+  gap: clamp(.6em, 1vw, 1.2em) !important;
+}
+.mexion-auth-page .plate__foot > span {
+  gap: 0 !important;
+}
+@media (min-width: 981px) {
+  .mexion-index-page .hero { font-size: clamp(34px, 4.4vw, 70px) !important; }
+  .mexion-index-page .cta { min-height: 59px !important; padding: 0 30px !important; }
+}
+@media (max-width: 980px) {
+  .mexion-auth-page .form-card { margin: 0 auto auto !important; }
+}
+
+/* v12 static-html parity pass: override Vue/app skin with the old public/index.html + sign-in rhythm. */
+.mexion-index-page *,
+.mexion-index-page *::before,
+.mexion-index-page *::after,
+.mexion-auth-page *,
+.mexion-auth-page *::before,
+.mexion-auth-page *::after { box-sizing: border-box; }
+.mexion-index-page { color: var(--ink) !important; font-family: var(--f-display) !important; background: radial-gradient(ellipse 90% 70% at 50% 50%, #FAF6EC 0%, #F8F4EA 40%, #EDE6D2 100%) !important; }
+.mexion-index-page::before,
+.mexion-auth-page .plate::before,
+.mexion-auth-page .form-wrap::before { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") !important; opacity: .42 !important; mix-blend-mode: multiply !important; }
+.mexion-auth-page .form-wrap::before { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n2'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n2)'/></svg>") !important; }
+.mexion-index-page .grid-overlay { background: none !important; opacity: 0 !important; }
+.mexion-index-page .corner-mark,
+.mexion-auth-page .cm { width: 14px !important; height: 14px !important; opacity: .45 !important; transform: none !important; z-index: 20 !important; }
+.mexion-index-page .corner-mark::before,
+.mexion-auth-page .cm::before { width: 14px !important; height: .6px !important; top: 6.7px !important; left: 0 !important; background: var(--mist) !important; }
+.mexion-index-page .corner-mark::after,
+.mexion-auth-page .cm::after { width: .6px !important; height: 14px !important; top: 0 !important; left: 6.7px !important; background: var(--mist) !important; }
+.mexion-index-page .cm-tl { top: clamp(12px, 1.4vh, 18px) !important; left: clamp(12px, 1.4vw, 22px) !important; }
+.mexion-index-page .cm-tr { top: clamp(12px, 1.4vh, 18px) !important; right: clamp(12px, 1.4vw, 22px) !important; }
+.mexion-index-page .cm-bl { bottom: clamp(12px, 1.4vh, 18px) !important; left: clamp(12px, 1.4vw, 22px) !important; }
+.mexion-index-page .cm-br { bottom: clamp(12px, 1.4vh, 18px) !important; right: clamp(12px, 1.4vw, 22px) !important; }
+.mexion-auth-page .cm-tl { top: 14px !important; left: 14px !important; }
+.mexion-auth-page .cm-tr { top: 14px !important; right: 14px !important; }
+.mexion-auth-page .cm-bl { bottom: 14px !important; left: 14px !important; }
+.mexion-auth-page .cm-br { bottom: 14px !important; right: 14px !important; }
+.mexion-index-page .hero { color: #1A1410 !important; }
+.mexion-index-page .hero__mark,
+html[lang='zh'] .mexion-index-page .hero__mark { color: inherit !important; font-style: inherit !important; }
+.mexion-index-page .brush-svg { left: 50% !important; bottom: -.18em !important; width: calc(100% + .15em) !important; height: .45em !important; transform: translateX(-50%) !important; fill: #C8392D !important; opacity: 1 !important; }
+.mexion-index-page .brush-svg path { fill: #C8392D !important; }
+.mexion-index-page .sub { margin-top: clamp(22px, 3.8vh, 46px) !important; font-size: clamp(13px, 1.1vw, 15px) !important; line-height: 1.92 !important; max-width: 34em !important; color: var(--lead) !important; }
+.mexion-index-page .sub strong em { border-bottom: 1px solid var(--ink); padding-bottom: .5px; }
+.mexion-index-page .cta { min-height: 0 !important; padding: 17px 30px !important; gap: 14px !important; border: 0 !important; border-radius: 1px !important; background: var(--ink) !important; box-shadow: 0 1px 0 rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04) !important; overflow: hidden !important; }
+.mexion-index-page .cta-ornament,
+.mexion-auth-page .submit-btn__ornament { display: inline-block; width: 7px; height: 7px; background: var(--verm); transform: rotate(45deg); flex-shrink: 0; }
+.mexion-index-page .cta-corner,
+.mexion-auth-page .submit-btn .corner { width: 12px !important; height: 12px !important; opacity: .45 !important; }
+.mexion-index-page .cta-corner.tl,
+.mexion-auth-page .submit-btn .corner.tl { top: 7px !important; left: 7px !important; border-top: 1px solid !important; border-left: 1px solid !important; border-right: 0 !important; border-bottom: 0 !important; }
+.mexion-index-page .cta-corner.br,
+.mexion-auth-page .submit-btn .corner.br { right: 7px !important; bottom: 7px !important; border-right: 1px solid !important; border-bottom: 1px solid !important; border-left: 0 !important; border-top: 0 !important; }
+@media (min-width: 981px) {
+  .mexion-index-page .plate-index.plate { position: absolute !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 36% !important; display: flex !important; flex-direction: column !important; align-items: stretch !important; justify-content: center !important; padding-bottom: clamp(24px, 4vh, 48px) !important; padding-left: clamp(20px, 2.6vw, 36px) !important; overflow: hidden !important; }
+  .mexion-index-page .plate-index .plate__title-cn { color: var(--ink) !important; }
+  .mexion-index-page .plate-index .plate__title-en { color: var(--lead) !important; font-style: italic !important; }
+  .mexion-index-page .plate-index .plate__caption span:last-child { font-family: var(--f-display) !important; font-style: italic !important; letter-spacing: 0 !important; color: var(--ink) !important; }
+  html[lang='zh'] .mexion-index-page .plate-index .plate__caption span:last-child { font-family: var(--f-cn) !important; font-style: normal !important; letter-spacing: .04em !important; }
+}
+.mexion-index-page .s-dot { position: relative; }
+.mexion-index-page .s-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid var(--forest); opacity: .5; }
+.mexion-auth-page { font-family: var(--f-display) !important; grid-template-columns: minmax(0, .72fr) minmax(0, 1fr) !important; background: var(--paper) !important; }
+.mexion-auth-page .form-wrap::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, transparent, var(--hairline) 18%, var(--hairline) 82%, transparent); pointer-events: none; z-index: 1; }
+.mexion-auth-page .form-wrap > * { position: relative; z-index: 2; }
+.mexion-auth-page .form-card { max-width: 420px !important; margin: auto !important; }
+.mexion-auth-page .form__title { font-size: clamp(32px, 3.1vw, 44px) !important; line-height: 1.04 !important; letter-spacing: -.022em !important; margin-bottom: 12px !important; }
+html[lang='zh'] .mexion-auth-page .form__title { font-size: clamp(32px, 3.2vw, 42px) !important; line-height: 1.14 !important; }
+.mexion-auth-page .form__lede { font-family: var(--f-display) !important; font-style: italic !important; font-size: 15px !important; line-height: 1.5 !important; margin-bottom: 22px !important; }
+html[lang='zh'] .mexion-auth-page .form__lede { font-family: var(--f-cn) !important; font-style: normal !important; line-height: 1.7 !important; }
+.mexion-auth-page .sso-row { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; margin: 0 0 18px !important; }
+.mexion-auth-page .sso-row > .space-y-4,
+.mexion-auth-page .sso-row > .space-y-4 > .grid { display: contents !important; }
+.mexion-auth-page .sso-row .btn,
+.mexion-auth-page .sso-row button,
+.mexion-auth-page .sso-row a { height: 47px !important; border-radius: 1px !important; border: 1px solid var(--hair) !important; background: var(--paper) !important; color: var(--ink) !important; box-shadow: none !important; font-family: var(--f-display) !important; font-size: 14px !important; transform: none !important; }
+html[lang='zh'] .mexion-auth-page .sso-row .btn,
+html[lang='zh'] .mexion-auth-page .sso-row button,
+html[lang='zh'] .mexion-auth-page .sso-row a { font-family: var(--f-cn) !important; font-size: 15px !important; }
+.mexion-auth-page .divider { display: flex !important; align-items: center !important; gap: 14px !important; height: auto !important; margin: 0 0 20px !important; background: transparent !important; color: var(--mist) !important; font-family: var(--f-mono) !important; font-size: 9px !important; letter-spacing: .24em !important; text-transform: uppercase !important; }
+.mexion-auth-page .divider::before,
+.mexion-auth-page .divider::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+.mexion-auth-page .mexion-auth-form { display: block !important; margin-top: 0 !important; }
+.mexion-auth-page .field { position: relative !important; display: block !important; margin-bottom: 14px !important; }
+.mexion-auth-page .field__label { font-size: 11px !important; margin-bottom: 6px !important; gap: 12px !important; }
+.mexion-auth-page .field__input { border: 0 !important; border-bottom: 1px solid var(--hair) !important; padding: 10px 2px 11px !important; font-family: var(--f-display) !important; font-size: 16px !important; transition: border-color .18s ease, padding-left .22s cubic-bezier(.65,0,.35,1) !important; }
+html[lang='zh'] .mexion-auth-page .field__input { font-family: var(--f-cn) !important; }
+.mexion-auth-page .field__input:focus { border-bottom-color: var(--verm) !important; padding-left: 8px !important; }
+.mexion-auth-page .field__input::placeholder { color: var(--mist) !important; font-style: italic; }
+html[lang='zh'] .mexion-auth-page .field__input::placeholder { font-style: normal; }
+.mexion-auth-page .field::before { content: ''; position: absolute; left: 0; bottom: 12px; width: 4px; height: 4px; background: var(--verm); transform: rotate(45deg) scale(0); transition: transform .25s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+.mexion-auth-page .field:focus-within::before { transform: rotate(45deg) scale(1); }
+.mexion-auth-page .field__underline { display: block !important; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--verm); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.65,0,.35,1); pointer-events: none; }
+.mexion-auth-page .field__input:focus ~ .field__underline { transform: scaleX(1); }
+.mexion-auth-page .field__pwd-toggle { right: 0 !important; bottom: 6px !important; padding: 4px 6px !important; font-size: 9px !important; letter-spacing: .18em !important; color: var(--lead) !important; }
+.mexion-auth-page .email-mark { right: 2px !important; top: auto !important; bottom: 18px !important; background: var(--verm) !important; transform: rotate(45deg) scale(1) !important; opacity: .75 !important; }
+.mexion-auth-page .field__sublabel { display: block; min-height: 0 !important; margin-top: 6px !important; font-family: var(--f-mono) !important; font-size: 10px !important; letter-spacing: .16em !important; text-transform: uppercase; color: var(--mist); }
+.mexion-auth-page .options-row { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; margin-bottom: 20px; }
+.mexion-auth-page .checkbox { display: inline-flex; align-items: center; gap: 9px; font-family: var(--f-display); font-style: italic; font-size: 14px; color: var(--lead); cursor: pointer; user-select: none; }
+html[lang='zh'] .mexion-auth-page .checkbox { font-family: var(--f-cn); font-style: normal; }
+.mexion-auth-page .checkbox input { display: none; }
+.mexion-auth-page .checkbox__box { width: 14px; height: 14px; border: 1px solid var(--lead); display: inline-block; position: relative; }
+.mexion-auth-page .checkbox input:checked ~ .checkbox__box { background: var(--ink); border-color: var(--ink); }
+.mexion-auth-page .checkbox__check { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.mexion-auth-page .checkbox__check path { fill: none; stroke: var(--paper); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14; stroke-dashoffset: 14; transition: stroke-dashoffset .32s cubic-bezier(.65,0,.35,1); }
+.mexion-auth-page .checkbox input:checked ~ .checkbox__box .checkbox__check path { stroke-dashoffset: 0; }
+.mexion-auth-page .submit-btn { min-height: 0 !important; width: 100% !important; margin-top: 0 !important; padding: 17px 30px !important; border: 0 !important; border-radius: 1px !important; background: var(--ink) !important; color: var(--paper) !important; font-family: var(--f-display) !important; font-style: normal !important; font-size: 17px !important; font-weight: 500 !important; letter-spacing: .008em !important; box-shadow: 0 1px 0 rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04) !important; overflow: hidden; }
+html[lang='zh'] .mexion-auth-page .submit-btn { font-family: var(--f-cn) !important; font-size: 16px !important; letter-spacing: .06em !important; }
+.mexion-auth-page .foot-note { margin-top: 16px !important; color: var(--lead) !important; font-size: 14px !important; text-align: center !important; font-family: var(--f-display) !important; font-style: italic; }
+html[lang='zh'] .mexion-auth-page .foot-note { font-family: var(--f-cn) !important; font-style: normal; }
+.mexion-auth-page .foot-note a { color: var(--ink) !important; border-bottom: 1px solid var(--hairline); text-decoration: none !important; margin-left: 6px; }
+.mexion-auth-page .foot-note a:hover { color: var(--verm) !important; border-color: var(--verm); }
+.mexion-auth-page .trust-strip { border-top: 1px solid var(--hairline-2) !important; border-bottom: 1px solid var(--hairline-2) !important; padding: 14px 0 12px !important; display: flex !important; justify-content: center !important; gap: 18px !important; color: var(--mist) !important; font-family: var(--f-mono) !important; font-size: 10px !important; letter-spacing: .14em !important; text-transform: uppercase !important; }
+.mexion-auth-page .trust-strip__item { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.mexion-auth-page .trust-strip__sym { color: var(--verm); font-size: 12px; line-height: 1; }
+.mexion-auth-page .trust-strip span + span::before { content: none !important; }
+.mexion-auth-page .form-legal { margin: 16px 0 0; padding-bottom: 18px; border-bottom: 1px dotted var(--hairline); color: var(--lead); font-family: var(--f-cn); font-size: 12px; line-height: 1.6; text-align: center; }
+.mexion-auth-page .form-legal a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hairline); margin: 0 3px; }
+.mexion-auth-page .form-legal a:hover { color: var(--verm); border-color: var(--verm); }
+.mexion-auth-page .colophon { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; padding-top: 10px; color: var(--mist); font-family: var(--f-mono); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; }
+.mexion-auth-page .colophon > span:last-child { text-align: right; }
+.mexion-auth-page .colophon__seal { display: inline-flex; align-items: center; gap: 7px; }
+.mexion-auth-page .colophon__seal::before { content: ''; width: 6px; height: 6px; background: var(--verm); transform: rotate(45deg); display: inline-block; }
+.mexion-auth-page .colophon__center { color: var(--lead); letter-spacing: .22em; }
+@media (max-width: 880px) { .mexion-auth-page { grid-template-columns: 1fr !important; height: auto !important; min-height: 100vh !important; overflow-y: auto !important; } .mexion-auth-page .plate { min-height: 320px !important; } .mexion-auth-page .form-wrap { height: auto !important; min-height: 70vh !important; } }
+@media (max-width: 640px) { .mexion-auth-page .plate { display: none !important; } .mexion-auth-page .form-wrap { min-height: 100vh !important; padding: 22px !important; } .mexion-auth-page .colophon { grid-template-columns: 1fr; text-align: center; } .mexion-auth-page .colophon > span:last-child { text-align: center; } }
+
+/* v13 auth fallback OAuth buttons: keep the unauthenticated static page composition when the backend is unavailable. */
+.mexion-auth-page .sso-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 12px 16px !important;
+  text-decoration: none !important;
+  cursor: default !important;
+  opacity: 1 !important;
+}
+.mexion-auth-page .sso-google-mark {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  color: #4285F4;
+}
+.mexion-auth-page .sso-github-mark {
+  font-size: 13px;
+  color: var(--ink);
+}
+.mexion-auth-page .sso-row:has(.sso-btn:nth-child(2)) {
+  grid-template-columns: 1fr 1fr !important;
+}
+@media (max-width: 520px) {
+  .mexion-auth-page .sso-row:has(.sso-btn:nth-child(2)) { grid-template-columns: 1fr !important; }
+}
+
+/* v14 micro parity: lower paper grain, mixed-case dates, old static link colors/status. */
+.mexion-index-page::before,
+.mexion-auth-page .plate::before,
+.mexion-auth-page .form-wrap::before { opacity: .12 !important; }
+.mexion-index-page .s-val,
+.mexion-auth-page .s-val { text-transform: none !important; }
+.mexion-index-page .s-dot--bad { background: var(--verm) !important; }
+.mexion-index-page .s-dot--bad::after { border-color: var(--verm) !important; }
+.mexion-auth-page .field__label .field__hint a {
+  color: var(--ink) !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid var(--hairline) !important;
+}
+.mexion-auth-page .field__label .field__hint a:hover { color: var(--verm) !important; border-color: var(--verm) !important; }
+.mexion-auth-page .sso-row svg { flex-shrink: 0; }
+.mexion-auth-page .sso-google-mark,
+.mexion-auth-page .sso-github-mark { display: none !important; }
+
+
+/* v15 auth static parity fixes: footer belongs to card; validity marks are not visible on blank fields. */
+.mexion-auth-page .auth-footer-slot {
+  width: 100% !important;
+  margin: 0 !important;
+  position: static !important;
+}
+.mexion-auth-page .auth-footer-slot:empty { display: none !important; }
+.mexion-auth-page .email-mark {
+  transform: rotate(45deg) scale(0) !important;
+  opacity: 0 !important;
+}
+.mexion-auth-page .field.is-valid .email-mark {
+  transform: rotate(45deg) scale(1) !important;
+  opacity: .75 !important;
+}
+.mexion-auth-page .form-card {
+  margin: auto !important;
+}
+.mexion-auth-page .foot-note {
+  margin-top: 16px !important;
+}
+
+/* v21 EOF auth parity lock: final overrides after every previous static pass. */
+.mexion-auth-page .form-top {
+  height: 30px !important;
+  min-height: 30px !important;
+  flex: 0 0 30px !important;
+  align-items: center !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 13px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+.mexion-auth-page .form-top .lang-toggle { gap: .35em !important; }
+.mexion-auth-page .form-top .lang-toggle button {
+  font-size: 13px !important;
+  line-height: 1 !important;
+  letter-spacing: .10em !important;
+}
+.mexion-auth-page .form-top .lang-toggle button + button::before {
+  margin-right: .35em !important;
+}
+.mexion-auth-page .form__eyebrow {
+  height: 14px !important;
+  line-height: 14px !important;
+}
+.mexion-auth-page .form__lede { margin-top: 0 !important; }
+.mexion-auth-page .divider {
+  height: 12px !important;
+  line-height: 12px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .mode-pane--forgot .form__lede {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 13px !important;
+  line-height: 19px !important;
+}
+.mexion-auth-page .form-card[data-mode="forgot"] .foot-note { margin-top: 14px !important; }
+.mexion-auth-page .trust-strip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  padding: 14px 0 13px !important;
+  border-top: 1px solid var(--hairline-2) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 10px !important;
+  letter-spacing: .24em !important;
+  text-transform: uppercase !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .trust-strip__item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  white-space: nowrap !important;
+  padding: 0 clamp(14px, 2.4vw, 28px) !important;
+  position: relative !important;
+}
+.mexion-auth-page .trust-strip__item + .trust-strip__item::before {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 50% !important;
+  width: 1px !important;
+  height: 11px !important;
+  background: var(--hairline) !important;
+  transform: translateY(-50%) !important;
+}
+.mexion-auth-page .trust-strip__sym {
+  font-family: var(--f-display) !important;
+  font-style: normal !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  color: var(--verm) !important;
+  letter-spacing: 0 !important;
+  margin-top: -1px !important;
+}
+.mexion-auth-page .trust-strip__item:nth-child(2) .trust-strip__sym { color: var(--forest) !important; }
+.mexion-auth-page .trust-strip__item:nth-child(3) .trust-strip__sym { color: var(--lead) !important; }
+.mexion-auth-page .form-legal {
+  margin: 0 !important;
+  padding: 14px 0 0 !important;
+  border: 0 !important;
+  color: var(--mist) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .form-legal a {
+  color: var(--lead) !important;
+  border-bottom: 1px solid var(--hairline-2) !important;
+  margin: 0 !important;
+}
+.mexion-auth-page .form-legal a:hover {
+  color: var(--ink) !important;
+  border-color: var(--lead) !important;
+}
+.mexion-auth-page .colophon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-top: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px dotted var(--hairline) !important;
+  color: var(--mist) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 9px !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .colophon__seal {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.mexion-auth-page .colophon__seal::before {
+  width: 5px !important;
+  height: 5px !important;
+}
+.mexion-auth-page .colophon__center {
+  flex: 1 !important;
+  text-align: center !important;
+  font-style: normal !important;
+  text-transform: none !important;
+  letter-spacing: .04em !important;
+  color: var(--lead-2) !important;
+  font-family: var(--f-cn) !important;
+  font-size: 10px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* v24 TRUE EOF parity lock: keep this block physically at the end. */
+#app .mexion-index-page .hero__l2,
+#app .mexion-index-page .hero__l3 {
+  margin-top: 0 !important;
+}
+#app .mexion-index-page .hero__l3 {
+  font-style: normal !important;
+}
+#app .mexion-index-page .nav .lang-toggle {
+  position: relative !important;
+  display: inline-block !important;
+  align-self: center !important;
+  width: 72.05px !important;
+  height: 14px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  white-space: nowrap !important;
+}
+#app .mexion-index-page .nav .lang-toggle::before {
+  content: '中文 / EN' !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 72.05px !important;
+  height: 14px !important;
+  color: var(--lead) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 11px !important;
+  line-height: normal !important;
+  letter-spacing: .13em !important;
+  pointer-events: none !important;
+}
+#app .mexion-index-page .nav .lang-toggle button {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-block !important;
+  width: 36px !important;
+  min-width: 0 !important;
+  height: 14px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 14px !important;
+}
+#app .mexion-index-page .nav .lang-toggle button + button::before {
+  content: none !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 28px 0 16px !important;
+}
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(1),
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(4) {
+  margin-bottom: 13px !important;
+}
+
+/* v25 auth exact static structure lock: mode-stack + in-form footnotes + caps-lock hint. */
+.mexion-auth-page .mode-stack {
+  position: relative !important;
+  width: 100% !important;
+  display: block !important;
+}
+.mexion-auth-page .mode-stack > .mode-pane {
+  min-width: 0 !important;
+  width: 100% !important;
+  flex-direction: column !important;
+}
+.mexion-auth-page .form-card[data-mode="login"] .mode-pane--login,
+.mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup,
+.mexion-auth-page .form-card[data-mode="forgot"] .mode-pane--forgot {
+  display: flex !important;
+}
+.mexion-auth-page .auth-footer-slot {
+  display: none !important;
+}
+.mexion-auth-page .caps-warn {
+  position: absolute !important;
+  right: 0 !important;
+  top: -2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 6px 0 8px !important;
+  background: color-mix(in oklab, var(--paper) 88%, transparent) !important;
+  color: var(--verm) !important;
+  border: 1px solid var(--hairline-2) !important;
+  font-family: var(--f-mono) !important;
+  font-size: 9px !important;
+  line-height: 16px !important;
+  letter-spacing: .20em !important;
+  text-transform: uppercase !important;
+  opacity: 0 !important;
+  transform: translateY(-4px) !important;
+  transition: opacity .2s ease, transform .2s ease !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+.mexion-auth-page .caps-warn::before {
+  content: '' !important;
+  width: 5px !important;
+  height: 5px !important;
+  display: inline-block !important;
+  background: var(--verm) !important;
+  transform: rotate(45deg) !important;
+  flex-shrink: 0 !important;
+}
+.mexion-auth-page .field--pwd.is-caps .caps-warn {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+.mexion-auth-page .field--pwd.is-caps .field__hint {
+  opacity: .25 !important;
+}
+#app .mexion-auth-page .form-legal {
+  line-height: 1.6 !important;
+}
+#app .mexion-auth-page .form-card-wrap {
+  flex: 1 1 auto !important;
+}
+
+/* v26 auth pixel-lock after in-form footnotes. */
+#app .mexion-auth-page .foot-note {
+  margin-top: 14px !important;
+}
+#app .mexion-auth-page .form-card[data-mode="login"] .mode-pane--login .field--pwd {
+  min-height: 71px !important;
+}
+#app .mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .divider {
+  margin: 14px 0 16px !important;
+}
+#app .mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .foot-note,
+#app .mexion-auth-page .form-card[data-mode="forgot"] .mode-pane--forgot .foot-note {
+  margin-top: 14px !important;
+}
+
+/* v27 signup field height micro-lock: static username/email fields are 71px high. */
+#app .mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(1),
+#app .mexion-auth-page .form-card[data-mode="signup"] .mode-pane--signup .mexion-auth-form > .field:nth-of-type(4) {
+  min-height: 71px !important;
+  margin-bottom: 11px !important;
+}
+
+/* v28 auth color/display parity with the original static login.css. */
+#app .mexion-auth-page {
+  --lead: #4A453E !important;
+  --lead-2: #6B655C !important;
+}
+#app .mexion-auth-page .form-top,
+#app .mexion-auth-page .plate__foot,
+#app .mexion-auth-page .form__lede,
+#app .mexion-auth-page .foot-note {
+  color: var(--lead) !important;
+}
+#app .mexion-auth-page .submit-btn {
+  display: flex !important;
+}
+
+/* v29 home viewport paper lock: 外侧留白与主体纸面统一，避免 1480px 容器外出现左右色带。 */
+:root {
+  --mexion-home-paper: #F8F4EA;
+}
+
+html:has(.mexion-index-page),
+body:has(.mexion-index-page),
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) #app > .min-h-screen,
+body:has(.mexion-index-page) .mexion-index-page {
+  background-color: var(--mexion-home-paper) !important;
+}
+
+body:has(.mexion-index-page) {
+  background-image: none !important;
+}
+
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) #app > .min-h-screen {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 50%, #FAF6EC 0%, #F8F4EA 40%, #EDE6D2 100%) !important;
+}
+
+body:has(.mexion-index-page) .mexion-index-page {
+  background: transparent !important;
+}
+
+/* v30 home full-viewport paper lock: 修复 1920 宽屏下首页左右外边距与主体纸面色差。 */
+:root {
+  --mexion-home-paper: #F8F4EA;
+}
+
+html:has(.mexion-index-page),
+body:has(.mexion-index-page),
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) #app > .min-h-screen,
+body:has(.mexion-index-page) .mexion-index-page {
+  background: var(--mexion-home-paper) !important;
+  background-color: var(--mexion-home-paper) !important;
+  background-image: none !important;
+}
+
+/* 原来的径向渐变只覆盖 max-width 页面主体，宽屏两侧会露出不同颜色；这里去掉色彩光斑，只保留纸面纹理。 */
+body:has(.mexion-index-page) .mexion-index-page::after {
+  display: none !important;
+}
+
+/* 纸张颗粒铺满整个视口，而不是只铺在中间主体容器内。 */
+body:has(.mexion-index-page)::before {
+  content: '' !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") !important;
+  opacity: .12 !important;
+  mix-blend-mode: multiply !important;
+}
+
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) .mexion-index-page {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* v31 home single-canvas backdrop:
+   旧静态页把 paper 背景挂在 body 上，body 背景会铺满整个 canvas；
+   Vue 版本之前把背景/纹理挂在 max-width 的 .mexion-index-page 上，
+   1920 宽屏时中间 1480px 与左右留白会形成明显竖向色差。
+   这里把首页背景重新收敛到一个全视口 canvas，页面容器本身透明。 */
+:root {
+  --mexion-home-paper: #F8F4EA;
+}
+
+html:has(.mexion-index-page),
+body:has(.mexion-index-page) {
+  background: var(--mexion-home-paper) !important;
+  background-color: var(--mexion-home-paper) !important;
+  background-image: none !important;
+}
+
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) #app > .min-h-screen,
+body:has(.mexion-index-page) .mexion-index-page {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.mexion-index-page) .mexion-index-page::before,
+body:has(.mexion-index-page) .mexion-index-page::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+/* 全屏统一纸张纤维，不再被 1480px 页面容器裁切。 */
+body:has(.mexion-index-page)::before {
+  content: '' !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") !important;
+  opacity: .14 !important;
+  mix-blend-mode: multiply !important;
+}
+
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) .mexion-index-page {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* v32 home full-viewport static paper parity:
+   恢复旧静态页的完整径向纸张底色和墨晕，但所有背景图层都固定到 viewport，
+   避免 max-width: 1480px 的主体在 1920px 屏幕上再次形成左右色带。 */
+html:has(.mexion-index-page) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+body:has(.mexion-index-page) {
+  background: radial-gradient(
+    ellipse 90% 70% at 50% 50%,
+    #FAF6EC 0%,
+    #F8F4EA 40%,
+    #EDE6D2 100%
+  ) !important;
+  background-color: #F8F4EA !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+body:has(.mexion-index-page) #app,
+body:has(.mexion-index-page) #app > .min-h-screen,
+body:has(.mexion-index-page) .mexion-index-page {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 旧静态页的纸张纤维：只铺一层，并覆盖整个 viewport。 */
+body:has(.mexion-index-page)::before {
+  content: '' !important;
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.0' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.07  0 0 0 0 0.04  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>") !important;
+  opacity: .42 !important;
+  mix-blend-mode: multiply !important;
+}
+
+/* 禁止主体容器再叠一层颗粒；墨晕使用 fixed，保持指针跟随且不受 1480px 裁切。 */
+body:has(.mexion-index-page) .mexion-index-page::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+body:has(.mexion-index-page) .mexion-index-page::after {
+  content: '' !important;
+  display: block !important;
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+  background:
+    radial-gradient(
+      circle at var(--mx, 30%) var(--my, 70%),
+      rgba(181,57,45,.06) 0%,
+      rgba(181,57,45,.012) 30%,
+      transparent 55%
+    ),
+    radial-gradient(circle at 78% 22%, rgba(60,40,20,.045) 0%, transparent 45%),
+    radial-gradient(circle at 88% 84%, rgba(181,57,45,.035) 0%, transparent 38%) !important;
+  transition: background .4s ease !important;
+}
+/* v33 home source-static texture parity:
+   当前作为基准的旧静态 public/assets/index.css 中纸纤维 data URI 本身无效，
+   浏览器计算结果为 background-image: none。关闭 Vue 额外颗粒，避免整屏发灰、分区观感不一致。 */
+body:has(.mexion-index-page)::before {
+  background: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+}
+/* v34 public mobile source parity:
+   Keep the legacy Three-Act Folio home and the plate-over-form auth layout.
+   This block intentionally comes last so app-wide responsive helpers cannot
+   collapse the public skin or hide Sub2API auth content. */
+@media (max-width: 860px) {
+  .mexion-index-page {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-left: var(--px, 28px) !important;
+    padding-right: var(--px, 28px) !important;
+  }
+  .mexion-index-page > .binding,
+  .mexion-index-page .corner-mark { display: none !important; }
+
+  .mexion-index-page .nav {
+    padding: 14px 20px !important;
+    gap: 10px !important;
+    align-items: baseline !important;
+  }
+  .mexion-index-page .nav__brand-meta,
+  .mexion-index-page .nav__links,
+  .mexion-index-page .nav__gap,
+  .mexion-index-page .nav__divider { display: none !important; }
+  .mexion-index-page .nav__brand { font-size: 17px !important; }
+  .mexion-index-page .nav__signin {
+    font-size: 12.5px !important;
+    padding: 9px 14px !important;
+    gap: 6px !important;
+  }
+  #app .mexion-index-page .nav .lang-toggle {
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+
+  .mexion-index-page .stage::before { display: none !important; }
+  .mexion-index-page .stage {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    padding: 0 22px !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    flex: 0 0 auto !important;
+    gap: 0 !important;
+    --m-gap: clamp(40px, 9vw, 64px);
+  }
+
+  .mexion-index-page .left {
+    order: 1 !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 18px 0 0 !important;
+    display: block !important;
+  }
+  .mexion-index-page .left .sec-label { display: none !important; }
+  .mexion-index-page .hero {
+    font-size: clamp(36px, 9.8vw, 60px) !important;
+    line-height: 1.04 !important;
+    letter-spacing: -.018em !important;
+    margin: 0 0 22px !important;
+    text-wrap: balance;
+  }
+  .mexion-index-page .sub {
+    font-size: 14.5px !important;
+    line-height: 1.7 !important;
+    margin: 0 0 32px !important;
+    max-width: 36ch !important;
+  }
+  .mexion-index-page .cta-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin: 0 !important;
+  }
+  .mexion-index-page .cta {
+    width: 100% !important;
+    min-height: 0 !important;
+    justify-content: center !important;
+    padding: 16px 22px !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+  }
+  .mexion-index-page .cta-secondary {
+    text-align: center !important;
+    font-size: 13px !important;
+  }
+  .mexion-index-page .left::after {
+    content: "PL. I — FOLIO RECTO ↓" !important;
+    display: block !important;
+    margin: var(--m-gap) 0 0 !important;
+    padding-top: 22px !important;
+    border-top: 1px solid rgba(20,18,14,.10) !important;
+    font-family: var(--font-mono, ui-monospace, monospace) !important;
+    font-size: 10px !important;
+    letter-spacing: .28em !important;
+    color: rgba(20,18,14,.45) !important;
+    text-align: center !important;
+  }
+
+  .mexion-index-page .plate-index {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    position: static !important;
+    padding: var(--m-gap) 0 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    overflow: visible !important;
+  }
+  .mexion-index-page .plate__frame-wrap,
+  .mexion-index-page .plate__frame,
+  .mexion-index-page .plate__ink {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  .mexion-index-page .plate-index .plate__head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 320px !important;
+    font-size: 10px !important;
+    letter-spacing: .22em !important;
+    opacity: .6 !important;
+  }
+  .mexion-index-page .plate__head-num,
+  .mexion-index-page .plate__head-meta { white-space: nowrap !important; }
+  .mexion-index-page .plate__head-rule {
+    display: block !important;
+    flex: 1 1 auto !important;
+    height: 1px !important;
+    background: currentColor !important;
+    opacity: .35 !important;
+  }
+  .mexion-index-page .plate__title {
+    margin: 14px 0 22px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: baseline !important;
+    gap: 4px 10px !important;
+    line-height: 1.2 !important;
+  }
+  .mexion-index-page .plate__title-cn { font-size: clamp(22px, 6vw, 30px) !important; }
+  .mexion-index-page .plate__title-sep { opacity: .3 !important; font-size: .7em !important; padding: 0 2px !important; }
+  .mexion-index-page .plate__title-en { font-size: clamp(14px, 3.4vw, 18px) !important; font-style: italic !important; opacity: .6 !important; }
+  .mexion-index-page .plate__frame-wrap {
+    width: min(68vw, 360px) !important;
+    margin: 0 auto 16px !important;
+  }
+  .mexion-index-page .plate__frame {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+  .mexion-index-page .plate__ink {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    position: static !important;
+  }
+  .mexion-index-page .plate__caption {
+    font-size: 12px !important;
+    letter-spacing: .06em !important;
+    opacity: .6 !important;
+    margin: 0 auto 4px !important;
+    text-align: center !important;
+    max-width: 30ch !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  .mexion-index-page .plate__prop {
+    order: 3 !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: var(--m-gap) 0 0 !important;
+    padding: 28px 0 0 !important;
+    border-top: 1px solid rgba(20,18,14,.12) !important;
+    border-bottom: none !important;
+    background: transparent !important;
+    text-align: left !important;
+  }
+  .mexion-index-page .prop__eyebrow {
+    display: block !important;
+    font-size: 10px !important;
+    letter-spacing: .28em !important;
+    margin-bottom: 12px !important;
+    opacity: .55 !important;
+  }
+  .mexion-index-page .prop__eyebrow-num { display: inline !important; }
+  .mexion-index-page .prop__body {
+    font-size: 14.5px !important;
+    line-height: 1.75 !important;
+    margin: 0 !important;
+    max-width: 38ch !important;
+  }
+  .mexion-index-page .foot {
+    padding: var(--m-gap) 22px 26px !important;
+  }
+  .mexion-index-page .status {
+    flex-wrap: wrap !important;
+    gap: 10px 18px !important;
+    font-size: 10px !important;
+    letter-spacing: .14em !important;
+  }
+  .mexion-index-page .status__spacer { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .mexion-index-page .stage {
+    padding: 0 18px !important;
+    --m-gap: clamp(36px, 10vw, 52px);
+  }
+  .mexion-index-page .hero { font-size: clamp(32px, 11vw, 46px) !important; line-height: 1.06 !important; }
+  .mexion-index-page .sub { font-size: 14px !important; max-width: none !important; }
+  .mexion-index-page .left::after { font-size: 9.5px !important; letter-spacing: .24em !important; }
+  .mexion-index-page .plate-index .plate__head { font-size: 9.5px !important; letter-spacing: .2em !important; }
+  .mexion-index-page .plate__caption { font-size: 11.5px !important; }
+  .mexion-index-page .plate__frame-wrap { width: 72vw !important; }
+  .mexion-index-page .prop__body { font-size: 14px !important; }
+  .mexion-index-page .nav { padding: 12px 16px !important; }
+  .mexion-index-page .nav__brand { font-size: 16px !important; }
+  .mexion-index-page .foot { padding: clamp(36px, 10vw, 52px) 18px 18px !important; }
+  .mexion-index-page .status .s-item:nth-of-type(3) { display: none !important; }
+}
+
+@media (max-width: 880px) {
+  html:has(.mexion-auth-page),
+  body:has(.mexion-auth-page) {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  .mexion-auth-page {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  .mexion-auth-page .plate {
+    display: flex !important;
+    min-height: 320px !important;
+    height: auto !important;
+    padding: 32px 28px !important;
+  }
+  .mexion-auth-page .plate__inner {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+  .mexion-auth-page .plate__fig {
+    max-width: 200px !important;
+    margin: 0 auto !important;
+  }
+  .mexion-auth-page .plate-binding { display: none !important; }
+  .mexion-auth-page .form-wrap {
+    padding: 32px 28px 28px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  .mexion-auth-page .form-card-wrap {
+    place-items: center !important;
+    padding: clamp(16px, 3vh, 32px) 0 !important;
+  }
+  .mexion-auth-page .form-card {
+    margin: 0 auto !important;
+  }
+  .mexion-auth-page .trust-strip {
+    padding: 14px 0 12px !important;
+    gap: 18px !important;
+    flex-wrap: wrap !important;
+    row-gap: 6px !important;
+  }
+  .mexion-auth-page .colophon {
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-wrap: wrap !important;
+    row-gap: 4px !important;
+    justify-content: center !important;
+    font-size: 8px !important;
+    letter-spacing: .14em !important;
+    text-align: initial !important;
+  }
+  .mexion-auth-page .colophon > span:last-child { text-align: right !important; }
+  .mexion-auth-page .colophon__center { display: none !important; }
+  .mexion-auth-page .cm { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .mexion-auth-page .sso-row { grid-template-columns: 1fr !important; }
+  .mexion-auth-page .plate__hero { font-size: 30px !important; }
+}
+/* v35 mobile specificity corrections after the source-parity audit. */
+@media (max-width: 860px) {
+  #app .mexion-index-page main.stage,
+  #app .mexion-index-page .stage { padding: 0 22px !important; }
+  #app .mexion-index-page .cta-row { margin-top: clamp(24px, 4vh, 48px) !important; }
+  #app .mexion-index-page .foot__rule { margin-bottom: 0 !important; }
+  #app .mexion-index-page .status {
+    padding-top: clamp(8px, 1.2vh, 13px) !important;
+    color: var(--lead) !important;
+  }
+  #app .mexion-index-page .status .s-val { color: var(--ink) !important; }
+}
+@media (max-width: 480px) {
+  #app .mexion-index-page main.stage,
+  #app .mexion-index-page .stage { padding: 0 18px !important; }
+  #app .mexion-index-page .nav { min-height: 57px !important; }
+  html[lang='zh'] #app .mexion-index-page .hero {
+    font-size: clamp(34px, 4.4vw, 70px) !important;
+    line-height: 1.16 !important;
+    letter-spacing: -.005em !important;
+    font-weight: 500 !important;
+  }
+}
+/* v36 final mobile flow corrections: preserve flex margins and static plate rhythm. */
+.mexion-auth-page .plate__sub { min-height: 7.12em !important; }
+@media (max-width: 860px) {
+  #app .mexion-index-page .left {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+  #app .mexion-index-page .hero { padding: 0 !important; }
+}
+/* v37 exact mobile home folio rhythm: restore source typography and inherited flex gaps. */
+@media (max-width: 860px) {
+  #app .mexion-index-page .plate-index .plate__head {
+    margin-bottom: clamp(8px, 1.3vh, 13px) !important;
+  }
+  #app .mexion-index-page .plate__title {
+    font-family: var(--f-display) !important;
+    font-size: clamp(12px, 1vw, 15px) !important;
+    color: var(--ink) !important;
+  }
+  #app .mexion-index-page .plate__caption-text {
+    font-family: var(--f-display) !important;
+    font-style: italic !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: var(--ink) !important;
+    font-size: 11px !important;
+  }
+  html[lang='zh'] #app .mexion-index-page .plate__caption-text {
+    font-family: var(--f-cn) !important;
+    font-style: normal !important;
+    font-size: 11px !important;
+    letter-spacing: .04em !important;
+  }
+  #app .mexion-index-page .plate__prop {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(5px, .9vh, 9px) !important;
+  }
+  #app .mexion-index-page .prop__eyebrow-num {
+    color: var(--ink) !important;
+    font-weight: 600 !important;
+    letter-spacing: .16em !important;
+  }
+  html[lang='zh'] #app .mexion-index-page .cta {
+    font-size: 16px !important;
+  }
+}
+
+/* v38 auth state panels: keep invalid/success states inside the paper system. */
+.mexion-auth-page .bg-amber-50,
+.mexion-auth-page .bg-green-50,
+.mexion-auth-page .dark\:bg-amber-900\/20,
+.mexion-auth-page .dark\:bg-green-900\/20 {
+  background: rgba(255, 255, 255, .22) !important;
+  border-color: var(--hairline) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* v39 robust utility-class neutralization for auth result cards. */
+#app .mexion-auth-page [class~="bg-amber-50"],
+#app .mexion-auth-page [class~="bg-green-50"] {
+  background-color: rgba(255, 255, 255, .22) !important;
+  background-image: none !important;
+  border-color: var(--hairline) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* v40 beat the global utility harmonizer on static auth pages. */
+#app .app:not(.mexion-dashboard-shell) .mexion-auth-page [class~="bg-amber-50"],
+#app .app:not(.mexion-dashboard-shell) .mexion-auth-page [class~="bg-green-50"] {
+  background: transparent !important;
+  border-color: var(--hairline) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* v41 theme-aware specificity for auth result cards. */
+html:not(.dark) #app .mexion-auth-page [class~="bg-amber-50"],
+html:not(.dark) #app .mexion-auth-page [class~="bg-green-50"],
+html.dark #app .mexion-auth-page [class~="bg-amber-50"],
+html.dark #app .mexion-auth-page [class~="bg-green-50"] {
+  background: transparent !important;
+  border-color: var(--hairline) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* v42 exact desktop home rhythm and footer typography. */
+@media (min-width: 981px) {
+  #app .mexion-index-page .hero {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #app .mexion-index-page .cta-row {
+    gap: clamp(20px, 2.4vw, 32px) !important;
+  }
+  #app .mexion-index-page .cta-secondary {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-family: var(--f-display) !important;
+    font-style: italic !important;
+    font-size: clamp(14px, 1.05vw, 16px) !important;
+    white-space: nowrap !important;
+    position: relative !important;
+  }
+  html[lang='zh'] #app .mexion-index-page .cta-secondary {
+    font-family: var(--f-cn) !important;
+    font-style: normal !important;
+  }
+  #app .mexion-index-page .plate__caption-text {
+    font-size: 11px !important;
+  }
+  #app .mexion-index-page .foot__rule {
+    margin-bottom: 0 !important;
+  }
+  #app .mexion-index-page .status {
+    padding-top: clamp(8px, 1.2vh, 13px) !important;
+    color: var(--lead) !important;
+  }
+  #app .mexion-index-page .status .s-val {
+    color: var(--ink) !important;
+  }
+}
+
+/* v43 exact dark parity for public static pages.
+   The Vue theme uses html.dark while the archived skin uses [data-theme="dark"].
+   Keep the archived page-local tokens scoped to public routes only. */
+html.dark #app .mexion-index-page {
+  --ink: #f1efe6;
+  --ink-soft: #dcd9ce;
+  --lead: #a6a091;
+  --lead-2: #8e8a7b;
+  --mist: #7c766a;
+  --hair: #3a372f;
+  /* The cover treats vermillion as printed pigment, not luminous UI chrome. */
+  --verm: #b5392d;
+  --verm-deep: #8e2a21;
+  --paper-2: #23211a;
+  --hairline: rgba(241, 239, 230, .12);
+  --hairline-2: rgba(241, 239, 230, .07);
+  color-scheme: dark;
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #181712 0%, #14130e 40%, #0e0d09 100%) !important;
+}
+html.dark body:has(#app .mexion-index-page) {
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #181712 0%, #14130e 40%, #0e0d09 100%) !important;
+}
+html.dark #app .mexion-index-page .hero {
+  color: var(--ink) !important;
+}
+html.dark #app .mexion-index-page .cta {
+  background: #1a1813 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+}
+html.dark #app .mexion-index-page::before {
+  opacity: .30 !important;
+  mix-blend-mode: overlay !important;
+}
+html.dark #app .mexion-index-page .left::after {
+  border-top-color: rgba(241, 239, 230, .12) !important;
+  color: rgba(241, 239, 230, .42) !important;
+}
+html.dark #app .mexion-index-page .plate__prop {
+  border-top-color: rgba(241, 239, 230, .14) !important;
+}
+
+html.dark #app .mexion-auth-page {
+  --ink: #f1efe6;
+  --ink-soft: #d8d5c9;
+  --lead: #a6a291;
+  --lead-2: #8e8a7b;
+  --mist: #7c7869;
+  --hair: #35322a;
+  --verm: #e45c4f;
+  --verm-deep: #c8392d;
+  --forest: #5cae78;
+  --paper: #15140e;
+  --paper-2: #1f1d15;
+  --paper-3: #1b1a12;
+  --hairline: rgba(241, 239, 230, .10);
+  --hairline-2: rgba(241, 239, 230, .06);
+  color-scheme: dark;
+  color: var(--ink) !important;
+  background: var(--paper) !important;
+}
+html.dark body:has(#app .mexion-auth-page) {
+  background: var(--mx-bg, #15140e) !important;
+  background-image: none !important;
+}
+html.dark #app .mexion-auth-page .plate {
+  background: radial-gradient(ellipse 90% 70% at 50% 50%, #1f1d15 0%, #1b1a12 45%, #15140e 100%) !important;
+}
+html.dark #app .mexion-auth-page .plate__hero {
+  color: var(--ink) !important;
+}
+html.dark #app .mexion-auth-page .form-wrap {
+  color: var(--ink) !important;
+  background: var(--paper-3) !important;
+  background-image: none !important;
+}
+/* v44 dark auth token lock over the earlier light pixel-lock variables. */
+html.dark #app .mexion-auth-page {
+  --lead: #a6a291 !important;
+  --lead-2: #8e8a7b !important;
+}
+
+

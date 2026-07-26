@@ -1,0 +1,136 @@
+/*
+ * Mexion interaction motion grammar
+ * ---------------------------------
+ * Small, reusable motions distilled from the static skin's common.css.
+ * This file stays inside the skin package and never owns business state.
+ */
+
+@keyframes mx-tab-accent {
+  from {
+    opacity: 0;
+    bottom: -3px;
+    transform: translateX(-50%) scaleX(.45);
+  }
+  to {
+    opacity: 1;
+    bottom: -1px;
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+@keyframes mx-badge-pop {
+  0% { opacity: 0; transform: scale(0); }
+  60% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mx-settings-tab-accent {
+  from { opacity: 0; transform: translateX(-50%) translateY(2px) scaleX(.45); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scaleX(1); }
+}
+
+@keyframes mx-skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes mx-route-paper-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* The static dashboard referenced tabAccent, but that keyframe was absent after
+ * the Vue migration. Re-own it here under a namespaced skin animation. */
+.mexion-dashboard-shell .tab {
+  position: relative;
+}
+
+.mexion-dashboard-shell .tab[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 14px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--verm, var(--mx-app-verm));
+  opacity: 0;
+  transform: translateX(-50%) scaleX(.45);
+  transform-origin: center;
+  animation: mx-tab-accent .25s ease-out forwards;
+}
+
+/* Settings are the largest native Vue tab family not present in the old HTML.
+ * Give them the same restrained vermilion written rule rather than a new motif. */
+#app .settings-tab {
+  position: relative;
+}
+
+#app .settings-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--mx-app-verm);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(.45);
+  transform-origin: center;
+  animation: mx-settings-tab-accent .25s ease-out forwards;
+}
+
+/* Notification state lands like a small seal. The inner pulse remains reserved
+ * for live unread state and is not applied to ordinary badges. */
+#app .notif-bell > span.absolute:not(.notif-bell__label) {
+  transform-origin: center;
+  animation: mx-badge-pop .4s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+/* Replace the generic opacity pulse with the old paper-light sweep. */
+#app .skeleton {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(
+    90deg,
+    var(--mx-app-bg-2) 0%,
+    var(--mx-app-surface-2) 50%,
+    var(--mx-app-bg-2) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: mx-skeleton-shimmer 1.4s ease-in-out infinite !important;
+}
+
+/* Route motion is attached by MexionOverlayHost only to the slot root of native
+ * application pages. Static Home/Auth/Dashboard and subscription folios keep
+ * their own authored sequences and are intentionally excluded. */
+html.is-mexion-route-entering #app .mexion-route-motion {
+  animation: mx-route-paper-in .46s var(--mx-ease-ink) both;
+  animation-delay: calc(var(--mx-route-index, 0) * 55ms);
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mexion-dashboard-shell .tab[aria-pressed="true"]::after,
+  #app .settings-tab[aria-selected="true"]::after,
+  #app .notif-bell > span.absolute:not(.notif-bell__label),
+  #app .skeleton,
+  html.is-mexion-route-entering #app .mexion-route-motion {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+
+  .mexion-dashboard-shell .tab[aria-pressed="true"]::after {
+    bottom: -1px;
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  #app .settings-tab[aria-selected="true"]::after {
+    bottom: 3px;
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+}
