@@ -169,7 +169,7 @@ Mexion 是 sub2api（Go 后端，`github.com/Wei-Shaw/sub2api`）的**前端皮�
 
 ## 6. 残留风险与后续建议
 
-1. **皮肤层未纳入 git 追踪**：`apps/web/src/skins/`、`apps/web/src/styles/` 当前为 untracked。改动虽已落盘并通过验证，但缺少版本历史/回滚点。建议评估是否将 overlay 层纳入独立追踪或打包留存。
+1. **皮肤层版本化风险已关闭**：`apps/web/src/skins/` 与 `apps/web/src/styles/` 已全部纳入 Git 追踪（当前分别 18 与 6 个文件，0 untracked），并包含在 `v1.0.0` 对应提交中。
 2. **上游 websearch 404 补丁需长期维护**：v0.1.165 上游仍未内建 `ErrSettingNotFound` 处理，后续每次升级都需重新协调该补丁；建议向上游提 PR 以消除长期分叉。
 3. **静态 Windows 构建需常带 `-tags timetzdata`**：否则默认 `Asia/Shanghai` 启动即失败。已写入 `.runtime/build-sub2api.sh`，建议同步到正式 Makefile/CI 的 Windows 目标。
 4. **vitest 在 Windows 默认多 worker 会 OOM**：本次以 `--no-file-parallelism` + 加大堆解决；建议在 CI 固化该配置。
@@ -187,7 +187,39 @@ Mexion 是 sub2api（Go 后端，`github.com/Wei-Shaw/sub2api`）的**前端皮�
 
 ---
 
-## 7. 附录：关键路径与经验
+## 7. 认证模式与唯一管理员收尾（2026-07-27）
+
+### 7.1 默认运行模式
+
+- `scripts/start-local-runtime.ps1` 默认启动**正常账号鉴权**的 Vite；启动子进程前会显式清除 `VITE_MEXION_LOCAL_PREVIEW`、`MEXION_PREVIEW_ADMIN_EMAIL`、`MEXION_PREVIEW_ADMIN_PASSWORD`，不会向浏览器注入免登录会话。
+- 管理员与数据库凭据只从显式参数、环境变量或 Git 忽略的 `.runtime/local-runtime.settings.json` 读取；启动输出仅显示管理员邮箱，不显示密码。
+- bcrypt 临时程序从进程环境读取密码，临时 Go 源码不含明文，执行后同时清理源码与临时环境变量。
+- 专用免登录预览保留在本地且已 Git 忽略的 `scripts/start-mexion-vue-preview.ps1`，不属于默认启动路径。
+
+### 7.2 唯一管理员约束
+
+真实登录与 `GET /api/v1/admin/users` 最终验收结果：
+
+| 账号 | 角色 | 状态 | 登录结果 |
+|---|---|---|---|
+| `admin@mexion.local` | `admin` | `active` | HTTP 200 |
+| `admin@example.com` | `user` | `disabled` | HTTP 401 |
+
+- `role=admin` 数量：**1**。
+- `role=admin AND status=active` 数量：**1**。
+- 本地启动器会保持配置账号为唯一有效管理员，并在启动后执行不变量断言；若状态不满足 `1|1|1`，启动器直接报错而非静默继续。
+
+### 7.3 无会话浏览器与运行栈验收
+
+- 全新 Chrome profile 直接访问 `/admin/dashboard`，最终呈现正常账号登录页：存在密码输入框与“登录 Mexion”文案，不存在管理 Dashboard 文案，Chrome exit code 0。
+- `GET /__mexion/preview-session` 返回 **503**，证明默认运行栈未配置预览凭据、免登录注入关闭。
+- PostgreSQL `5432`、Redis `6379`、sub2api `8080`、Vite `5515` 均处于 LISTENING。
+- `/health=200`、公开设置 `version=0.1.165`、前端 `/=200`、`/login=200`。
+- 浏览器证据：`logs/auth-closeout-20260727/unauth-check.json`、`unauth-admin-dashboard.html`、`unauth-admin-dashboard.png`。
+
+---
+
+## 8. 附录：关键路径与经验
 
 **产物路径**
 - 备份：`D:\Mexion\backups\pre-sub2api-v0.1.165-20260726-210131\`
@@ -199,7 +231,7 @@ Mexion 是 sub2api（Go 后端，`github.com/Wei-Shaw/sub2api`）的**前端皮�
 **运行栈**（升级后）
 - 后端 `bin/server` @ `127.0.0.1:8080`（v0.1.165）
 - PostgreSQL 16.14 @ `:5432`（DB `sub2api`）、Redis @ `:6379`（`.runtime` 便携运行时）
-- Vue 免登录预览 @ `127.0.0.1:5515`（`scripts/start-mexion-vue-preview.ps1`）
+- Vue 正常鉴权开发运行 @ `127.0.0.1:5515`（默认 `scripts/start-local-runtime.ps1`）；专用免登录预览仅为本地显式 opt-in
 
 **经验教训**
 - PG 操作切勿放在会触发 120s 前台超时的 bash 中；用 detached 干净重启（`pg_ctl stop -m immediate` + 清理 `postmaster.pid` + `-W start`）可修复 SIGTERM 破坏后子进程 spawn 崩溃（`0xC0000142`）。

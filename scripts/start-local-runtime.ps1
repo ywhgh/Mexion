@@ -1,8 +1,10 @@
 param(
   [string]$Sub2ApiRoot = 'D:\midstation-relay-analysis\worktrees\A\sub2api',
-  [string]$AdminEmail = 'admin@example.com',
-  [string]$AdminPassword = 'admin123',
-  [int]$WebPort = 5173,
+  [string]$AdminEmail = $env:MEXION_ADMIN_EMAIL,
+  [string]$AdminPassword = $env:MEXION_ADMIN_PASSWORD,
+  [string]$DatabasePassword = $env:SUB2API_DB_PASSWORD,
+  [string]$LocalSettingsPath,
+  [int]$WebPort = 5515,
   [int]$ApiPort = 8080,
   [int]$PostgresPort = 5432,
   [int]$RedisPort = 6379,
@@ -19,18 +21,39 @@ $PgData = Join-Path $RuntimeRoot 'pgdata'
 $RedisRoot = Join-Path $RuntimeRoot 'redis'
 $DatabaseName = 'sub2api'
 $DatabaseUser = 'postgres'
-# Local PostgreSQL password, supplied via SUB2API_DB_PASSWORD so no credential
-# is stored in the repository. On the very first run this is the password the
-# local cluster is created with; afterwards it must match that cluster.
-$DatabasePassword = $env:SUB2API_DB_PASSWORD
-if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {
-  throw 'SUB2API_DB_PASSWORD is not set. Set it to the password of the local .runtime PostgreSQL cluster before running this script.'
+
+if ([string]::IsNullOrWhiteSpace($LocalSettingsPath)) {
+  $LocalSettingsPath = Join-Path $RuntimeRoot 'local-runtime.settings.json'
+}
+
+if (Test-Path -LiteralPath $LocalSettingsPath) {
+  try {
+    $localSettings = Get-Content -LiteralPath $LocalSettingsPath -Raw | ConvertFrom-Json
+  } catch {
+    throw "Failed to read local runtime settings at ${LocalSettingsPath}: $($_.Exception.Message)"
+  }
+
+  if ([string]::IsNullOrWhiteSpace($AdminEmail)) { $AdminEmail = [string]$localSettings.admin_email }
+  if ([string]::IsNullOrWhiteSpace($AdminPassword)) { $AdminPassword = [string]$localSettings.admin_password }
+  if ([string]::IsNullOrWhiteSpace($DatabasePassword)) { $DatabasePassword = [string]$localSettings.database_password }
+}
+
+$missingSettings = @(
+  if ([string]::IsNullOrWhiteSpace($AdminEmail)) { 'MEXION_ADMIN_EMAIL / admin_email' }
+  if ([string]::IsNullOrWhiteSpace($AdminPassword)) { 'MEXION_ADMIN_PASSWORD / admin_password' }
+  if ([string]::IsNullOrWhiteSpace($DatabasePassword)) { 'SUB2API_DB_PASSWORD / database_password' }
+)
+if ($missingSettings.Count -gt 0) {
+  throw "Missing local runtime settings: $($missingSettings -join ', '). Supply parameters/environment variables or create the gitignored file ${LocalSettingsPath}."
 }
 
 New-Item -ItemType Directory -Force -Path $RuntimeRoot, $LogRoot | Out-Null
 
 function Test-PortListening([int]$PortNumber) {
-  return [bool](Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort $PortNumber -State Listen -ErrorAction SilentlyContinue)
+  # A wildcard listener (0.0.0.0 / ::) is also reachable through 127.0.0.1.
+  # Requiring LocalAddress=127.0.0.1 misdetects Windows services such as Redis
+  # and causes a second process to fail while binding the already-used port.
+  return [bool](Get-NetTCPConnection -LocalPort $PortNumber -State Listen -ErrorAction SilentlyContinue)
 }
 
 function Wait-Port([int]$PortNumber, [string]$Name, [int]$Seconds = 30) {
@@ -114,32 +137,44 @@ function Start-Redis {
 
 function New-BcryptHash([string]$Password) {
   $backend = Join-Path $Sub2ApiRoot 'backend'
-  $tmp = Join-Path $backend 'mexion_hash_tmp.go'
-  $escaped = $Password.Replace('\', '\\').Replace('"', '\"')
-  @"
+  $tmp = Join-Path $backend ("mexion_hash_tmp_{0}.go" -f ([guid]::NewGuid().ToString('N')))
+  @'
 package main
 
 import (
   "fmt"
+  "os"
+
   "golang.org/x/crypto/bcrypt"
 )
 
 func main() {
-  hash, err := bcrypt.GenerateFromPassword([]byte("$escaped"), bcrypt.DefaultCost)
+  password := os.Getenv("MEXION_BOOTSTRAP_PASSWORD")
+  if password == "" { panic("MEXION_BOOTSTRAP_PASSWORD is empty") }
+  hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
   if err != nil { panic(err) }
   fmt.Print(string(hash))
 }
-"@ | Set-Content -LiteralPath $tmp -Encoding UTF8
+'@ | Set-Content -LiteralPath $tmp -Encoding UTF8
+
+  $hadPreviousPassword = Test-Path Env:MEXION_BOOTSTRAP_PASSWORD
+  $previousPassword = $env:MEXION_BOOTSTRAP_PASSWORD
+  $env:MEXION_BOOTSTRAP_PASSWORD = $Password
   try {
     Push-Location $backend
     try {
-      $hash = (& go run .\mexion_hash_tmp.go)
+      $hash = (& go run $tmp)
       if ($LASTEXITCODE -ne 0 -or !$hash) { throw 'failed to generate bcrypt hash with go run' }
       return ($hash | Out-String).Trim()
     } finally {
       Pop-Location
     }
   } finally {
+    if ($hadPreviousPassword) {
+      $env:MEXION_BOOTSTRAP_PASSWORD = $previousPassword
+    } else {
+      Remove-Item Env:MEXION_BOOTSTRAP_PASSWORD -ErrorAction SilentlyContinue
+    }
     Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
   }
 }
@@ -167,8 +202,34 @@ set password_hash = '$hashSql',
     username = case when username is null or username = '' then '$usernameSql' else username end,
     updated_at = now()
 where email = '$emailSql' and deleted_at is null;
+
+-- This local bootstrap intentionally maintains one effective administrator.
+update users
+set role = 'user',
+    status = 'disabled',
+    updated_at = now()
+where email <> '$emailSql'
+  and role = 'admin'
+  and deleted_at is null;
 "@
   & $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -c $sql | Write-Host
+}
+
+function Assert-SingleAdmin {
+  $psql = Join-Path $PgRoot 'bin\psql.exe'
+  $emailSql = $AdminEmail.Replace("'", "''")
+  $env:PGPASSWORD = $DatabasePassword
+  $sql = @"
+select
+  count(*) filter (where role = 'admin' and deleted_at is null),
+  count(*) filter (where role = 'admin' and status = 'active' and deleted_at is null),
+  count(*) filter (where email = '$emailSql' and role = 'admin' and status = 'active' and deleted_at is null)
+from users;
+"@
+  $state = ((& $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -tAc $sql) | Out-String).Trim()
+  if ($LASTEXITCODE -ne 0 -or $state -ne '1|1|1') {
+    throw "Local administrator invariant failed (expected exactly one active admin matching $AdminEmail)."
+  }
 }
 
 function Ensure-AdminCompliance {
@@ -232,7 +293,17 @@ function Start-Web {
   }
   if (!(Get-Command pnpm -ErrorAction SilentlyContinue)) { throw 'pnpm was not found in PATH.' }
 
-  $command = "Set-Location -LiteralPath '$RepoRoot'; pnpm --filter @mexion/web dev"
+  # The all-in-one launcher uses normal authenticated mode by default.
+  # Local auto-login remains an explicit opt-in through start-mexion-vue-preview.ps1.
+  $escapedRepoRoot = $RepoRoot.Replace("'", "''")
+  $escapedBackendUrl = "http://127.0.0.1:$ApiPort".Replace("'", "''")
+  $command = "Set-Location -LiteralPath '$escapedRepoRoot'; " +
+    "Remove-Item Env:VITE_MEXION_LOCAL_PREVIEW -ErrorAction SilentlyContinue; " +
+    "Remove-Item Env:MEXION_PREVIEW_ADMIN_EMAIL -ErrorAction SilentlyContinue; " +
+    "Remove-Item Env:MEXION_PREVIEW_ADMIN_PASSWORD -ErrorAction SilentlyContinue; " +
+    "`$env:NODE_OPTIONS='--max-old-space-size=1024'; " +
+    "`$env:SUB2API_BACKEND_URL='$escapedBackendUrl'; " +
+    "pnpm --dir '$escapedRepoRoot\apps\web' exec vite --host 127.0.0.1 --port $WebPort"
   Start-HiddenProcess `
     -FilePath 'powershell.exe' `
     -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $command) `
@@ -246,11 +317,13 @@ Start-Postgres
 Ensure-Database
 Start-Redis
 Ensure-AdminUser
+Assert-SingleAdmin
 Ensure-AdminCompliance
 Start-Sub2Api
 Start-Web
 
 Write-Host ''
-Write-Host "Mexion web:  http://127.0.0.1:$WebPort"
-Write-Host "sub2api API: http://127.0.0.1:$ApiPort"
-Write-Host "Admin:       $AdminEmail / $AdminPassword"
+Write-Host "Mexion 首页:     http://127.0.0.1:$WebPort/"
+Write-Host "Mexion 登录入口: http://127.0.0.1:$WebPort/login"
+Write-Host "sub2api API:     http://127.0.0.1:$ApiPort"
+Write-Host "Admin account:   $AdminEmail"

@@ -40,14 +40,28 @@ go run ./cmd/server
 pnpm sub2api:dev
 ```
 
-如果使用 `pnpm dev:local`（`scripts/start-local-runtime.ps1`,会拉起 `.runtime` 下的 PostgreSQL 与 Redis）,需要先提供本地数据库口令 —— 脚本不再硬编码该值：
+如果使用 `pnpm dev:local`（`scripts/start-local-runtime.ps1`，会拉起 `.runtime` 下的 PostgreSQL 与 Redis），需要提供本地管理员和数据库凭据。脚本不会把凭据写入前端环境，也不会启用免登录。
+
+可通过当前 PowerShell 会话传入：
 
 ```powershell
+$env:MEXION_ADMIN_EMAIL = 'admin@mexion.local'
+$env:MEXION_ADMIN_PASSWORD = '<本地管理员密码>'
 $env:SUB2API_DB_PASSWORD = '<本地 .runtime 集群的口令>'
 pnpm dev:local
 ```
 
-首次运行时该口令即为新建集群所用的口令;之后必须与已建集群保持一致。
+也可创建已被 Git 忽略的 `.runtime/local-runtime.settings.json`：
+
+```json
+{
+  "admin_email": "admin@mexion.local",
+  "admin_password": "<本地管理员密码>",
+  "database_password": "<本地 .runtime 集群的口令>"
+}
+```
+
+配置优先级为显式参数/环境变量高于本地 JSON。首次运行时数据库口令即为新建集群所用的口令，之后必须与已建集群保持一致。启动脚本会保持配置账号为唯一有效管理员；浏览器仍需在 `/login` 正常登录。专用免登录预览只存在于本地且已 Git 忽略的 `scripts/start-mexion-vue-preview.ps1`。
 
 再启动 Mexion 前端：
 
