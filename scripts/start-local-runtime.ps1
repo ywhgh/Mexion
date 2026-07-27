@@ -19,7 +19,13 @@ $PgData = Join-Path $RuntimeRoot 'pgdata'
 $RedisRoot = Join-Path $RuntimeRoot 'redis'
 $DatabaseName = 'sub2api'
 $DatabaseUser = 'postgres'
-$DatabasePassword = 'sub2api_dev'
+# Local PostgreSQL password, supplied via SUB2API_DB_PASSWORD so no credential
+# is stored in the repository. On the very first run this is the password the
+# local cluster is created with; afterwards it must match that cluster.
+$DatabasePassword = $env:SUB2API_DB_PASSWORD
+if ([string]::IsNullOrWhiteSpace($DatabasePassword)) {
+  throw 'SUB2API_DB_PASSWORD is not set. Set it to the password of the local .runtime PostgreSQL cluster before running this script.'
+}
 
 New-Item -ItemType Directory -Force -Path $RuntimeRoot, $LogRoot | Out-Null
 

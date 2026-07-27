@@ -40,6 +40,15 @@ go run ./cmd/server
 pnpm sub2api:dev
 ```
 
+如果使用 `pnpm dev:local`（`scripts/start-local-runtime.ps1`,会拉起 `.runtime` 下的 PostgreSQL 与 Redis）,需要先提供本地数据库口令 —— 脚本不再硬编码该值：
+
+```powershell
+$env:SUB2API_DB_PASSWORD = '<本地 .runtime 集群的口令>'
+pnpm dev:local
+```
+
+首次运行时该口令即为新建集群所用的口令;之后必须与已建集群保持一致。
+
 再启动 Mexion 前端：
 
 ```powershell
@@ -99,3 +108,9 @@ v1.0.0 发布前的验证结果：`typecheck` 0 错误、`lint` 0 error / 0 warn
 - `scripts/start-mexion-vue-preview.ps1` — 免登录预览启动脚本，`pnpm skin:vue:preview` 依赖它
 
 因此 `pnpm skin:vue:preview` 以及文档中对上述脚本的引用在全新克隆中不可用。仓库内保留的验证脚本（如 `scripts/verify-mexion-skin-contract.mjs`、`scripts/cdp-public-skin-audit.mjs`、`scripts/cdp-motion-parity-audit.mjs`）不含凭据，可直接使用。
+
+## 许可证
+
+本项目以 [MIT License](LICENSE) 发布，版权归 ywhgh 所有。
+
+Mexion 通过 HTTP 调用外部的 sub2api 后端（LGPL-3.0）。两者为独立进程、各自独立分发，本仓库不包含 sub2api 的源码或二进制。
