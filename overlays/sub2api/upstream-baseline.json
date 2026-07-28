@@ -12,7 +12,7 @@
     {
       "path": "docs/SECURITY_OPTIMIZATION_PLAN.md",
       "marker": "MEXION-SECURITY-PLAN:1",
-      "sha256": "fc900d054c2720905ce7bd9927167e1c951c1dce812b226be7008531ae0e7566"
+      "sha256": "165ff7b8c567c9cb3a8eac179f2fcfde286ef1373fe01caa867bb3dec0d8c279"
     },
     {
       "path": "docs/UPSTREAM_UPGRADE_SECURITY_OVERLAY.md",

@@ -206,7 +206,7 @@ The last command is dry-run by default. Applying an upgrade requires an explicit
 - [x] Runtime ports pass loopback-only assertions after a real cold start.
 - [x] The unique active administrator is user ID `1`.
 - [x] Upstream patch, baseline, documents, and their hashes agree.
-- [ ] Connected CI provides standard scanner evidence.
+- [x] Connected CI provides standard scanner evidence.
 - [x] Failures are fixed and the complete audit is rerun from the beginning.
 
 ### Local closeout evidence (2026-07-28)
@@ -223,3 +223,7 @@ The last command is dry-run by default. Applying an upgrade requires an explicit
 - Real-browser Preview verification passes 5/5 routes. Dynamic login, cookie
   refresh, logout, hostile Host/Origin rejection, security headers, and user ID
   `1` checks pass without exposing credentials or session values.
+- GitHub Actions Security gates run
+  [`30316924518`](https://github.com/ywhgh/Mexion/actions/runs/30316924518)
+  passes the application/upstream overlay, Git history Gitleaks, and Trivy
+  filesystem jobs.
