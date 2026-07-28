@@ -1,0 +1,331 @@
+diff --git a/backend/internal/handler/auth_dingtalk_oauth.go b/backend/internal/handler/auth_dingtalk_oauth.go
+index 25c04ede79d92405c731daf726e95ad17bc3ce97..b2a7b6383937b711e56e6e046a2e56637c2ba88c 100644
+--- a/backend/internal/handler/auth_dingtalk_oauth.go
++++ b/backend/internal/handler/auth_dingtalk_oauth.go
+@@ -811,12 +811,15 @@ func (h *AuthHandler) CompleteDingTalkOAuthRegistration(c *gin.Context) {
+ 	clearOAuthPendingSessionCookie(c, secureCookie)
+ 	clearOAuthPendingBrowserCookie(c, secureCookie)
+ 
+-	c.JSON(http.StatusOK, gin.H{
+-		"access_token":  tokenPair.AccessToken,
+-		"refresh_token": tokenPair.RefreshToken,
+-		"expires_in":    tokenPair.ExpiresIn,
+-		"token_type":    "Bearer",
+-	})
++	payload := gin.H{
++		"access_token": tokenPair.AccessToken,
++		"expires_in":   tokenPair.ExpiresIn,
++		"token_type":   "Bearer",
++	}
++	if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++		payload["refresh_token"] = refreshToken
++	}
++	c.JSON(http.StatusOK, payload)
+ }
+ 
+ // CreateDingTalkOAuthAccount creates a new user account from a pending DingTalk OAuth session.
+diff --git a/backend/internal/handler/auth_email_oauth.go b/backend/internal/handler/auth_email_oauth.go
+index 09567b1b3d72a0d5ebf04e69dc37822fdba3ba7d..508974f32a4aab7a6882adc47d0115b72ce23e2a 100644
+--- a/backend/internal/handler/auth_email_oauth.go
++++ b/backend/internal/handler/auth_email_oauth.go
+@@ -208,8 +208,8 @@ func (h *AuthHandler) emailOAuthCallbackWithProfile(
+ 	}
+ 
+ 	fragment := url.Values{}
++	h.setRefreshTokenCookie(c, tokenPair.RefreshToken)
+ 	fragment.Set("access_token", tokenPair.AccessToken)
+-	fragment.Set("refresh_token", tokenPair.RefreshToken)
+ 	fragment.Set("expires_in", fmt.Sprintf("%d", tokenPair.ExpiresIn))
+ 	fragment.Set("token_type", "Bearer")
+ 	fragment.Set("redirect", redirectTo)
+@@ -438,7 +438,7 @@ func (h *AuthHandler) completeEmailOAuthRegistration(c *gin.Context, provider st
+ 	h.authService.ApplyOAuthSignupPromoCode(c.Request.Context(), user.ID, pendingOAuthPromoCode(session))
+ 	h.authService.RecordSuccessfulLogin(c.Request.Context(), user.ID)
+ 	clearCookies()
+-	writeOAuthTokenPairResponse(c, tokenPair)
++	h.writeOAuthTokenPairResponse(c, tokenPair)
+ }
+ 
+ func (h *AuthHandler) getEmailOAuthConfig(ctx context.Context, provider string) (config.EmailOAuthProviderConfig, error) {
+diff --git a/backend/internal/handler/auth_handler.go b/backend/internal/handler/auth_handler.go
+index 2467feaee8b7b14b25d2d07568c78351b202e38b..cf6e332a9241c9fce7cef388a0f7ac5de126842f 100644
+--- a/backend/internal/handler/auth_handler.go
++++ b/backend/internal/handler/auth_handler.go
+@@ -2,6 +2,8 @@ package handler
+ 
+ import (
+ 	"context"
++	"errors"
++	"io"
+ 	"log/slog"
+ 	"strings"
+ 	"sync"
+@@ -121,7 +123,7 @@ func (h *AuthHandler) respondWithTokenPair(c *gin.Context, user *service.User) {
+ 	}
+ 	response.Success(c, AuthResponse{
+ 		AccessToken:  tokenPair.AccessToken,
+-		RefreshToken: tokenPair.RefreshToken,
++		RefreshToken: h.refreshTokenForResponse(c, tokenPair.RefreshToken),
+ 		ExpiresIn:    tokenPair.ExpiresIn,
+ 		TokenType:    "Bearer",
+ 		User:         dto.UserFromService(user),
+@@ -648,13 +650,13 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
+ 
+ // RefreshTokenRequest 刷新Token请求
+ type RefreshTokenRequest struct {
+-	RefreshToken string `json:"refresh_token" binding:"required"`
++	RefreshToken string `json:"refresh_token"`
+ }
+ 
+ // RefreshTokenResponse 刷新Token响应
+ type RefreshTokenResponse struct {
+ 	AccessToken  string `json:"access_token"`
+-	RefreshToken string `json:"refresh_token"`
++	RefreshToken string `json:"refresh_token,omitempty"`
+ 	ExpiresIn    int    `json:"expires_in"` // Access Token有效期（秒）
+ 	TokenType    string `json:"token_type"`
+ }
+@@ -663,12 +665,20 @@ type RefreshTokenResponse struct {
+ // POST /api/v1/auth/refresh
+ func (h *AuthHandler) RefreshToken(c *gin.Context) {
+ 	var req RefreshTokenRequest
+-	if err := c.ShouldBindJSON(&req); err != nil {
++	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+ 		response.BadRequest(c, "Invalid request: "+err.Error())
+ 		return
+ 	}
++	refreshToken := strings.TrimSpace(req.RefreshToken)
++	if refreshToken == "" {
++		refreshToken, _ = readRefreshTokenCookie(c)
++	}
++	if refreshToken == "" {
++		response.Unauthorized(c, "Refresh token is required")
++		return
++	}
+ 
+-	result, err := h.authService.RefreshTokenPair(c.Request.Context(), req.RefreshToken)
++	result, err := h.authService.RefreshTokenPair(c.Request.Context(), refreshToken)
+ 	if err != nil {
+ 		response.ErrorFrom(c, err)
+ 		return
+@@ -682,7 +692,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
+ 
+ 	response.Success(c, RefreshTokenResponse{
+ 		AccessToken:  result.AccessToken,
+-		RefreshToken: result.RefreshToken,
++		RefreshToken: h.refreshTokenForResponse(c, result.RefreshToken),
+ 		ExpiresIn:    result.ExpiresIn,
+ 		TokenType:    "Bearer",
+ 	})
+@@ -704,16 +714,21 @@ func (h *AuthHandler) Logout(c *gin.Context) {
+ 	var req LogoutRequest
+ 	// 允许空请求体（向后兼容）
+ 	_ = c.ShouldBindJSON(&req)
++	refreshToken := strings.TrimSpace(req.RefreshToken)
++	if refreshToken == "" {
++		refreshToken, _ = readRefreshTokenCookie(c)
++	}
+ 
+ 	// 如果提供了Refresh Token，撤销它
+-	if req.RefreshToken != "" {
+-		if err := h.authService.RevokeRefreshToken(c.Request.Context(), req.RefreshToken); err != nil {
++	if refreshToken != "" {
++		if err := h.authService.RevokeRefreshToken(c.Request.Context(), refreshToken); err != nil {
+ 			slog.Debug("failed to revoke refresh token", "error", err)
+ 			// 不影响登出流程
+ 		}
+ 	}
+ 	h.consumePendingOAuthSessionOnLogout(c)
+ 	clearOAuthLogoutCookies(c)
++	clearRefreshTokenCookie(c)
+ 
+ 	response.Success(c, LogoutResponse{
+ 		Message: "Logged out successfully",
+@@ -739,6 +754,7 @@ func (h *AuthHandler) RevokeAllSessions(c *gin.Context) {
+ 		response.InternalError(c, "Failed to revoke sessions")
+ 		return
+ 	}
++	clearRefreshTokenCookie(c)
+ 
+ 	response.Success(c, RevokeAllSessionsResponse{
+ 		Message: "All sessions have been revoked. Please log in again.",
+diff --git a/backend/internal/handler/auth_linuxdo_oauth.go b/backend/internal/handler/auth_linuxdo_oauth.go
+index 92720495b9133c6dc518f9dcdb2ad6011a5194d7..dcf112f0cf87fd2fdc7067e00ff280ad27876743 100644
+--- a/backend/internal/handler/auth_linuxdo_oauth.go
++++ b/backend/internal/handler/auth_linuxdo_oauth.go
+@@ -365,7 +365,7 @@ func (h *AuthHandler) LinuxDoOAuthCallback(c *gin.Context) {
+ 			h.authService.RecordSuccessfulLogin(c.Request.Context(), user.ID)
+ 			clearOAuthPendingSessionCookie(c, secureCookie)
+ 			clearOAuthPendingBrowserCookie(c, secureCookie)
+-			redirectOAuthTokenPair(c, frontendCallback, tokenPair, redirectTo)
++			h.redirectOAuthTokenPair(c, frontendCallback, tokenPair, redirectTo)
+ 			return
+ 		}
+ 		if !errors.Is(err, service.ErrOAuthInvitationRequired) {
+@@ -605,12 +605,15 @@ func (h *AuthHandler) CompleteLinuxDoOAuthRegistration(c *gin.Context) {
+ 	clearOAuthPendingSessionCookie(c, secureCookie)
+ 	clearOAuthPendingBrowserCookie(c, secureCookie)
+ 
+-	c.JSON(http.StatusOK, gin.H{
+-		"access_token":  tokenPair.AccessToken,
+-		"refresh_token": tokenPair.RefreshToken,
+-		"expires_in":    tokenPair.ExpiresIn,
+-		"token_type":    "Bearer",
+-	})
++	payload := gin.H{
++		"access_token": tokenPair.AccessToken,
++		"expires_in":   tokenPair.ExpiresIn,
++		"token_type":   "Bearer",
++	}
++	if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++		payload["refresh_token"] = refreshToken
++	}
++	c.JSON(http.StatusOK, payload)
+ }
+ 
+ func (h *AuthHandler) getLinuxDoOAuthConfig(ctx context.Context) (config.LinuxDoConnectConfig, error) {
+@@ -816,11 +819,11 @@ func redirectOAuthError(c *gin.Context, frontendCallback string, code string, me
+ 	redirectWithFragment(c, frontendCallback, fragment)
+ }
+ 
+-func redirectOAuthTokenPair(c *gin.Context, frontendCallback string, tokenPair *service.TokenPair, redirectTo string) {
++func (h *AuthHandler) redirectOAuthTokenPair(c *gin.Context, frontendCallback string, tokenPair *service.TokenPair, redirectTo string) {
+ 	fragment := url.Values{}
+ 	if tokenPair != nil {
++		h.setRefreshTokenCookie(c, tokenPair.RefreshToken)
+ 		fragment.Set("access_token", truncateFragmentValue(tokenPair.AccessToken))
+-		fragment.Set("refresh_token", truncateFragmentValue(tokenPair.RefreshToken))
+ 		fragment.Set("expires_in", strconv.Itoa(tokenPair.ExpiresIn))
+ 		fragment.Set("token_type", "Bearer")
+ 	}
+diff --git a/backend/internal/handler/auth_oauth_pending_flow.go b/backend/internal/handler/auth_oauth_pending_flow.go
+index 79e9f0a80bb8c34044a514f752b607d2bdbdb79d..2e7b086a9ee6e5209432ef57687bca4a7be09fb0 100644
+--- a/backend/internal/handler/auth_oauth_pending_flow.go
++++ b/backend/internal/handler/auth_oauth_pending_flow.go
+@@ -1605,13 +1605,16 @@ func (h *AuthHandler) transitionPendingOAuthAccountToChoiceState(
+ 	return session, nil
+ }
+ 
+-func writeOAuthTokenPairResponse(c *gin.Context, tokenPair *service.TokenPair) {
+-	c.JSON(http.StatusOK, gin.H{
+-		"access_token":  tokenPair.AccessToken,
+-		"refresh_token": tokenPair.RefreshToken,
+-		"expires_in":    tokenPair.ExpiresIn,
+-		"token_type":    "Bearer",
+-	})
++func (h *AuthHandler) writeOAuthTokenPairResponse(c *gin.Context, tokenPair *service.TokenPair) {
++	payload := gin.H{
++		"access_token": tokenPair.AccessToken,
++		"expires_in":   tokenPair.ExpiresIn,
++		"token_type":   "Bearer",
++	}
++	if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++		payload["refresh_token"] = refreshToken
++	}
++	c.JSON(http.StatusOK, payload)
+ }
+ 
+ func (h *AuthHandler) bindPendingOAuthLogin(c *gin.Context, provider string) {
+@@ -1689,7 +1692,7 @@ func (h *AuthHandler) bindPendingOAuthLogin(c *gin.Context, provider string) {
+ 	}
+ 
+ 	clearCookies()
+-	writeOAuthTokenPairResponse(c, tokenPair)
++	h.writeOAuthTokenPairResponse(c, tokenPair)
+ }
+ 
+ func respondPendingOAuthBindingApplyError(c *gin.Context, err error) {
+@@ -1879,7 +1882,7 @@ func (h *AuthHandler) createPendingOAuthAccount(c *gin.Context, provider string)
+ 	// createPendingOAuthAccount = 注册新账户，需要把钉钉昵称同步到 users.username 作为初始值
+ 	h.maybeSyncDingTalkAfterRegistration(c.Request.Context(), session, user.ID)
+ 	clearCookies()
+-	writeOAuthTokenPairResponse(c, tokenPair)
++	h.writeOAuthTokenPairResponse(c, tokenPair)
+ }
+ 
+ // ExchangePendingOAuthCompletion redeems a pending OAuth browser session into a frontend-safe payload.
+@@ -2030,7 +2033,9 @@ func (h *AuthHandler) ExchangePendingOAuthCompletion(c *gin.Context) {
+ 		}
+ 		h.authService.RecordSuccessfulLogin(c.Request.Context(), loginUser.ID)
+ 		payload["access_token"] = tokenPair.AccessToken
+-		payload["refresh_token"] = tokenPair.RefreshToken
++		if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++			payload["refresh_token"] = refreshToken
++		}
+ 		payload["expires_in"] = tokenPair.ExpiresIn
+ 		payload["token_type"] = "Bearer"
+ 	}
+diff --git a/backend/internal/handler/auth_oidc_oauth.go b/backend/internal/handler/auth_oidc_oauth.go
+index 904bdc225046bddda9f9770b83d935690a867b6e..e2ed7859c1d367cb044c8452fdf90cf090c875e0 100644
+--- a/backend/internal/handler/auth_oidc_oauth.go
++++ b/backend/internal/handler/auth_oidc_oauth.go
+@@ -708,12 +708,15 @@ func (h *AuthHandler) CompleteOIDCOAuthRegistration(c *gin.Context) {
+ 	clearOAuthPendingSessionCookie(c, secureCookie)
+ 	clearOAuthPendingBrowserCookie(c, secureCookie)
+ 
+-	c.JSON(http.StatusOK, gin.H{
+-		"access_token":  tokenPair.AccessToken,
+-		"refresh_token": tokenPair.RefreshToken,
+-		"expires_in":    tokenPair.ExpiresIn,
+-		"token_type":    "Bearer",
+-	})
++	payload := gin.H{
++		"access_token": tokenPair.AccessToken,
++		"expires_in":   tokenPair.ExpiresIn,
++		"token_type":   "Bearer",
++	}
++	if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++		payload["refresh_token"] = refreshToken
++	}
++	c.JSON(http.StatusOK, payload)
+ }
+ 
+ func (h *AuthHandler) getOIDCOAuthConfig(ctx context.Context) (config.OIDCConnectConfig, error) {
+@@ -1281,8 +1284,8 @@ func (h *AuthHandler) tryOIDCVerifiedEmailFastPath(
+ 	}
+ 
+ 	fragment := url.Values{}
++	h.setRefreshTokenCookie(c, tokenPair.RefreshToken)
+ 	fragment.Set("access_token", tokenPair.AccessToken)
+-	fragment.Set("refresh_token", tokenPair.RefreshToken)
+ 	fragment.Set("expires_in", fmt.Sprintf("%d", tokenPair.ExpiresIn))
+ 	fragment.Set("token_type", "Bearer")
+ 	fragment.Set("redirect", redirectTo)
+diff --git a/backend/internal/handler/auth_wechat_oauth.go b/backend/internal/handler/auth_wechat_oauth.go
+index 3e8a21dbab23a42567d7a907fbe47c35f3d2d442..b8ab856a3589d4b9ea647c29b45c27cc5891b1b0 100644
+--- a/backend/internal/handler/auth_wechat_oauth.go
++++ b/backend/internal/handler/auth_wechat_oauth.go
+@@ -585,12 +585,15 @@ func (h *AuthHandler) CompleteWeChatOAuthRegistration(c *gin.Context) {
+ 	clearOAuthPendingSessionCookie(c, secureCookie)
+ 	clearOAuthPendingBrowserCookie(c, secureCookie)
+ 
+-	c.JSON(http.StatusOK, gin.H{
+-		"access_token":  tokenPair.AccessToken,
+-		"refresh_token": tokenPair.RefreshToken,
+-		"expires_in":    tokenPair.ExpiresIn,
+-		"token_type":    "Bearer",
+-	})
++	payload := gin.H{
++		"access_token": tokenPair.AccessToken,
++		"expires_in":   tokenPair.ExpiresIn,
++		"token_type":   "Bearer",
++	}
++	if refreshToken := h.refreshTokenForResponse(c, tokenPair.RefreshToken); refreshToken != "" {
++		payload["refresh_token"] = refreshToken
++	}
++	c.JSON(http.StatusOK, payload)
+ }
+ 
+ func (h *AuthHandler) createWeChatPendingSession(
+@@ -614,11 +617,6 @@ func (h *AuthHandler) createWeChatPendingSession(
+ 		} else {
+ 			return authErr
+ 		}
+-	} else if tokenPair != nil {
+-		completionResponse["access_token"] = tokenPair.AccessToken
+-		completionResponse["refresh_token"] = tokenPair.RefreshToken
+-		completionResponse["expires_in"] = tokenPair.ExpiresIn
+-		completionResponse["token_type"] = "Bearer"
+ 	}
+ 
+ 	return h.createOAuthPendingSession(c, oauthPendingSessionPayload{

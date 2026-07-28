@@ -108,6 +108,8 @@ async function waitSettled(cdp, expectedPaths) {
 }
 
 async function clearOrigin(cdp) {
+  // CDP origin clearing does not reliably clear sessionStorage in the current tab.
+  await evaluate(cdp, 'sessionStorage.clear(); localStorage.clear()').catch(() => {})
   await cdp.send('Page.navigate', { url: 'about:blank' })
   await sleep(200)
   await cdp.send('Storage.clearDataForOrigin', { origin: base, storageTypes: 'all' })
@@ -122,10 +124,10 @@ async function navigate(cdp, route, expectedPaths, clean = true) {
     requested: ${JSON.stringify(route)},
     href: location.href,
     pathname: location.pathname,
-    token: Boolean(localStorage.getItem('auth_token')),
+    token: Boolean(sessionStorage.getItem('auth_token')),
     user: (() => {
       try {
-        const value = JSON.parse(localStorage.getItem('auth_user') || 'null')
+        const value = JSON.parse(sessionStorage.getItem('auth_user') || 'null')
         return value ? { id: value.id, username: value.username, role: value.role } : null
       } catch { return null }
     })(),

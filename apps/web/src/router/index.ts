@@ -772,9 +772,9 @@ router.beforeEach(async (to, _from, next) => {
 
   const authStore = useAuthStore()
 
-  // Restore auth state from localStorage on first navigation (page refresh)
+  // Restore this tab's auth state or bootstrap it from the HttpOnly refresh cookie.
   if (!authInitialized) {
-    authStore.checkAuth()
+    await authStore.checkAuth()
     authInitialized = true
   }
 

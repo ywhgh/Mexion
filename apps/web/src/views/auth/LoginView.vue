@@ -2,7 +2,10 @@
   <AuthLayout>
     <section class="mode-pane mode-pane--login" data-active="">
       <p class="form__eyebrow">§ {{ t('auth.signIn') }}</p>
-      <h2 class="form__title" v-html="t('auth.welcomeBack') === 'Welcome back' ? 'Welcome <em>back.</em>' : '欢迎<em>回来</em>。'"></h2>
+      <h2 class="form__title">
+        <template v-if="isZh">欢迎<em>回来</em>。</template>
+        <template v-else>Welcome <em>back.</em></template>
+      </h2>
       <p class="form__lede">{{ isZh ? '输入你的凭证，进入控制台。' : 'Enter your credentials to continue to the console.' }}</p>
 
       <div v-if="showAuthProviders" class="sso-row">

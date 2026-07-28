@@ -1,0 +1,60 @@
+diff --git a/backend/internal/handler/auth_refresh_cookie_test.go b/backend/internal/handler/auth_refresh_cookie_test.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..c7ba18ac861deadf75b7ca8c34aacf32fcb9ec4d
+--- /dev/null
++++ b/backend/internal/handler/auth_refresh_cookie_test.go
+@@ -0,0 +1,54 @@
++package handler
++
++import (
++	"net/http"
++	"net/http/httptest"
++	"testing"
++
++	"github.com/gin-gonic/gin"
++	"github.com/stretchr/testify/require"
++)
++
++func TestRefreshTokenCookieUIBoundary(t *testing.T) {
++	gin.SetMode(gin.TestMode)
++	h := &AuthHandler{}
++
++	t.Run("ui response uses a host-only httponly cookie", func(t *testing.T) {
++		w := httptest.NewRecorder()
++		c, _ := gin.CreateTestContext(w)
++		c.Request = httptest.NewRequest(http.MethodPost, "https://example.com/api/v1/auth/login", nil)
++		c.Request.Header.Set(userUIRequestHeader, "1")
++
++		require.Empty(t, h.refreshTokenForResponse(c, "refresh-secret"))
++		cookies := w.Result().Cookies()
++		require.Len(t, cookies, 1)
++		cookie := cookies[0]
++		require.Equal(t, refreshTokenCookieName, cookie.Name)
++		require.Equal(t, refreshTokenCookiePath, cookie.Path)
++		require.True(t, cookie.HttpOnly)
++		require.True(t, cookie.Secure)
++		require.Equal(t, http.SameSiteLaxMode, cookie.SameSite)
++		require.Empty(t, cookie.Domain)
++		require.NotContains(t, cookie.Value, "refresh-secret")
++
++		readRequest := httptest.NewRequest(http.MethodPost, "https://example.com/api/v1/auth/refresh", nil)
++		readRequest.Header.Set(userUIRequestHeader, "1")
++		readRequest.AddCookie(cookie)
++		readContext, _ := gin.CreateTestContext(httptest.NewRecorder())
++		readContext.Request = readRequest
++		value, err := readRefreshTokenCookie(readContext)
++		require.NoError(t, err)
++		require.Equal(t, "refresh-secret", value)
++	})
++
++	t.Run("non-ui response preserves the API JSON token contract", func(t *testing.T) {
++		w := httptest.NewRecorder()
++		c, _ := gin.CreateTestContext(w)
++		c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/auth/login", nil)
++
++		require.Equal(t, "refresh-secret", h.refreshTokenForResponse(c, "refresh-secret"))
++		require.Empty(t, w.Header().Values("Set-Cookie"))
++		_, err := readRefreshTokenCookie(c)
++		require.ErrorIs(t, err, http.ErrNoCookie)
++	})
++}

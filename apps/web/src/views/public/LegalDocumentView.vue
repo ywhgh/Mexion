@@ -87,12 +87,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
-import DOMPurify from 'dompurify'
 import { useI18n } from 'vue-i18n'
 import Icon from '@/components/icons/Icon.vue'
 import { getPublicSettings } from '@/api/auth'
 import { getLocale } from '@/i18n'
 import { sanitizeUrl } from '@/utils/url'
+import { sanitizeRichHtml } from '@/utils/html'
 import type { LoginAgreementDocument, PublicSettings } from '@/types'
 import zhAdminCompliance from '../../../../docs/legal/admin-compliance.zh.md?raw'
 import enAdminCompliance from '../../../../docs/legal/admin-compliance.en.md?raw'
@@ -148,7 +148,7 @@ const renderedHtml = computed(() => {
     return ''
   }
   const html = marked.parse(content) as string
-  return DOMPurify.sanitize(html)
+  return sanitizeRichHtml(html)
 })
 
 const documentIcon = computed<LegalDocumentIcon>(() => {

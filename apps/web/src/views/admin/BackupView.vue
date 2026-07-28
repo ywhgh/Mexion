@@ -284,6 +284,7 @@ import { useI18n } from 'vue-i18n'
 import { adminAPI } from '@/api'
 import { useAppStore } from '@/stores'
 import type { BackupS3Config, BackupScheduleConfig, BackupRecord } from '@/api/admin/backup'
+import { sanitizeUrl } from '@/utils/url'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -540,7 +541,11 @@ async function createBackup() {
 async function downloadBackup(id: string) {
   try {
     const result = await adminAPI.backup.getDownloadURL(id)
-    window.open(result.url, '_blank')
+    const downloadUrl = sanitizeUrl(result.url, { allowRelative: true })
+    if (!downloadUrl) {
+      throw new Error('Invalid backup download URL')
+    }
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer')
   } catch (error) {
     appStore.showError((error as { message?: string })?.message || t('errors.networkError'))
   }

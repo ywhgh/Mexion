@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/Wei-Shaw/sub2api.git",
+    "branch": "upgrade/v0.1.165",
+    "commit": "e9a58c1cb8b5ef626a75c93b4d953fde5e67aa29",
+    "release": "v0.1.165",
+    "version_file": "backend/cmd/server/VERSION",
+    "observed_version_file_value": "0.1.164"
+  },
+  "documents": [
+    {
+      "path": "docs/SECURITY_OPTIMIZATION_PLAN.md",
+      "marker": "MEXION-SECURITY-PLAN:1",
+      "sha256": "fc900d054c2720905ce7bd9927167e1c951c1dce812b226be7008531ae0e7566"
+    },
+    {
+      "path": "docs/UPSTREAM_UPGRADE_SECURITY_OVERLAY.md",
+      "marker": "MEXION-UPGRADE-OVERLAY:1",
+      "sha256": "4f2ab09a05fdcea4020ca3809eb3a305812d4044aa43eed5c65c524ea7b00c4e"
+    }
+  ],
+  "patches": [
+    {
+      "order": 10,
+      "path": "overlays/sub2api/patches/0001-websearch-missing-config.patch",
+      "sha256": "0adb1107d4a6c2b056654abf20e0a0c853961dd6ab5b8cefae32e155f265dfc0",
+      "required": true,
+      "purpose": "Treat a missing optional web-search setting as disabled instead of returning HTTP 404.",
+      "dirty_paths": ["backend/internal/service/websearch_config.go"],
+      "verification": ["git apply --reverse --check", "go test -run WebSearch ./internal/service"]
+    },
+    {
+      "order": 20,
+      "path": "overlays/sub2api/patches/0020-security-safe-defaults.patch",
+      "sha256": "ac526ce3a3fd16f4f7902507b39b4d549ac56d6e742430e5ad5b2a12ebc42015",
+      "required": true,
+      "purpose": "Fail closed for forwarded-IP API-key ACL trust and require an explicit database password.",
+      "dirty_paths": [
+        "backend/internal/config/config.go",
+        "backend/internal/config/config_test.go"
+      ],
+      "verification": ["git apply --reverse --check", "go test ./internal/config"]
+    },
+    {
+      "order": 30,
+      "path": "overlays/sub2api/patches/0030-security-response-headers.patch",
+      "sha256": "9b742b5d48a35e26721520db125131f6f96866eee43eb2029fc60299a4d09f90",
+      "required": true,
+      "purpose": "Add baseline HTTP security headers and keep CSP fail-closed when nonce generation fails.",
+      "dirty_paths": [
+        "backend/internal/server/middleware/security_headers.go",
+        "backend/internal/server/middleware/security_headers_test.go"
+      ],
+      "verification": ["git apply --reverse --check", "go test ./internal/server/middleware"]
+    },
+    {
+      "order": 40,
+      "path": "overlays/sub2api/patches/0040-refresh-cookie-helper.patch",
+      "sha256": "283f530fc6ee5c67f0a4d2072ceaa53c7a7edc0f0d18bcad74d456218bd7be74",
+      "required": true,
+      "creates_paths": true,
+      "purpose": "Store UI refresh tokens in a host-only HttpOnly cookie while preserving non-UI JSON compatibility.",
+      "dirty_paths": ["backend/internal/handler/auth_refresh_cookie.go"],
+      "verification": ["git apply --reverse --check"]
+    },
+    {
+      "order": 41,
+      "path": "overlays/sub2api/patches/0041-refresh-cookie-helper-test.patch",
+      "sha256": "327d08f1171e17a4f20b96f7eba6d138f91d1cd81d6b66a534aaf109f0ea651d",
+      "required": true,
+      "creates_paths": true,
+      "purpose": "Lock the refresh-cookie UI boundary and non-UI JSON compatibility in a focused test.",
+      "dirty_paths": ["backend/internal/handler/auth_refresh_cookie_test.go"],
+      "verification": ["git apply --reverse --check"]
+    },
+    {
+      "order": 50,
+      "path": "overlays/sub2api/patches/0050-refresh-cookie-ui-flows.patch",
+      "sha256": "ffe913af4e3f4e3ed2eebf741929fec6ae4259932f1e2ac50a7686fa9f1094fe",
+      "required": true,
+      "purpose": "Route login, refresh, logout, and OAuth UI flows through the HttpOnly refresh-cookie contract.",
+      "dirty_paths": [
+        "backend/internal/handler/auth_dingtalk_oauth.go",
+        "backend/internal/handler/auth_email_oauth.go",
+        "backend/internal/handler/auth_handler.go",
+        "backend/internal/handler/auth_linuxdo_oauth.go",
+        "backend/internal/handler/auth_oauth_pending_flow.go",
+        "backend/internal/handler/auth_oidc_oauth.go",
+        "backend/internal/handler/auth_wechat_oauth.go"
+      ],
+      "verification": [
+        "git apply --reverse --check",
+        "go test -run RefreshTokenCookieUIBoundary ./internal/handler"
+      ]
+    },
+    {
+      "order": 51,
+      "path": "overlays/sub2api/patches/0051-refresh-cookie-oauth-tests.patch",
+      "sha256": "2d213ecf2e0529d00933d048738153ad0b95825c8c1869b697eb7696fe70f79a",
+      "required": true,
+      "purpose": "Prove OAuth redirects omit refresh tokens and issue host-only HttpOnly cookies.",
+      "dirty_paths": [
+        "backend/internal/handler/auth_linuxdo_oauth_test.go",
+        "backend/internal/handler/auth_oidc_oauth_test.go"
+      ],
+      "verification": [
+        "git apply --reverse --check",
+        "go test -run 'LinuxDoOAuthCallbackDirectlyLogsInNewUser|OIDCOAuthCallbackVerifiedEmailFastPath' ./internal/handler"
+      ]
+    }
+  ],
+  "migrations": {
+    "directory": "backend/migrations",
+    "inventory_includes": "all regular files sorted by JavaScript ordinal code-unit order with LF terminators",
+    "file_count": 242,
+    "inventory_sha256": "90b4c364342f9f113dc33596da6ba545814b0aebb78c4f7d9abadc09ffc6af74"
+  },
+  "build": {
+    "package": "./cmd/server",
+    "tags": ["timetzdata"],
+    "cgo_enabled": "0",
+    "trimpath": true,
+    "version_ldflag": "main.Version"
+  }
+}

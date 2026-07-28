@@ -244,7 +244,7 @@ function restoreRecoverySnapshot(context: {
     return null
   }
 
-  const rawSnapshot = window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)
+  const rawSnapshot = window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)
   if (!rawSnapshot) {
     return null
   }
@@ -307,7 +307,7 @@ function clearStatusRefreshTimer(): void {
 
 function clearRecoverySnapshot(): void {
   if (typeof window === 'undefined') return
-  clearPaymentRecoverySnapshot(window.localStorage, PAYMENT_RECOVERY_STORAGE_KEY)
+  clearPaymentRecoverySnapshot(window.sessionStorage, PAYMENT_RECOVERY_STORAGE_KEY)
 }
 
 function clearRecoverySnapshotForTerminalStatus(status: string | null | undefined): void {

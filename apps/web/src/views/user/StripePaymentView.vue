@@ -135,9 +135,12 @@ let redirectTimer: ReturnType<typeof setTimeout> | null = null
 
 onMounted(async () => {
   const orderId = Number(route.query.order_id)
-  const clientSecret = String(route.query.client_secret || '')
   const method = String(route.query.method || '')
-  const resumeToken = typeof route.query.resume_token === 'string' ? route.query.resume_token : undefined
+  const restored = typeof window !== 'undefined'
+    ? readPaymentRecoverySnapshot(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY))
+    : null
+  const matchingSnapshot = restored?.orderId === orderId ? restored : null
+  const clientSecret = matchingSnapshot?.clientSecret || ''
 
   if (!orderId || !clientSecret) {
     loading.value = false
@@ -146,14 +149,8 @@ onMounted(async () => {
   }
 
   try {
-    if (typeof window !== 'undefined') {
-      const restored = readPaymentRecoverySnapshot(
-        window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY),
-        { resumeToken },
-      )
-      if (restored?.orderId === orderId) {
-        currency.value = normalizePaymentCurrency(restored.currency)
-      }
+    if (matchingSnapshot) {
+      currency.value = normalizePaymentCurrency(matchingSnapshot.currency)
     }
     const res = await paymentAPI.getOrder(orderId)
     order.value = res.data

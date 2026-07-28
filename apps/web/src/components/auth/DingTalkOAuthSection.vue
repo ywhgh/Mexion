@@ -38,6 +38,7 @@
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { resolveAffiliateReferralCode, storeOAuthAffiliateCode } from '@/utils/oauthAffiliate'
+import { sanitizeInternalRedirect } from '@/utils/url'
 
 const props = withDefaults(defineProps<{
   disabled?: boolean
@@ -51,7 +52,7 @@ const route = useRoute()
 const { t } = useI18n()
 
 function startLogin(): void {
-  const redirectTo = (route.query.redirect as string) || '/dashboard'
+  const redirectTo = sanitizeInternalRedirect(route.query.redirect)
   storeOAuthAffiliateCode(resolveAffiliateReferralCode(props.affCode, route.query.aff, route.query.aff_code))
   const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) || '/api/v1'
   const normalized = apiBase.replace(/\/$/, '')

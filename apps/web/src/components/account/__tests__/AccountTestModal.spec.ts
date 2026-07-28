@@ -110,12 +110,13 @@ describe('AccountTestModal', () => {
         })
       }
     } as any)
-    localStorage.setItem('auth_token', 'test-token')
+    sessionStorage.setItem('auth_token', 'test-token')
   })
 
   afterEach(() => {
     global.fetch = originalFetch
     localStorage.clear()
+    sessionStorage.clear()
   })
 
   it('posts compact mode for OpenAI compact probe', async () => {

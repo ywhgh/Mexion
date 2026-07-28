@@ -3,6 +3,10 @@ import vue from '@vitejs/plugin-vue'
 import checker from 'vite-plugin-checker'
 import { resolve } from 'path'
 import { createMexionLocalPreviewPlugin } from './src/skins/mexion/vite-local-preview'
+import {
+  serializeForInlineScript,
+  VITE_DEV_SECURITY_HEADERS
+} from './src/skins/mexion/vite-security'
 
 /**
  * Vite 插件：开发模式下注入公开配置到 index.html。
@@ -22,7 +26,7 @@ function injectPublicSettings(backendUrl: string): Plugin {
           if (response.ok) {
             const data = await response.json()
             if (data.code === 0 && data.data) {
-              const script = `<script>window.__APP_CONFIG__=${JSON.stringify(data.data)};</script>`
+              const script = `<script>window.__APP_CONFIG__=${serializeForInlineScript(data.data)};</script>`
               return html.replace('</head>', `${script}\n</head>`)
             }
           }
@@ -94,6 +98,7 @@ export default defineConfig(({ mode }) => {
       host: '127.0.0.1',
       port: devPort,
       strictPort: true,
+      headers: VITE_DEV_SECURITY_HEADERS,
       proxy: {
         '/api': {
           target: backendUrl,

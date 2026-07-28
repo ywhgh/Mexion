@@ -21,30 +21,29 @@ $PgData = Join-Path $RuntimeRoot 'pgdata'
 $RedisRoot = Join-Path $RuntimeRoot 'redis'
 $DatabaseName = 'sub2api'
 $DatabaseUser = 'postgres'
+$SecurityHelpers = Join-Path $PSScriptRoot 'lib\local-runtime-security.ps1'
+if (!(Test-Path -LiteralPath $SecurityHelpers)) { throw "Security helpers not found: $SecurityHelpers" }
+. $SecurityHelpers
 
 if ([string]::IsNullOrWhiteSpace($LocalSettingsPath)) {
   $LocalSettingsPath = Join-Path $RuntimeRoot 'local-runtime.settings.json'
 }
 
-if (Test-Path -LiteralPath $LocalSettingsPath) {
-  try {
-    $localSettings = Get-Content -LiteralPath $LocalSettingsPath -Raw | ConvertFrom-Json
-  } catch {
-    throw "Failed to read local runtime settings at ${LocalSettingsPath}: $($_.Exception.Message)"
-  }
+$resolvedSettings = Get-MexionLocalRuntimeSettings `
+  -Path $LocalSettingsPath `
+  -AdminEmail $AdminEmail `
+  -AdminPassword $AdminPassword `
+  -DatabasePassword $DatabasePassword `
+  -RequireAdmin `
+  -RequireDatabase
+$AdminEmail = $resolvedSettings.AdminEmail
+$AdminPassword = $resolvedSettings.AdminPassword
+$DatabasePassword = $resolvedSettings.DatabasePassword
 
-  if ([string]::IsNullOrWhiteSpace($AdminEmail)) { $AdminEmail = [string]$localSettings.admin_email }
-  if ([string]::IsNullOrWhiteSpace($AdminPassword)) { $AdminPassword = [string]$localSettings.admin_password }
-  if ([string]::IsNullOrWhiteSpace($DatabasePassword)) { $DatabasePassword = [string]$localSettings.database_password }
-}
-
-$missingSettings = @(
-  if ([string]::IsNullOrWhiteSpace($AdminEmail)) { 'MEXION_ADMIN_EMAIL / admin_email' }
-  if ([string]::IsNullOrWhiteSpace($AdminPassword)) { 'MEXION_ADMIN_PASSWORD / admin_password' }
-  if ([string]::IsNullOrWhiteSpace($DatabasePassword)) { 'SUB2API_DB_PASSWORD / database_password' }
-)
-if ($missingSettings.Count -gt 0) {
-  throw "Missing local runtime settings: $($missingSettings -join ', '). Supply parameters/environment variables or create the gitignored file ${LocalSettingsPath}."
+# Keep credentials in PowerShell variables only; long-lived child processes must
+# not inherit the input environment used to bootstrap this launcher.
+foreach ($name in @('MEXION_ADMIN_EMAIL', 'MEXION_ADMIN_PASSWORD', 'SUB2API_DB_PASSWORD')) {
+  [Environment]::SetEnvironmentVariable($name, $null, 'Process')
 }
 
 New-Item -ItemType Directory -Force -Path $RuntimeRoot, $LogRoot | Out-Null
@@ -59,7 +58,10 @@ function Test-PortListening([int]$PortNumber) {
 function Wait-Port([int]$PortNumber, [string]$Name, [int]$Seconds = 30) {
   $deadline = (Get-Date).AddSeconds($Seconds)
   while ((Get-Date) -lt $deadline) {
-    if (Test-PortListening $PortNumber) { return }
+    if (Test-PortListening $PortNumber) {
+      [void](Assert-MexionLoopbackListener -Port $PortNumber -Name $Name)
+      return
+    }
     Start-Sleep -Milliseconds 500
   }
   throw "$Name did not start on 127.0.0.1:$PortNumber within $Seconds seconds"
@@ -67,17 +69,23 @@ function Wait-Port([int]$PortNumber, [string]$Name, [int]$Seconds = 30) {
 
 function Start-HiddenProcess([string]$FilePath, [string[]]$ArgumentList, [string]$WorkingDirectory, [string]$OutLog, [string]$ErrLog) {
   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $OutLog), (Split-Path -Parent $ErrLog) | Out-Null
-  return Start-Process -FilePath $FilePath `
-    -ArgumentList $ArgumentList `
-    -WorkingDirectory $WorkingDirectory `
-    -WindowStyle Hidden `
-    -RedirectStandardOutput $OutLog `
-    -RedirectStandardError $ErrLog `
-    -PassThru
+  $startProcess = @{
+    FilePath = $FilePath
+    WorkingDirectory = $WorkingDirectory
+    WindowStyle = 'Hidden'
+    RedirectStandardOutput = $OutLog
+    RedirectStandardError = $ErrLog
+    PassThru = $true
+  }
+  if (@($ArgumentList).Count -gt 0) {
+    $startProcess.ArgumentList = $ArgumentList
+  }
+  return Start-Process @startProcess
 }
 
 function Start-Postgres {
   if (Test-PortListening $PostgresPort) {
+    [void](Assert-MexionLoopbackListener -Port $PostgresPort -Name 'PostgreSQL')
     Write-Host "PostgreSQL already listening on 127.0.0.1:$PostgresPort"
     return
   }
@@ -92,6 +100,7 @@ function Start-Postgres {
     New-Item -ItemType Directory -Force -Path $PgData | Out-Null
     $pwFile = Join-Path $RuntimeRoot 'pgpass.tmp'
     Set-Content -LiteralPath $pwFile -Value $DatabasePassword -NoNewline -Encoding ASCII
+    Protect-MexionSecretPath -Path $pwFile
     try {
       & $initDb -D $PgData -U $DatabaseUser --pwfile=$pwFile -A scram-sha-256 -E UTF8 | Write-Host
     } finally {
@@ -108,15 +117,21 @@ function Ensure-Database {
   $psql = Join-Path $PgRoot 'bin\psql.exe'
   $createdb = Join-Path $PgRoot 'bin\createdb.exe'
   if (!(Test-Path $psql)) { throw "psql.exe not found under $PgRoot" }
-  $env:PGPASSWORD = $DatabasePassword
-  $exists = (& $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d postgres -tAc "select 1 from pg_database where datname='$DatabaseName'").Trim()
+  $exists = ((Invoke-MexionNativeWithEnvironment `
+    -FilePath $psql `
+    -ArgumentList @('-h', '127.0.0.1', '-p', [string]$PostgresPort, '-U', $DatabaseUser, '-d', 'postgres', '-tAc', "select 1 from pg_database where datname='$DatabaseName'") `
+    -EnvironmentVariables @{ PGPASSWORD = $DatabasePassword }) | Out-String).Trim()
   if ($exists -ne '1') {
-    & $createdb -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser $DatabaseName | Write-Host
+    Invoke-MexionNativeWithEnvironment `
+      -FilePath $createdb `
+      -ArgumentList @('-h', '127.0.0.1', '-p', [string]$PostgresPort, '-U', $DatabaseUser, $DatabaseName) `
+      -EnvironmentVariables @{ PGPASSWORD = $DatabasePassword } | Write-Host
   }
 }
 
 function Start-Redis {
   if (Test-PortListening $RedisPort) {
+    [void](Assert-MexionLoopbackListener -Port $RedisPort -Name 'Redis')
     Write-Host "Redis already listening on 127.0.0.1:$RedisPort"
     return
   }
@@ -128,7 +143,7 @@ function Start-Redis {
 
   Start-HiddenProcess `
     -FilePath $redis `
-    -ArgumentList @('--bind', '127.0.0.1', '--port', [string]$RedisPort, '--dir', $RedisRoot) `
+    -ArgumentList @('--bind', '127.0.0.1', '--protected-mode', 'yes', '--port', [string]$RedisPort, '--dir', $RedisRoot) `
     -WorkingDirectory $RedisRoot `
     -OutLog (Join-Path $LogRoot 'redis.log') `
     -ErrLog (Join-Path $LogRoot 'redis.err.log') | Out-Null
@@ -157,24 +172,19 @@ func main() {
 }
 '@ | Set-Content -LiteralPath $tmp -Encoding UTF8
 
-  $hadPreviousPassword = Test-Path Env:MEXION_BOOTSTRAP_PASSWORD
-  $previousPassword = $env:MEXION_BOOTSTRAP_PASSWORD
-  $env:MEXION_BOOTSTRAP_PASSWORD = $Password
   try {
     Push-Location $backend
     try {
-      $hash = (& go run $tmp)
-      if ($LASTEXITCODE -ne 0 -or !$hash) { throw 'failed to generate bcrypt hash with go run' }
+      $hash = Invoke-MexionNativeWithEnvironment `
+        -FilePath 'go' `
+        -ArgumentList @('run', $tmp) `
+        -EnvironmentVariables @{ MEXION_BOOTSTRAP_PASSWORD = $Password }
+      if (!$hash) { throw 'failed to generate bcrypt hash with go run' }
       return ($hash | Out-String).Trim()
     } finally {
       Pop-Location
     }
   } finally {
-    if ($hadPreviousPassword) {
-      $env:MEXION_BOOTSTRAP_PASSWORD = $previousPassword
-    } else {
-      Remove-Item Env:MEXION_BOOTSTRAP_PASSWORD -ErrorAction SilentlyContinue
-    }
     Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
   }
 }
@@ -189,7 +199,6 @@ function Ensure-AdminUser {
   $emailSql = $AdminEmail.Replace("'", "''")
   $hashSql = $hash.Replace("'", "''")
   $usernameSql = ($AdminEmail.Split('@')[0]).Replace("'", "''")
-  $env:PGPASSWORD = $DatabasePassword
   $sql = @"
 insert into users (email, password_hash, role, balance, concurrency, status, username, notes, created_at, updated_at)
 values ('$emailSql', '$hashSql', 'admin', 1000000, 50, 'active', '$usernameSql', 'Local bootstrap administrator', now(), now())
@@ -212,30 +221,35 @@ where email <> '$emailSql'
   and role = 'admin'
   and deleted_at is null;
 "@
-  & $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -c $sql | Write-Host
+  Invoke-MexionNativeWithEnvironment `
+    -FilePath $psql `
+    -ArgumentList @('-h', '127.0.0.1', '-p', [string]$PostgresPort, '-U', $DatabaseUser, '-d', $DatabaseName, '-v', 'ON_ERROR_STOP=1', '-c', $sql) `
+    -EnvironmentVariables @{ PGPASSWORD = $DatabasePassword } | Write-Host
 }
 
 function Assert-SingleAdmin {
   $psql = Join-Path $PgRoot 'bin\psql.exe'
   $emailSql = $AdminEmail.Replace("'", "''")
-  $env:PGPASSWORD = $DatabasePassword
   $sql = @"
 select
   count(*) filter (where role = 'admin' and deleted_at is null),
   count(*) filter (where role = 'admin' and status = 'active' and deleted_at is null),
-  count(*) filter (where email = '$emailSql' and role = 'admin' and status = 'active' and deleted_at is null)
+  count(*) filter (where email = '$emailSql' and role = 'admin' and status = 'active' and deleted_at is null),
+  count(*) filter (where id = 1 and email = '$emailSql' and role = 'admin' and status = 'active' and deleted_at is null)
 from users;
 "@
-  $state = ((& $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -tAc $sql) | Out-String).Trim()
-  if ($LASTEXITCODE -ne 0 -or $state -ne '1|1|1') {
-    throw "Local administrator invariant failed (expected exactly one active admin matching $AdminEmail)."
+  $state = ((Invoke-MexionNativeWithEnvironment `
+    -FilePath $psql `
+    -ArgumentList @('-h', '127.0.0.1', '-p', [string]$PostgresPort, '-U', $DatabaseUser, '-d', $DatabaseName, '-v', 'ON_ERROR_STOP=1', '-tAc', $sql) `
+    -EnvironmentVariables @{ PGPASSWORD = $DatabasePassword }) | Out-String).Trim()
+  if ($state -ne '1|1|1|1') {
+    throw "Local administrator invariant failed (expected exactly one active admin with ID 1 matching $AdminEmail)."
   }
 }
 
 function Ensure-AdminCompliance {
   $psql = Join-Path $PgRoot 'bin\psql.exe'
   $emailSql = $AdminEmail.Replace("'", "''")
-  $env:PGPASSWORD = $DatabasePassword
   $sql = @"
 with admin_user as (
   select id
@@ -262,32 +276,54 @@ insert into settings (key, value, updated_at)
 select key, value, now() from ack
 on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at;
 "@
-  & $psql -h 127.0.0.1 -p $PostgresPort -U $DatabaseUser -d $DatabaseName -v ON_ERROR_STOP=1 -c $sql | Write-Host
+  Invoke-MexionNativeWithEnvironment `
+    -FilePath $psql `
+    -ArgumentList @('-h', '127.0.0.1', '-p', [string]$PostgresPort, '-U', $DatabaseUser, '-d', $DatabaseName, '-v', 'ON_ERROR_STOP=1', '-c', $sql) `
+    -EnvironmentVariables @{ PGPASSWORD = $DatabasePassword } | Write-Host
 }
 
 function Start-Sub2Api {
   if (Test-PortListening $ApiPort) {
+    [void](Assert-MexionLoopbackListener -Port $ApiPort -Name 'sub2api')
     Write-Host "sub2api already listening on 127.0.0.1:$ApiPort"
     return
   }
 
   $backend = Join-Path $Sub2ApiRoot 'backend'
   if (!(Test-Path $backend)) { throw "sub2api backend not found: $backend" }
-  if (!(Get-Command go -ErrorAction SilentlyContinue)) { throw 'go.exe was not found in PATH.' }
-
-  $command = "Set-Location -LiteralPath '$backend'; go run ./cmd/server"
+  $config = Join-Path $backend 'config.yaml'
+  if (Test-Path -LiteralPath $config) { Protect-MexionSecretPath -Path $config }
+  $server = Join-Path $backend 'bin\server'
+  if (!(Test-Path -LiteralPath $server)) {
+    if (!(Get-Command go -ErrorAction SilentlyContinue)) { throw 'go.exe was not found in PATH.' }
+    $version = ((& git -C $Sub2ApiRoot describe --tags --abbrev=0) | Out-String).Trim().TrimStart('v')
+    if ($LASTEXITCODE -ne 0 -or $version -notmatch '^\d+\.\d+\.\d+$') {
+      throw 'Unable to resolve a release version for the sub2api build.'
+    }
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $server) | Out-Null
+    Push-Location $backend
+    try {
+      Invoke-MexionNativeWithEnvironment `
+        -FilePath 'go' `
+        -ArgumentList @('build', '-tags', 'timetzdata', "-ldflags=-s -w -X main.Version=$version", '-trimpath', '-o', $server, './cmd/server') `
+        -EnvironmentVariables @{ CGO_ENABLED = '0' } | Write-Host
+    } finally {
+      Pop-Location
+    }
+  }
   Start-HiddenProcess `
-    -FilePath 'powershell.exe' `
-    -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $command) `
+    -FilePath $server `
+    -ArgumentList @() `
     -WorkingDirectory $backend `
     -OutLog (Join-Path $LogRoot 'sub2api.log') `
     -ErrLog (Join-Path $LogRoot 'sub2api.err.log') | Out-Null
-  Wait-Port $ApiPort 'sub2api' 60
+  Wait-Port $ApiPort 'sub2api' 120
 }
 
 function Start-Web {
   if ($NoWeb) { return }
   if (Test-PortListening $WebPort) {
+    [void](Assert-MexionLoopbackListener -Port $WebPort -Name 'Mexion web')
     Write-Host "Mexion web already listening on 127.0.0.1:$WebPort"
     return
   }

@@ -1,0 +1,36 @@
+diff --git a/backend/internal/service/websearch_config.go b/backend/internal/service/websearch_config.go
+index bb33368d3959eb161260faeb29c57dfabc8e9f96..f6871a67ad885ac463ea4edb5a6ce4b12d195988 100644
+--- a/backend/internal/service/websearch_config.go
++++ b/backend/internal/service/websearch_config.go
+@@ -3,6 +3,7 @@ package service
+ import (
+ 	"context"
+ 	"encoding/json"
++	"errors"
+ 	"fmt"
+ 	"log/slog"
+ 	"sync/atomic"
+@@ -106,11 +107,21 @@ func (s *SettingService) loadWebSearchConfigFromDB() (*WebSearchEmulationConfig,
+ 
+ 	raw, err := s.settingRepo.GetValue(dbCtx, SettingKeyWebSearchEmulationConfig)
+ 	if err != nil {
++		empty := &WebSearchEmulationConfig{}
++		if errors.Is(err, ErrSettingNotFound) {
++			// A fresh installation has no persisted row yet. Missing optional
++			// configuration means "disabled", not an HTTP 404 on the first read.
++			webSearchEmulationCache.Store(&cachedWebSearchEmulationConfig{
++				config:    empty,
++				expiresAt: time.Now().Add(webSearchEmulationCacheTTL).UnixNano(),
++			})
++			return empty, nil
++		}
+ 		webSearchEmulationCache.Store(&cachedWebSearchEmulationConfig{
+-			config:    &WebSearchEmulationConfig{},
++			config:    empty,
+ 			expiresAt: time.Now().Add(webSearchEmulationErrorTTL).UnixNano(),
+ 		})
+-		return &WebSearchEmulationConfig{}, err
++		return empty, err
+ 	}
+ 	cfg := parseWebSearchConfigJSON(raw)
+ 	webSearchEmulationCache.Store(&cachedWebSearchEmulationConfig{

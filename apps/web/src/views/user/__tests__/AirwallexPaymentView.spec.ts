@@ -55,7 +55,7 @@ function airwallexSnapshot(overrides: Partial<PaymentRecoverySnapshot> = {}): Pa
     orderType: 'balance',
     paymentMode: '',
     resumeToken: 'resume-awx',
-    createdAt: Date.UTC(2099, 0, 1, 0, 0, 0),
+    createdAt: Date.now(),
     ...overrides,
   }
 }
@@ -81,16 +81,15 @@ describe('AirwallexPaymentView', () => {
       },
     })
     redirectToCheckout.mockReset()
-    window.localStorage.clear()
+    window.sessionStorage.clear()
   })
 
   it('从本地恢复快照读取支付参数，避免在 URL 中暴露 client_secret', async () => {
     routeState.query = {
       order_id: '101',
       out_trade_no: 'sub2_awx_101',
-      resume_token: 'resume-awx',
     }
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       PAYMENT_RECOVERY_STORAGE_KEY,
       JSON.stringify(airwallexSnapshot()),
     )
@@ -115,7 +114,7 @@ describe('AirwallexPaymentView', () => {
     const successUrl = new URL(checkoutOptions.successUrl)
     expect(successUrl.searchParams.get('order_id')).toBe('101')
     expect(successUrl.searchParams.get('out_trade_no')).toBe('sub2_awx_101')
-    expect(successUrl.searchParams.get('resume_token')).toBe('resume-awx')
+    expect(successUrl.searchParams.has('resume_token')).toBe(false)
   })
 
   it('拒绝只从 URL query 读取 Airwallex 支付密钥', async () => {

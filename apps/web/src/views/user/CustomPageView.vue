@@ -107,6 +107,10 @@
           <iframe
             :src="embeddedUrl"
             class="custom-embed-frame"
+            sandbox="allow-forms allow-scripts allow-popups"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            :title="menuItem?.label || t('customPage.notConfiguredTitle')"
             allowfullscreen
           ></iframe>
         </div>
@@ -126,8 +130,8 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
 import { buildApiUrl } from '@/api/client'
 import { buildEmbeddedUrl, detectTheme } from '@/utils/embedded-url'
+import { sanitizeRichHtml } from '@/utils/html'
 import { marked } from 'marked'
-import DOMPurify from 'dompurify'
 
 interface TocItem {
   id: string
@@ -177,8 +181,6 @@ const embeddedUrl = computed(() => {
   if (!menuItem.value || isMarkdownMode.value) return ''
   return buildEmbeddedUrl(
     menuItem.value.url,
-    authStore.user?.id,
-    authStore.token,
     pageTheme.value,
     locale.value,
   )
@@ -241,10 +243,7 @@ async function fetchAndRenderMarkdown(slug: string) {
     )
 
     const html = marked.parse(raw) as string
-    const sanitized = DOMPurify.sanitize(html, {
-      ADD_TAGS: ['iframe'],
-      ADD_ATTR: ['allowfullscreen', 'frameborder', 'src'],
-    })
+    const sanitized = sanitizeRichHtml(html, { allowIframes: true })
 
     // Inject IDs into headings and build TOC
     const toc: TocItem[] = []

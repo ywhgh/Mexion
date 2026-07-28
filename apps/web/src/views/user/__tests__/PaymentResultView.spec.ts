@@ -80,7 +80,7 @@ const recoverySnapshotFactory = (resumeToken: string) => ({
   orderType: 'balance',
   paymentMode: 'popup',
   resumeToken,
-  createdAt: Date.UTC(2099, 0, 1, 0, 0, 0),
+  createdAt: Date.now(),
 })
 
 describe('PaymentResultView', () => {
@@ -91,7 +91,7 @@ describe('PaymentResultView', () => {
     verifyOrder.mockReset()
     verifyOrderPublic.mockReset()
     resolveOrderPublicByResumeToken.mockReset()
-    window.localStorage.clear()
+    window.sessionStorage.clear()
   })
 
   afterEach(() => {
@@ -104,7 +104,7 @@ describe('PaymentResultView', () => {
       order_id: '999',
       status: 'success',
     }
-    window.localStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
+    window.sessionStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
       orderId: 42,
       amount: 88,
       qrCode: '',
@@ -121,7 +121,7 @@ describe('PaymentResultView', () => {
       orderType: 'balance',
       paymentMode: 'redirect',
       resumeToken: 'resume-42',
-      createdAt: Date.UTC(2099, 0, 1, 0, 0, 0),
+      createdAt: Date.now(),
     }))
     resolveOrderPublicByResumeToken.mockResolvedValue({
       data: orderFactory('PENDING'),
@@ -150,7 +150,7 @@ describe('PaymentResultView', () => {
       order_id: '42',
       status: 'success',
     }
-    window.localStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
+    window.sessionStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
       orderId: 42,
       amount: 88,
       qrCode: '',
@@ -167,7 +167,7 @@ describe('PaymentResultView', () => {
       orderType: 'balance',
       paymentMode: 'popup',
       resumeToken: 'resume-authoritative',
-      createdAt: Date.UTC(2099, 0, 1, 0, 0, 0),
+      createdAt: Date.now(),
     }))
     resolveOrderPublicByResumeToken.mockResolvedValue({
       data: {
@@ -193,7 +193,7 @@ describe('PaymentResultView', () => {
     expect(wrapper.text()).toContain('payment.result.success')
     expect(wrapper.text()).toContain('103.00')
     expect(wrapper.text()).toContain('100.00')
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('refreshes a pending resume-token result until the order becomes paid', async () => {
@@ -201,7 +201,7 @@ describe('PaymentResultView', () => {
     routeState.query = {
       resume_token: 'resume-77',
     }
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       PAYMENT_RECOVERY_STORAGE_KEY,
       JSON.stringify(recoverySnapshotFactory('resume-77')),
     )
@@ -225,7 +225,7 @@ describe('PaymentResultView', () => {
 
     expect(resolveOrderPublicByResumeToken).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toContain('payment.result.processing')
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).not.toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).not.toBeNull()
 
     await vi.advanceTimersByTimeAsync(2000)
     await flushPromises()
@@ -233,7 +233,7 @@ describe('PaymentResultView', () => {
     expect(resolveOrderPublicByResumeToken).toHaveBeenCalledTimes(2)
     expect(wrapper.text()).toContain('payment.result.success')
     expect(wrapper.text()).not.toContain('payment.result.failed')
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('falls back to order_id polling when resume-token recovery fails', async () => {
@@ -241,7 +241,7 @@ describe('PaymentResultView', () => {
       resume_token: 'resume-fail',
       order_id: '77',
     }
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       PAYMENT_RECOVERY_STORAGE_KEY,
       JSON.stringify({
         ...recoverySnapshotFactory('resume-fail'),
@@ -268,7 +268,7 @@ describe('PaymentResultView', () => {
     expect(pollOrderStatus).toHaveBeenCalledWith(77)
     expect(verifyOrderPublic).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('payment.result.success')
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('falls back to public out_trade_no verification when resume_token recovery fails in legacy return flows', async () => {
@@ -305,7 +305,7 @@ describe('PaymentResultView', () => {
     routeState.query = {
       trade_status: 'TRADE_SUCCESS',
     }
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       PAYMENT_RECOVERY_STORAGE_KEY,
       JSON.stringify(recoverySnapshotFactory('resume-stale')),
     )

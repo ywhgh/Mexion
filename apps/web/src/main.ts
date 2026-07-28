@@ -51,5 +51,17 @@ async function bootstrap() {
 bootstrap().catch((error) => {
   console.error('[Mexion] bootstrap failed:', error)
   const message = error instanceof Error ? error.message : String(error)
-  document.body.innerHTML = `<main style="font-family:system-ui;padding:32px;color:#3b211b"><h1>Mexion 本地预览启动失败</h1><p>${message.replace(/[<>&]/g, (char) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[char] || char))}</p><p>请使用 scripts/start-mexion-vue-preview.ps1 启动，或移除 URL 上的 mexion-preview 参数。</p></main>`
+  const main = document.createElement('main')
+  main.style.cssText = 'font-family:system-ui;padding:32px;color:#3b211b'
+
+  const title = document.createElement('h1')
+  title.textContent = 'Mexion 本地预览启动失败'
+  const detail = document.createElement('p')
+  detail.textContent = message
+  const guidance = document.createElement('p')
+  guidance.textContent =
+    '请使用 scripts/start-mexion-vue-preview.ps1 启动，或移除 URL 上的 mexion-preview 参数。'
+
+  main.append(title, detail, guidance)
+  document.body.replaceChildren(main)
 })

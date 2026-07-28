@@ -1,0 +1,74 @@
+diff --git a/backend/internal/server/middleware/security_headers.go b/backend/internal/server/middleware/security_headers.go
+index e71f6318d481ecd69b045605811832bd9b43cc3b..818f7eb8a22d81995b9dc9fa80a4d11b991f989e 100644
+--- a/backend/internal/server/middleware/security_headers.go
++++ b/backend/internal/server/middleware/security_headers.go
+@@ -94,6 +94,11 @@ func SecurityHeaders(cfg config.CSPConfig, getFrameSrcOrigins func() []string) g
+ 		c.Header("X-Content-Type-Options", "nosniff")
+ 		c.Header("X-Frame-Options", "DENY")
+ 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
++		c.Header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
++		c.Header("X-Permitted-Cross-Domain-Policies", "none")
++		if c.Request != nil && c.Request.TLS != nil {
++			c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
++		}
+ 		if isAPIRoutePath(c) {
+ 			c.Next()
+ 			return
+@@ -103,9 +108,9 @@ func SecurityHeaders(cfg config.CSPConfig, getFrameSrcOrigins func() []string) g
+ 			// Generate nonce for this request
+ 			nonce, err := GenerateNonce()
+ 			if err != nil {
+-				// crypto/rand 失败时降级为无 nonce 的 CSP 策略
+-				log.Printf("[SecurityHeaders] %v — 降级为无 nonce 的 CSP", err)
+-				c.Header("Content-Security-Policy", strings.ReplaceAll(finalPolicy, NonceTemplate, "'unsafe-inline'"))
++				// crypto/rand failure must not weaken script-src to unsafe-inline.
++				log.Printf("[SecurityHeaders] %v — using CSP without inline script permission", err)
++				c.Header("Content-Security-Policy", cspWithoutNonce(finalPolicy))
+ 			} else {
+ 				c.Set(CSPNonceKey, nonce)
+ 				c.Header("Content-Security-Policy", strings.ReplaceAll(finalPolicy, NonceTemplate, "'nonce-"+nonce+"'"))
+@@ -115,6 +120,10 @@ func SecurityHeaders(cfg config.CSPConfig, getFrameSrcOrigins func() []string) g
+ 	}
+ }
+ 
++func cspWithoutNonce(policy string) string {
++	return strings.TrimSpace(strings.ReplaceAll(policy, NonceTemplate, ""))
++}
++
+ func isAPIRoutePath(c *gin.Context) bool {
+ 	if c == nil || c.Request == nil || c.Request.URL == nil {
+ 		return false
+diff --git a/backend/internal/server/middleware/security_headers_test.go b/backend/internal/server/middleware/security_headers_test.go
+index c980f7e6e46d4c5862df79442c0568a82e8d0a9a..bd7f92ea1b2510497e8e0c1f16f53298de9ef798 100644
+--- a/backend/internal/server/middleware/security_headers_test.go
++++ b/backend/internal/server/middleware/security_headers_test.go
+@@ -95,6 +95,29 @@ func TestSecurityHeaders(t *testing.T) {
+ 		assert.Equal(t, "nosniff", w.Header().Get("X-Content-Type-Options"))
+ 		assert.Equal(t, "DENY", w.Header().Get("X-Frame-Options"))
+ 		assert.Equal(t, "strict-origin-when-cross-origin", w.Header().Get("Referrer-Policy"))
++		assert.Equal(t, "camera=(), microphone=(), geolocation=()", w.Header().Get("Permissions-Policy"))
++		assert.Equal(t, "none", w.Header().Get("X-Permitted-Cross-Domain-Policies"))
++		assert.Empty(t, w.Header().Get("Strict-Transport-Security"))
++	})
++
++	t.Run("sets_hsts_only_for_direct_tls_requests", func(t *testing.T) {
++		cfg := config.CSPConfig{Enabled: false}
++		middleware := SecurityHeaders(cfg, nil)
++
++		w := httptest.NewRecorder()
++		c, _ := gin.CreateTestContext(w)
++		c.Request = httptest.NewRequest(http.MethodGet, "https://example.com/", nil)
++
++		middleware(c)
++
++		assert.Equal(t, "max-age=31536000; includeSubDomains", w.Header().Get("Strict-Transport-Security"))
++	})
++
++	t.Run("nonce_failure_policy_never_enables_unsafe_inline", func(t *testing.T) {
++		policy := cspWithoutNonce("default-src 'self'; script-src 'self' __CSP_NONCE__")
++		assert.NotContains(t, policy, NonceTemplate)
++		assert.NotContains(t, policy, "'unsafe-inline'")
++		assert.Contains(t, policy, "script-src 'self'")
+ 	})
+ 
+ 	t.Run("csp_disabled_no_csp_header", func(t *testing.T) {

@@ -287,6 +287,7 @@ import { DEFAULT_PAYMENT_CURRENCY, formatPaymentAmount, normalizePaymentCurrency
 import type { PaymentMethodOption } from '@/components/payment/PaymentMethodSelector.vue'
 import { buildPaymentErrorToastMessage, describePaymentScenarioError } from './paymentUx'
 import { hasWechatResumeQuery, parseWechatResumeRoute, stripWechatResumeQuery } from './paymentWechatResume'
+import { sanitizePaymentUrl } from '@/utils/url'
 
 const i18n = useI18n()
 const { t } = i18n
@@ -402,12 +403,12 @@ const paymentState = ref<PaymentRecoverySnapshot>(emptyPaymentState())
 
 function persistRecoverySnapshot(snapshot: PaymentRecoverySnapshot) {
   if (typeof window === 'undefined' || !snapshot.orderId) return
-  writePaymentRecoverySnapshot(window.localStorage, snapshot, PAYMENT_RECOVERY_STORAGE_KEY)
+  writePaymentRecoverySnapshot(window.sessionStorage, snapshot, PAYMENT_RECOVERY_STORAGE_KEY)
 }
 
 function removeRecoverySnapshot() {
   if (typeof window === 'undefined') return
-  clearPaymentRecoverySnapshot(window.localStorage, PAYMENT_RECOVERY_STORAGE_KEY)
+  clearPaymentRecoverySnapshot(window.sessionStorage, PAYMENT_RECOVERY_STORAGE_KEY)
 }
 
 function resetPayment() {
@@ -784,10 +785,17 @@ async function createOrder(orderAmount: number, orderType: OrderType, planId?: n
 
     const result = await paymentStore.createOrder(payload) as CreateOrderResult & { resume_token?: string }
     const openWindow = (url: string) => {
-      const win = window.open(url, 'paymentPopup', getPaymentPopupFeatures())
+      const safeUrl = sanitizePaymentUrl(url, { allowRelative: true })
+      if (!safeUrl) throw new Error('UNSAFE_PAYMENT_URL')
+      const win = window.open(safeUrl, 'paymentPopup', getPaymentPopupFeatures())
       if (!win || win.closed) {
-        window.location.href = url
+        window.location.href = safeUrl
       }
+    }
+    const navigateToPaymentUrl = (url: string) => {
+      const safeUrl = sanitizePaymentUrl(url, { allowRelative: true })
+      if (!safeUrl) throw new Error('UNSAFE_PAYMENT_URL')
+      window.location.href = safeUrl
     }
     const visibleMethod = normalizeVisibleMethod(requestType) || requestType
     // When user clicks the dedicated Stripe button, leave method blank so the
@@ -800,9 +808,7 @@ async function createOrder(orderAmount: number, orderType: OrderType, planId?: n
         path: '/payment/stripe',
         query: {
           order_id: String(result.order_id),
-          client_secret: result.client_secret,
           method: stripeMethod || undefined,
-          resume_token: result.resume_token || undefined,
         },
       }).href
       : ''
@@ -812,7 +818,6 @@ async function createOrder(orderAmount: number, orderType: OrderType, planId?: n
         query: {
           order_id: String(result.order_id),
           out_trade_no: result.out_trade_no || undefined,
-          resume_token: result.resume_token || undefined,
         },
       }).href
       : ''
@@ -851,11 +856,11 @@ async function createOrder(orderAmount: number, orderType: OrderType, planId?: n
       return
     }
     if (decision.kind === 'stripe_route') {
-      window.location.href = decision.paymentState.payUrl
+      navigateToPaymentUrl(decision.paymentState.payUrl)
       return
     }
     if (decision.kind === 'airwallex_route') {
-      window.location.href = decision.paymentState.payUrl
+      navigateToPaymentUrl(decision.paymentState.payUrl)
       return
     }
     if (decision.kind === 'wechat_jsapi' && decision.jsapi) {
@@ -902,7 +907,7 @@ async function createOrder(orderAmount: number, orderType: OrderType, planId?: n
     }
     if (decision.kind === 'redirect_waiting' && decision.paymentState.payUrl) {
       if (isMobileDevice()) {
-        window.location.href = decision.paymentState.payUrl
+        navigateToPaymentUrl(decision.paymentState.payUrl)
         return
       }
       openWindow(decision.paymentState.payUrl)
@@ -1007,9 +1012,7 @@ async function attemptMobileQrFallback(err: unknown, context: MobileQrFallbackCo
         path: '/payment/stripe',
         query: {
           order_id: String(result.order_id),
-          client_secret: result.client_secret,
           method: stripeMethod,
-          resume_token: result.resume_token || undefined,
         },
       }).href
       : ''
@@ -1112,7 +1115,7 @@ onMounted(async () => {
           ? route.query.wechat_resume_token
           : undefined
       const restored = readPaymentRecoverySnapshot(
-        window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY),
+        window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY),
         { resumeToken: routeResumeToken },
       )
       if (restored) {

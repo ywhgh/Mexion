@@ -2,7 +2,10 @@
   <AuthLayout>
     <section class="mode-pane mode-pane--signup" data-active="">
       <p class="form__eyebrow">§ {{ isZh ? '注册' : 'Join' }}</p>
-      <h2 class="form__title" v-html="isZh ? '立此<em>存照</em>。' : 'Begin <em>here.</em>'"></h2>
+      <h2 class="form__title">
+        <template v-if="isZh">立此<em>存照</em>。</template>
+        <template v-else>Begin <em>here.</em></template>
+      </h2>
       <p class="form__lede">{{ isZh ? '三十秒，加入 Mexion，开启你的统一调用。' : 'Thirty seconds. Join Mexion and unify every model call.' }}</p>
 
       <div v-if="!registrationEnabled && settingsLoaded" class="auth-error-banner auth-error-banner--warn">
@@ -1081,7 +1084,6 @@ async function handleRegister(): Promise<void> {
   transform: translateY(-8px);
 }
 </style>
-
 
 
 

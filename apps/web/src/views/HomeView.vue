@@ -2,11 +2,14 @@
   <div v-if="homeContent" class="min-h-screen">
     <iframe
       v-if="isHomeContentUrl"
-      :src="homeContent.trim()"
+      :src="homeContentUrl"
       class="h-screen w-full border-0"
+      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+      referrerpolicy="no-referrer"
+      loading="lazy"
       allowfullscreen
     ></iframe>
-    <div v-else v-html="homeContent"></div>
+    <div v-else v-html="sanitizedHomeContent"></div>
   </div>
 
   <div v-else class="mexion-index-page">
@@ -129,6 +132,7 @@ import { computed, defineComponent, h, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore, useAppStore } from '@/stores'
 import { sanitizeUrl } from '@/utils/url'
+import { sanitizeRichHtml } from '@/utils/html'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 
 const BrushSvg = defineComponent({
@@ -148,10 +152,9 @@ const siteName = computed(() => appStore.cachedPublicSettings?.site_name || appS
 const siteLogo = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.site_logo || appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
 const docUrl = computed(() => sanitizeUrl(appStore.cachedPublicSettings?.doc_url || appStore.docUrl || 'https://mexion-doc.pages.dev/'))
 const homeContent = computed(() => appStore.cachedPublicSettings?.home_content || '')
-const isHomeContentUrl = computed(() => {
-  const content = homeContent.value.trim()
-  return content.startsWith('http://') || content.startsWith('https://')
-})
+const homeContentUrl = computed(() => sanitizeUrl(homeContent.value))
+const isHomeContentUrl = computed(() => Boolean(homeContentUrl.value))
+const sanitizedHomeContent = computed(() => sanitizeRichHtml(homeContent.value))
 
 const isZh = computed(() => String(locale.value).toLowerCase().startsWith('zh'))
 const homeStatusOk = ref(true)

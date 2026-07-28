@@ -45,7 +45,6 @@ const fakeAdminUser = {
 
 const fakeAuthResponse = {
   access_token: 'test-token-123',
-  refresh_token: 'refresh-token-456',
   expires_in: 3600,
   token_type: 'Bearer',
   user: { ...fakeUser },
@@ -55,6 +54,7 @@ describe('useAuthStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
+    sessionStorage.clear()
     vi.useFakeTimers()
     vi.clearAllMocks()
   })
@@ -75,8 +75,10 @@ describe('useAuthStore', () => {
       expect(store.token).toBe('test-token-123')
       expect(store.user).toEqual(fakeUser)
       expect(store.isAuthenticated).toBe(true)
-      expect(localStorage.getItem('auth_token')).toBe('test-token-123')
-      expect(localStorage.getItem('auth_user')).toBe(JSON.stringify(fakeUser))
+      expect(sessionStorage.getItem('auth_token')).toBe('test-token-123')
+      expect(sessionStorage.getItem('auth_user')).toBe(JSON.stringify(fakeUser))
+      expect(localStorage.getItem('auth_session_hint')).toBe('1')
+      expect(localStorage.getItem('refresh_token')).toBeNull()
     })
 
     it('登录失败时清除状态并抛出错误', async () => {
@@ -136,7 +138,7 @@ describe('useAuthStore', () => {
   // --- logout ---
 
   describe('logout', () => {
-    it('注销后清除所有状态和 localStorage', async () => {
+    it('注销后清除标签页认证状态和持久化会话提示', async () => {
       mockLogin.mockResolvedValue(fakeAuthResponse)
       mockLogout.mockResolvedValue(undefined)
       const store = useAuthStore()
@@ -151,69 +153,71 @@ describe('useAuthStore', () => {
       expect(store.token).toBeNull()
       expect(store.user).toBeNull()
       expect(store.isAuthenticated).toBe(false)
-      expect(localStorage.getItem('auth_token')).toBeNull()
-      expect(localStorage.getItem('auth_user')).toBeNull()
+      expect(sessionStorage.getItem('auth_token')).toBeNull()
+      expect(sessionStorage.getItem('auth_user')).toBeNull()
+      expect(sessionStorage.getItem('token_expires_at')).toBeNull()
+      expect(localStorage.getItem('auth_session_hint')).toBeNull()
       expect(localStorage.getItem('refresh_token')).toBeNull()
-      expect(localStorage.getItem('token_expires_at')).toBeNull()
     })
   })
 
   // --- checkAuth ---
 
   describe('checkAuth', () => {
-    it('从 localStorage 恢复持久化状态', () => {
-      localStorage.setItem('auth_token', 'saved-token')
-      localStorage.setItem('auth_user', JSON.stringify(fakeUser))
+    it('从当前标签页 sessionStorage 恢复状态', async () => {
+      sessionStorage.setItem('auth_token', 'saved-token')
+      sessionStorage.setItem('auth_user', JSON.stringify(fakeUser))
 
       // Mock refreshUser (getCurrentUser) 防止后台刷新报错
       mockGetCurrentUser.mockResolvedValue({ data: fakeUser })
 
       const store = useAuthStore()
-      store.checkAuth()
+      await store.checkAuth()
 
       expect(store.token).toBe('saved-token')
       expect(store.user).toEqual(fakeUser)
       expect(store.isAuthenticated).toBe(true)
     })
 
-    it('localStorage 无数据时保持未认证状态', () => {
+    it('没有标签页状态或 cookie 提示时保持未认证状态', async () => {
       const store = useAuthStore()
-      store.checkAuth()
+      await store.checkAuth()
 
       expect(store.token).toBeNull()
       expect(store.user).toBeNull()
       expect(store.isAuthenticated).toBe(false)
     })
 
-    it('localStorage 中用户数据损坏时清除状态', () => {
-      localStorage.setItem('auth_token', 'saved-token')
-      localStorage.setItem('auth_user', 'invalid-json{{{')
+    it('sessionStorage 中用户数据损坏时清除状态', async () => {
+      sessionStorage.setItem('auth_token', 'saved-token')
+      sessionStorage.setItem('auth_user', 'invalid-json{{{')
 
       const store = useAuthStore()
-      store.checkAuth()
+      await store.checkAuth()
 
       expect(store.token).toBeNull()
       expect(store.user).toBeNull()
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(sessionStorage.getItem('auth_token')).toBeNull()
     })
 
-    it('恢复 refresh token 和过期时间', () => {
+    it('恢复当前标签页 access token 和过期时间且不读取 refresh token', async () => {
       const futureTs = String(Date.now() + 3600_000)
-      localStorage.setItem('auth_token', 'saved-token')
-      localStorage.setItem('auth_user', JSON.stringify(fakeUser))
-      localStorage.setItem('refresh_token', 'saved-refresh')
-      localStorage.setItem('token_expires_at', futureTs)
+      sessionStorage.setItem('auth_token', 'saved-token')
+      sessionStorage.setItem('auth_user', JSON.stringify(fakeUser))
+      sessionStorage.setItem('token_expires_at', futureTs)
+      localStorage.setItem('refresh_token', 'legacy-refresh-must-be-removed')
 
       mockGetCurrentUser.mockResolvedValue({ data: fakeUser })
 
       const store = useAuthStore()
-      store.checkAuth()
+      await store.checkAuth()
 
       expect(store.isAuthenticated).toBe(true)
+      expect(localStorage.getItem('refresh_token')).toBeNull()
     })
 
-    it('恢复持久化 pending auth session', () => {
-      localStorage.setItem(
+    it('恢复当前标签页 pending auth session', async () => {
+      sessionStorage.setItem(
         'pending_auth_session',
         JSON.stringify({
           token: 'pending-token',
@@ -224,7 +228,7 @@ describe('useAuthStore', () => {
       )
 
       const store = useAuthStore()
-      store.checkAuth()
+      await store.checkAuth()
 
       expect(store.hasPendingAuthSession).toBe(true)
       expect(store.pendingAuthSession).toEqual({
@@ -233,6 +237,42 @@ describe('useAuthStore', () => {
         provider: 'wechat',
         redirect: '/profile',
       })
+    })
+
+    it('丢弃旧 localStorage 凭据而不迁移到当前标签页', async () => {
+      localStorage.setItem('auth_token', 'legacy-access')
+      localStorage.setItem('auth_user', JSON.stringify(fakeUser))
+      localStorage.setItem('refresh_token', 'legacy-refresh')
+      localStorage.setItem('token_expires_at', String(Date.now() + 3600_000))
+
+      const store = useAuthStore()
+      await store.checkAuth()
+
+      expect(store.isAuthenticated).toBe(false)
+      expect(sessionStorage.getItem('auth_token')).toBeNull()
+      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(localStorage.getItem('auth_user')).toBeNull()
+      expect(localStorage.getItem('refresh_token')).toBeNull()
+      expect(localStorage.getItem('token_expires_at')).toBeNull()
+    })
+
+    it('存在非敏感提示时通过 HttpOnly cookie 引导新标签页会话', async () => {
+      localStorage.setItem('auth_session_hint', '1')
+      mockRefreshToken.mockResolvedValue({
+        access_token: 'cookie-access-token',
+        expires_in: 3600,
+        token_type: 'Bearer',
+      })
+      mockGetCurrentUser.mockResolvedValue({ data: fakeUser })
+
+      const store = useAuthStore()
+      await store.checkAuth()
+
+      expect(mockRefreshToken).toHaveBeenCalledTimes(1)
+      expect(store.token).toBe('cookie-access-token')
+      expect(store.user).toEqual(fakeUser)
+      expect(store.isAuthenticated).toBe(true)
+      expect(localStorage.getItem('refresh_token')).toBeNull()
     })
   })
 
@@ -248,7 +288,7 @@ describe('useAuthStore', () => {
       })
 
       expect(store.hasPendingAuthSession).toBe(true)
-      expect(JSON.parse(localStorage.getItem('pending_auth_session') || 'null')).toEqual({
+      expect(JSON.parse(sessionStorage.getItem('pending_auth_session') || 'null')).toEqual({
         token: 'pending-token',
         token_field: 'pending_auth_token',
         provider: 'wechat',
@@ -258,7 +298,7 @@ describe('useAuthStore', () => {
       store.clearPendingAuthSession()
 
       expect(store.hasPendingAuthSession).toBe(false)
-      expect(localStorage.getItem('pending_auth_session')).toBeNull()
+      expect(sessionStorage.getItem('pending_auth_session')).toBeNull()
     })
 
     it('restores a persisted pending oauth session without requiring a token value', () => {
@@ -345,7 +385,7 @@ describe('useAuthStore', () => {
   // --- refreshUser ---
 
   describe('refreshUser', () => {
-    it('刷新用户数据并更新 localStorage', async () => {
+    it('刷新用户数据并更新当前标签页 sessionStorage', async () => {
       mockLogin.mockResolvedValue(fakeAuthResponse)
       const store = useAuthStore()
       await store.login({ email: 'test@example.com', password: '123456' })
@@ -357,7 +397,7 @@ describe('useAuthStore', () => {
 
       expect(result).toEqual(updatedUser)
       expect(store.user).toEqual(updatedUser)
-      expect(JSON.parse(localStorage.getItem('auth_user')!)).toEqual(updatedUser)
+      expect(JSON.parse(sessionStorage.getItem('auth_user')!)).toEqual(updatedUser)
     })
 
     it('未认证时抛出错误', async () => {

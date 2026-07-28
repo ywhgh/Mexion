@@ -1,0 +1,116 @@
+name: Security gates
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    name: Application and upstream overlay
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out Mexion
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Materialize pinned Sub2API overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="$GITHUB_WORKSPACE/overlays/sub2api/upstream-baseline.json"
+          upstream_repo="$(node -e "const m=require(process.argv[1]);process.stdout.write(m.upstream.repository)" "$manifest")"
+          upstream_commit="$(node -e "const m=require(process.argv[1]);process.stdout.write(m.upstream.commit)" "$manifest")"
+          upstream_branch="$(node -e "const m=require(process.argv[1]);process.stdout.write(m.upstream.branch)" "$manifest")"
+          target="$RUNNER_TEMP/sub2api"
+          git clone --filter=blob:none "$upstream_repo" "$target"
+          git -C "$target" switch -c "$upstream_branch" "$upstream_commit"
+          node -e "const m=require(process.argv[1]);for(const p of [...m.patches].sort((a,b)=>a.order-b.order))console.log(p.path)" "$manifest" |
+            while IFS= read -r patch; do
+              git -C "$target" apply "$GITHUB_WORKSPACE/$patch"
+            done
+          echo "SUB2API_ROOT=$target" >> "$GITHUB_ENV"
+
+      - name: Run deterministic security audit
+        run: pnpm security:audit
+
+      - name: Check registry advisories
+        run: pnpm audit --prod --audit-level=high
+
+      - name: Check and build frontend
+        run: |
+          pnpm --filter @mexion/web typecheck
+          pnpm --filter @mexion/web test:run
+          pnpm --filter @mexion/web build
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ runner.temp }}/sub2api/backend/go.mod
+          cache-dependency-path: ${{ runner.temp }}/sub2api/backend/go.sum
+
+      - name: Test security-sensitive backend packages
+        working-directory: ${{ env.SUB2API_ROOT }}/backend
+        run: |
+          go test ./internal/config
+          go test ./internal/server/middleware
+          go test ./internal/service -run WebSearch
+          go test ./internal/handler -run 'RefreshTokenCookie|OAuthCallbackDirectlyLogsInNewUser|OIDCOAuthCallbackVerifiedEmailFastPath'
+
+      - name: Scan reachable Go vulnerabilities
+        working-directory: ${{ env.SUB2API_ROOT }}/backend
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  gitleaks:
+    name: Git history secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy:
+    name: Filesystem vulnerability scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: 1

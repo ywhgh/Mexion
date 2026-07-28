@@ -79,6 +79,7 @@ import { usePaymentStore } from '@/stores/payment'
 import { useAppStore } from '@/stores'
 import { paymentAPI } from '@/api/payment'
 import { extractI18nErrorMessage } from '@/utils/apiError'
+import { sanitizePaymentUrl } from '@/utils/url'
 import { getPaymentPopupFeatures, isBuiltInAlipayMethod, isBuiltInWxpayMethod } from '@/components/payment/providerConfig'
 import type { PaymentOrder } from '@/types/payment'
 import { currencySymbol } from '@/components/payment/currency'
@@ -157,9 +158,9 @@ function getLogoForType(): string | null {
 
 
 function reopenPopup() {
-  if (props.payUrl) {
-    window.open(props.payUrl, 'paymentPopup', getPaymentPopupFeatures())
-  }
+  const safeUrl = sanitizePaymentUrl(props.payUrl || '', { allowRelative: true })
+  if (!safeUrl) return
+  window.open(safeUrl, 'paymentPopup', getPaymentPopupFeatures())
 }
 
 async function renderQR() {

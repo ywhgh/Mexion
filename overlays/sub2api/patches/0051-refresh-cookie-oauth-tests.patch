@@ -1,0 +1,60 @@
+diff --git a/backend/internal/handler/auth_linuxdo_oauth_test.go b/backend/internal/handler/auth_linuxdo_oauth_test.go
+index 2f1e73c4a8d39cd417aea73d45a04733429013c4..82b5edd6b62b05ba784c3e269f391a4fb4e919a8 100644
+--- a/backend/internal/handler/auth_linuxdo_oauth_test.go
++++ b/backend/internal/handler/auth_linuxdo_oauth_test.go
+@@ -779,9 +779,15 @@ func TestLinuxDoOAuthCallbackDirectlyLogsInNewUserWhenEmailVerificationDisabled(
+ 	location := recorder.Header().Get("Location")
+ 	require.Contains(t, location, "/auth/linuxdo/callback#")
+ 	require.Contains(t, location, "access_token=")
+-	require.Contains(t, location, "refresh_token=")
++	require.NotContains(t, location, "refresh_token=")
+ 	fragmentValues := parseOAuthRedirectFragment(t, location)
++	require.Empty(t, fragmentValues.Get("refresh_token"))
+ 	require.Equal(t, "/dashboard", fragmentValues.Get("redirect"))
++	refreshCookie := findCookie(recorder.Result().Cookies(), refreshTokenCookieName)
++	require.NotNil(t, refreshCookie)
++	require.True(t, refreshCookie.HttpOnly)
++	require.Equal(t, http.SameSiteLaxMode, refreshCookie.SameSite)
++	require.Empty(t, refreshCookie.Domain)
+ 	requireCookieCleared(t, recorder, oauthPendingSessionCookieName)
+ 	requireCookieCleared(t, recorder, oauthPendingBrowserCookieName)
+ 
+diff --git a/backend/internal/handler/auth_oidc_oauth_test.go b/backend/internal/handler/auth_oidc_oauth_test.go
+index 08bb459a0c9ed51b4bafaca8d3893259af023089..013852668b91c555d730385dc8e1d8a1ae99a74a 100644
+--- a/backend/internal/handler/auth_oidc_oauth_test.go
++++ b/backend/internal/handler/auth_oidc_oauth_test.go
+@@ -959,8 +959,15 @@ func TestTryOIDCVerifiedEmailFastPathCreatesUserAndIdentity(t *testing.T) {
+ 	location := recorder.Header().Get("Location")
+ 	require.Contains(t, location, "/auth/oidc/callback")
+ 	require.Contains(t, location, "access_token=")
+-	require.Contains(t, location, "refresh_token=")
++	require.NotContains(t, location, "refresh_token=")
+ 	require.Contains(t, location, "token_type=Bearer")
++	fragmentValues := parseOAuthRedirectFragment(t, location)
++	require.Empty(t, fragmentValues.Get("refresh_token"))
++	refreshCookie := findCookie(recorder.Result().Cookies(), refreshTokenCookieName)
++	require.NotNil(t, refreshCookie)
++	require.True(t, refreshCookie.HttpOnly)
++	require.Equal(t, http.SameSiteLaxMode, refreshCookie.SameSite)
++	require.Empty(t, refreshCookie.Domain)
+ 
+ 	user, err := client.User.Query().Where(dbuser.EmailEQ("fastpath@example.com")).Only(ctx)
+ 	require.NoError(t, err)
+@@ -1013,10 +1020,16 @@ func TestOIDCOAuthCallbackVerifiedEmailFastPathIssuesTokenWithoutPendingSession(
+ 	location := recorder.Header().Get("Location")
+ 	require.Contains(t, location, "/auth/oidc/callback#")
+ 	require.Contains(t, location, "access_token=")
+-	require.Contains(t, location, "refresh_token=")
++	require.NotContains(t, location, "refresh_token=")
+ 	require.Contains(t, location, "token_type=Bearer")
+ 	fragmentValues := parseOAuthRedirectFragment(t, location)
++	require.Empty(t, fragmentValues.Get("refresh_token"))
+ 	require.Equal(t, "/dashboard", fragmentValues.Get("redirect"))
++	refreshCookie := findCookie(recorder.Result().Cookies(), refreshTokenCookieName)
++	require.NotNil(t, refreshCookie)
++	require.True(t, refreshCookie.HttpOnly)
++	require.Equal(t, http.SameSiteLaxMode, refreshCookie.SameSite)
++	require.Empty(t, refreshCookie.Domain)
+ 	requireCookieCleared(t, recorder, oauthPendingSessionCookieName)
+ 	requireCookieCleared(t, recorder, oauthPendingBrowserCookieName)
+ 

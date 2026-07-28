@@ -1,0 +1,83 @@
+diff --git a/backend/internal/handler/auth_refresh_cookie.go b/backend/internal/handler/auth_refresh_cookie.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..c3f5d67b92525cc194f4988baa39cd28c3e47cff
+--- /dev/null
++++ b/backend/internal/handler/auth_refresh_cookie.go
+@@ -0,0 +1,77 @@
++package handler
++
++import (
++	"net/http"
++	"strings"
++	"time"
++
++	"github.com/gin-gonic/gin"
++)
++
++const (
++	userUIRequestHeader    = "X-User-UI-Request"
++	refreshTokenCookieName = "sub2api_refresh_token"
++	refreshTokenCookiePath = "/api/v1/auth"
++)
++
++func isUserUIRequest(c *gin.Context) bool {
++	if c == nil {
++		return false
++	}
++	value := strings.TrimSpace(c.GetHeader(userUIRequestHeader))
++	return value == "1" || strings.EqualFold(value, "true")
++}
++
++func (h *AuthHandler) refreshTokenForResponse(c *gin.Context, token string) string {
++	if !isUserUIRequest(c) {
++		return token
++	}
++	h.setRefreshTokenCookie(c, token)
++	return ""
++}
++
++func (h *AuthHandler) setRefreshTokenCookie(c *gin.Context, token string) {
++	if c == nil || strings.TrimSpace(token) == "" {
++		return
++	}
++	days := 30
++	if h != nil && h.cfg != nil && h.cfg.JWT.RefreshTokenExpireDays > 0 {
++		days = h.cfg.JWT.RefreshTokenExpireDays
++	}
++	maxAge := days * 24 * 60 * 60
++	http.SetCookie(c.Writer, &http.Cookie{
++		Name:     refreshTokenCookieName,
++		Value:    encodeCookieValue(token),
++		Path:     refreshTokenCookiePath,
++		MaxAge:   maxAge,
++		Expires:  time.Now().Add(time.Duration(days) * 24 * time.Hour),
++		HttpOnly: true,
++		Secure:   isRequestHTTPS(c),
++		SameSite: http.SameSiteLaxMode,
++	})
++	c.Header("Cache-Control", "no-store")
++	c.Header("Pragma", "no-cache")
++}
++
++func readRefreshTokenCookie(c *gin.Context) (string, error) {
++	if !isUserUIRequest(c) {
++		return "", http.ErrNoCookie
++	}
++	return readCookieDecoded(c, refreshTokenCookieName)
++}
++
++func clearRefreshTokenCookie(c *gin.Context) {
++	if c == nil {
++		return
++	}
++	http.SetCookie(c.Writer, &http.Cookie{
++		Name:     refreshTokenCookieName,
++		Value:    "",
++		Path:     refreshTokenCookiePath,
++		MaxAge:   -1,
++		Expires:  time.Unix(1, 0),
++		HttpOnly: true,
++		Secure:   isRequestHTTPS(c),
++		SameSite: http.SameSiteLaxMode,
++	})
++}

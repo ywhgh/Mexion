@@ -217,7 +217,7 @@ async function mountSubscriptionConfirm(options: Parameters<typeof checkoutInfoW
   showWarning.mockReset()
   getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoWithPlansFixture(options))
   bridgeInvoke.mockReset()
-  window.localStorage.clear()
+  window.sessionStorage.clear()
   ;(window as Window & { WeixinJSBridge?: { invoke: typeof bridgeInvoke } }).WeixinJSBridge = undefined
 
   const wrapper = shallowMount(PaymentView, {
@@ -341,7 +341,7 @@ describe('PaymentView payment recovery', () => {
     showInfo.mockReset()
     showWarning.mockReset()
     bridgeInvoke.mockReset()
-    window.localStorage.clear()
+    window.sessionStorage.clear()
     ;(window as Window & { WeixinJSBridge?: { invoke: typeof bridgeInvoke } }).WeixinJSBridge = undefined
   })
 
@@ -361,7 +361,7 @@ describe('PaymentView payment recovery', () => {
         },
       },
     }))
-    window.localStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
+    window.sessionStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
       orderId: 888,
       amount: 66,
       qrCode: 'ldc-qr',
@@ -426,7 +426,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     showWarning.mockReset()
     getCheckoutInfo.mockReset().mockResolvedValue(checkoutInfoFixture())
     bridgeInvoke.mockReset()
-    window.localStorage.clear()
+    window.sessionStorage.clear()
     ;(window as Window & { WeixinJSBridge?: { invoke: typeof bridgeInvoke } }).WeixinJSBridge = {
       invoke: bridgeInvoke,
     }
@@ -458,7 +458,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
         resume_token: 'resume-token-123',
       },
     })
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('resets payment state when JSAPI reports cancellation', async () => {
@@ -480,7 +480,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
 
     expect(showInfo).toHaveBeenCalledWith('payment.qr.cancelled')
     expect(routerPush).not.toHaveBeenCalled()
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('clears stale recovery state when JSAPI never becomes available', async () => {
@@ -506,13 +506,13 @@ describe('PaymentView WeChat JSAPI flow', () => {
       'payment.errors.wechatJsapiUnavailable payment.errors.wechatOpenInWeChatHint',
     )
     expect(routerPush).not.toHaveBeenCalled()
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
     expect(wrapper.html()).not.toContain('payment-status-panel-stub')
   })
 
   it('clears a stale recovery snapshot before handling wechat resume callback params', async () => {
     createOrder.mockRejectedValueOnce(new Error('resume failed'))
-    window.localStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
+    window.sessionStorage.setItem(PAYMENT_RECOVERY_STORAGE_KEY, JSON.stringify({
       orderId: 999,
       amount: 66,
       qrCode: 'stale-qr',
@@ -529,7 +529,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
       orderType: 'balance',
       paymentMode: 'popup',
       resumeToken: '',
-      createdAt: Date.UTC(2099, 0, 1, 0, 0, 0),
+      createdAt: Date.now(),
     }))
 
     shallowMount(PaymentView, {
@@ -546,7 +546,7 @@ describe('PaymentView WeChat JSAPI flow', () => {
     expect(createOrder).toHaveBeenCalledWith(expect.objectContaining({
       wechat_resume_token: 'resume-token-123',
     }))
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toBeNull()
   })
 
   it('keeps subscription resume context for token-only WeChat callbacks', async () => {
@@ -641,6 +641,6 @@ describe('PaymentView WeChat JSAPI flow', () => {
     }))
     expect(showWarning).toHaveBeenCalledWith('payment.errors.mobilePaymentFallbackToQr')
     expect(showError).not.toHaveBeenCalled()
-    expect(window.localStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toContain('weixin://wxpay/bizpayurl?pr=fallback-native')
+    expect(window.sessionStorage.getItem(PAYMENT_RECOVERY_STORAGE_KEY)).toContain('weixin://wxpay/bizpayurl?pr=fallback-native')
   })
 })

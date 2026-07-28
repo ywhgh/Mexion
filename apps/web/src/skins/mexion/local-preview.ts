@@ -8,6 +8,12 @@
  * false in production.
  */
 
+import {
+  AUTH_USER_KEY,
+  setSessionAccessToken,
+  setSessionTokenExpiresIn,
+} from '@/utils/authSession'
+
 type PreviewUser = Record<string, unknown> & {
   id: number
   username: string
@@ -17,7 +23,6 @@ type PreviewUser = Record<string, unknown> & {
 
 type PreviewSessionResponse = {
   access_token: string
-  refresh_token?: string
   expires_in?: number
   user: PreviewUser
 }
@@ -25,10 +30,6 @@ type PreviewSessionResponse = {
 const PREVIEW_QUERY_KEYS = ['mexion-preview', 'mexion_preview']
 const PUBLIC_SURFACE_QUERY_KEYS = ['mexion-public', 'mexion_public']
 const PREVIEW_MARKER_KEY = 'mexion_local_preview'
-const AUTH_TOKEN_KEY = 'auth_token'
-const AUTH_USER_KEY = 'auth_user'
-const REFRESH_TOKEN_KEY = 'refresh_token'
-const TOKEN_EXPIRES_AT_KEY = 'token_expires_at'
 
 function isTruthy(value: string | null | undefined): boolean {
   return value === '1' || value === 'true' || value === 'yes' || value === ''
@@ -57,16 +58,10 @@ export function isMexionLocalPreviewRequested(): boolean {
 }
 
 function storeSession(session: PreviewSessionResponse): void {
-  localStorage.setItem(AUTH_TOKEN_KEY, session.access_token)
-  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(session.user))
-  if (session.refresh_token) {
-    localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token)
-  }
+  setSessionAccessToken(session.access_token)
+  sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(session.user))
   if (typeof session.expires_in === 'number') {
-    localStorage.setItem(
-      TOKEN_EXPIRES_AT_KEY,
-      String(Date.now() + session.expires_in * 1000)
-    )
+    setSessionTokenExpiresIn(session.expires_in)
   }
   localStorage.setItem(PREVIEW_MARKER_KEY, 'true')
 }
@@ -77,7 +72,7 @@ function storeSession(session: PreviewSessionResponse): void {
  * normal auth guard and API/Store semantics intact.
  *
  * The endpoint is intentionally called on every preview bootstrap instead of
- * trusting an existing localStorage token. A token may still have a future
+ * trusting an existing sessionStorage token. A token may still have a future
  * JWT expiry while the backend has invalidated its token version (for example
  * after a restart or account/session change), which otherwise causes a false
  * redirect to /login.
@@ -86,7 +81,11 @@ export async function prepareMexionLocalPreview(): Promise<boolean> {
   if (!isMexionLocalPreviewRequested()) return false
 
   const response = await fetch('/__mexion/preview-session', {
-    headers: { Accept: 'application/json' },
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'X-Mexion-Preview': '1',
+    },
     cache: 'no-store'
   })
 

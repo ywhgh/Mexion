@@ -1,0 +1,12 @@
+title = "Mexion gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Reviewed synthetic credential fixtures"
+paths = [
+  '''apps/web/src/components/account/__tests__/EditAccountModal\.spec\.ts''',
+  '''apps/web/src/skins/mexion/__tests__/vite-security\.spec\.ts''',
+  '''apps/web/src/utils/__tests__/url\.spec\.ts'''
+]

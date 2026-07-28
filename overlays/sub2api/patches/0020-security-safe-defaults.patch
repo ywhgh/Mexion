@@ -1,0 +1,64 @@
+diff --git a/backend/internal/config/config.go b/backend/internal/config/config.go
+index a62c068f215974d77c37bbf823a037abd15a1375..19ca6d96a6d2eae5f38f5d32204bd51748074de0 100644
+--- a/backend/internal/config/config.go
++++ b/backend/internal/config/config.go
+@@ -1896,7 +1896,7 @@ func setDefaults() {
+ 	viper.SetDefault("security.csp.enabled", true)
+ 	viper.SetDefault("security.csp.policy", DefaultCSPPolicy)
+ 	viper.SetDefault("security.proxy_probe.insecure_skip_verify", false)
+-	viper.SetDefault("security.trust_forwarded_ip_for_api_key_acl", true)
++	viper.SetDefault("security.trust_forwarded_ip_for_api_key_acl", false)
+ 
+ 	// Security - disable direct fallback on proxy error
+ 	viper.SetDefault("security.proxy_fallback.allow_direct_on_error", false)
+@@ -1988,7 +1988,7 @@ func setDefaults() {
+ 	viper.SetDefault("database.host", "localhost")
+ 	viper.SetDefault("database.port", 5432)
+ 	viper.SetDefault("database.user", "postgres")
+-	viper.SetDefault("database.password", "postgres")
++	viper.SetDefault("database.password", "")
+ 	viper.SetDefault("database.dbname", "sub2api")
+ 	viper.SetDefault("database.sslmode", "prefer")
+ 	viper.SetDefault("database.max_open_conns", 256)
+diff --git a/backend/internal/config/config_test.go b/backend/internal/config/config_test.go
+index e4186732a87bb0af5d93417fdb2e47c27484d119..ad0acf34141990cb0d31f7f124272acda5108eca 100644
+--- a/backend/internal/config/config_test.go
++++ b/backend/internal/config/config_test.go
+@@ -16,10 +16,18 @@ import (
+ 
+ func resetViperWithJWTSecret(t *testing.T) {
+ 	t.Helper()
+-	viper.Reset()
++	resetViperWithEmptyConfig(t)
+ 	t.Setenv("JWT_SECRET", strings.Repeat("x", 32))
+ }
+ 
++func resetViperWithEmptyConfig(t *testing.T) {
++	t.Helper()
++	viper.Reset()
++	configDir := t.TempDir()
++	require.NoError(t, os.WriteFile(filepath.Join(configDir, "config.yaml"), []byte("{}\n"), 0o600))
++	t.Setenv("DATA_DIR", configDir)
++}
++
+ func TestLoadServerTimingConfig(t *testing.T) {
+ 	t.Run("disabled by default", func(t *testing.T) {
+ 		resetViperWithJWTSecret(t)
+@@ -54,7 +62,7 @@ func TestLoadHTTPIngressSafetyDefaults(t *testing.T) {
+ 	require.Equal(t, 64*1024, cfg.Server.MaxHeaderBytes)
+ 	require.Empty(t, cfg.Server.TrustedProxies)
+ 	require.False(t, cfg.Server.TrustedProxiesConfigured)
+-	require.True(t, cfg.TrustForwardedIPForAPIKeyACL())
++	require.False(t, cfg.TrustForwardedIPForAPIKeyACL())
+ 	require.Equal(t, int64(32*1024*1024), cfg.Gateway.TextMaxBodySize)
+ 	require.True(t, cfg.APIKeyAuth.InvalidAbuse.Enabled)
+ 	require.Equal(t, 120, cfg.APIKeyAuth.InvalidAbuse.Threshold)
+@@ -254,7 +262,7 @@ func TestLoadTrustedProxiesPresenceFromYAML(t *testing.T) {
+ }
+ 
+ func TestLoadForBootstrapAllowsMissingJWTSecret(t *testing.T) {
+-	viper.Reset()
++	resetViperWithEmptyConfig(t)
+ 	t.Setenv("JWT_SECRET", "")
+ 
+ 	cfg, err := LoadForBootstrap()

@@ -12,6 +12,7 @@ describe('API Client', () => {
 
   beforeEach(async () => {
     localStorage.clear()
+    sessionStorage.clear()
     // 每次测试重新导入以获取干净的模块状态
     vi.resetModules()
     const mod = await import('@/api/client')
@@ -39,7 +40,7 @@ describe('API Client', () => {
     })
 
     it('自动附加 Authorization 头', async () => {
-      localStorage.setItem('auth_token', 'my-jwt-token')
+      sessionStorage.setItem('auth_token', 'my-jwt-token')
 
       // 拦截实际请求
       const adapter = vi.fn().mockResolvedValue({
@@ -119,6 +120,7 @@ describe('API Client', () => {
 
       const config = adapter.mock.calls[0][0]
       expect(config.withCredentials).toBe(true)
+      expect(config.headers.get('X-User-UI-Request')).toBe('1')
     })
   })
 
@@ -158,7 +160,7 @@ describe('API Client', () => {
     })
 
     it('部署与运营合规未确认时广播事件且保留登录态', async () => {
-      localStorage.setItem('auth_token', 'admin-token')
+      sessionStorage.setItem('auth_token', 'admin-token')
       const listener = vi.fn()
       window.addEventListener('admin-compliance-required', listener)
 
@@ -199,7 +201,7 @@ describe('API Client', () => {
           version: 'v2026.06.10',
         })
       )
-      expect(localStorage.getItem('auth_token')).toBe('admin-token')
+      expect(sessionStorage.getItem('auth_token')).toBe('admin-token')
 
       window.removeEventListener('admin-compliance-required', listener)
     })
@@ -208,9 +210,10 @@ describe('API Client', () => {
   // --- 401 Token 刷新 ---
 
   describe('401 Token 刷新', () => {
-    it('无 refresh_token 时 401 清除 localStorage', async () => {
-      localStorage.setItem('auth_token', 'expired-token')
-      // 不设置 refresh_token
+    it('HttpOnly cookie 刷新失败时清除当前标签页认证状态', async () => {
+      sessionStorage.setItem('auth_token', 'expired-token')
+      localStorage.setItem('auth_session_hint', '1')
+      vi.spyOn(axios, 'post').mockRejectedValueOnce(new Error('refresh failed'))
 
       // Mock window.location
       const originalLocation = window.location
@@ -234,7 +237,8 @@ describe('API Client', () => {
 
       await expect(apiClient.get('/test')).rejects.toBeDefined()
 
-      expect(localStorage.getItem('auth_token')).toBeNull()
+      expect(sessionStorage.getItem('auth_token')).toBeNull()
+      expect(localStorage.getItem('auth_session_hint')).toBeNull()
 
       // 恢复 location
       Object.defineProperty(window, 'location', {

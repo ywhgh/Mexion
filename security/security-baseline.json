@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "dependency_policy": {
+    "overrides": {
+      "js-cookie": "3.0.7",
+      "form-data@<4.0.6": ">=4.0.6",
+      "dompurify@<=3.4.11": "3.4.12",
+      "postcss@<=8.5.17": "8.5.23"
+    },
+    "only_built_dependencies": ["esbuild", "vue-demi"],
+    "forbidden_direct_packages": ["xlsx", "file-saver"],
+    "required_direct_packages": {
+      "dompurify": "^3.4.12",
+      "write-excel-file": "^4.1.1"
+    }
+  },
+  "secret_policy": {
+    "private_settings_path": ".runtime/local-runtime.settings.json",
+    "excluded_directories": [
+      ".git",
+      ".runtime",
+      ".update",
+      "backups",
+      "coverage",
+      "dist",
+      "logs",
+      "node_modules",
+      "apps/web-static-backup-20260707-2030",
+      "apps/web/public/vendor",
+      "research"
+    ],
+    "credential_format_allowlist": [
+      {
+        "path": "apps/web/src/components/account/__tests__/EditAccountModal.spec.ts",
+        "rule": "private-key",
+        "count": 1
+      },
+      {
+        "path": "apps/web/src/i18n/locales/en/admin/resources.ts",
+        "rule": "url-userinfo",
+        "count": 1
+      },
+      {
+        "path": "apps/web/src/i18n/locales/zh/admin/resources.ts",
+        "rule": "url-userinfo",
+        "count": 1
+      },
+      {
+        "path": "apps/web/src/skins/mexion/__tests__/vite-security.spec.ts",
+        "rule": "url-userinfo",
+        "count": 1
+      },
+      {
+        "path": "apps/web/src/utils/__tests__/url.spec.ts",
+        "rule": "url-userinfo",
+        "count": 1
+      }
+    ]
+  },
+  "html_sinks": [
+    {
+      "path": "apps/web/src/components/admin/AdminComplianceDialog.vue",
+      "expression": "renderedDocument",
+      "count": 1,
+      "requires": ["DOMPurify.sanitize(html)"]
+    },
+    {
+      "path": "apps/web/src/components/common/AnnouncementBell.vue",
+      "expression": "renderMarkdown(selectedAnnouncement.content)",
+      "count": 1,
+      "requires": ["DOMPurify.sanitize(html)"]
+    },
+    {
+      "path": "apps/web/src/components/common/AnnouncementPopup.vue",
+      "expression": "renderedContent",
+      "count": 1,
+      "requires": ["DOMPurify.sanitize(html)"]
+    },
+    {
+      "path": "apps/web/src/components/common/ImageUpload.vue",
+      "expression": "sanitizedValue",
+      "count": 1,
+      "requires": ["sanitizeSvg(props.modelValue"]
+    },
+    {
+      "path": "apps/web/src/components/keys/UseKeyModal.vue",
+      "expression": "file.highlighted",
+      "count": 1,
+      "requires": ["const escapeHtml", "${escapeHtml(value)}"]
+    },
+    {
+      "path": "apps/web/src/components/layout/AppSidebar.vue",
+      "expression": "sanitizeSvg(item.iconSvg)",
+      "count": 3,
+      "requires": ["import { sanitizeSvg }"]
+    },
+    {
+      "path": "apps/web/src/components/layout/AppSidebar.vue",
+      "expression": "sanitizeSvg(child.iconSvg)",
+      "count": 1,
+      "requires": ["import { sanitizeSvg }"]
+    },
+    {
+      "path": "apps/web/src/views/HomeView.vue",
+      "expression": "sanitizedHomeContent",
+      "count": 1,
+      "requires": ["sanitizeRichHtml(homeContent.value)"]
+    },
+    {
+      "path": "apps/web/src/views/KeyUsageView.vue",
+      "expression": "row.iconSvg",
+      "count": 1,
+      "requires": ["const ICON_SHIELD", "iconSvg: ICON_"]
+    },
+    {
+      "path": "apps/web/src/views/public/LegalDocumentView.vue",
+      "expression": "renderedHtml",
+      "count": 1,
+      "requires": ["import { sanitizeRichHtml }", "sanitizeRichHtml(html)"]
+    },
+    {
+      "path": "apps/web/src/views/user/CustomPageView.vue",
+      "expression": "renderedHtml",
+      "count": 1,
+      "requires": ["import { sanitizeRichHtml }", "sanitizeRichHtml(html,"]
+    }
+  ],
+  "srcdoc_sinks": [
+    {
+      "path": "apps/web/src/views/admin/settings/EmailTemplateEditor.vue",
+      "expression": "previewHtml",
+      "count": 1,
+      "requires": ["sandbox=\"\"", "referrerpolicy=\"no-referrer\""]
+    }
+  ],
+  "source_contracts": [
+    {
+      "path": "apps/web/src/skins/mexion/vite-local-preview.ts",
+      "requires": [
+        "req.method !==",
+        "res.statusCode = 405",
+        "x-mexion-preview",
+        "isTrustedPreviewRequest",
+        "requireLoopbackBackendUrl",
+        "X-User-UI-Request",
+        "Set-Cookie",
+        "delete process.env.MEXION_PREVIEW_ADMIN_PASSWORD",
+        "Cache-Control",
+        "no-store"
+      ]
+    },
+    {
+      "path": "apps/web/src/skins/mexion/vite-security.ts",
+      "requires": [
+        "Content-Security-Policy",
+        "frame-ancestors 'none'",
+        "X-Content-Type-Options",
+        "isLoopbackAddress",
+        "isLoopbackHostname",
+        "serializeForInlineScript"
+      ]
+    },
+    {
+      "path": "apps/web/src/utils/authSession.ts",
+      "requires": [
+        "window.sessionStorage",
+        "AUTH_SESSION_HINT_KEY",
+        "clearLegacyPersistentAuth",
+        "window.localStorage.removeItem(AUTH_SESSION_HINT_KEY)"
+      ]
+    },
+    {
+      "path": "apps/web/src/utils/spreadsheet.ts",
+      "requires": ["write-excel-file/browser", "type: String"]
+    },
+    {
+      "path": "scripts/start-local-runtime.ps1",
+      "requires": [
+        "Assert-MexionLoopbackListener",
+        "Protect-MexionSecretPath",
+        "SUB2API_DB_PASSWORD",
+        "SetEnvironmentVariable($name, $null, 'Process')",
+        "--protected-mode",
+        "Join-Path $backend 'bin\\server'"
+      ]
+    },
+    {
+      "path": "scripts/lib/local-runtime-security.ps1",
+      "requires": [
+        "SetAccessRuleProtection($true, $false)",
+        "S-1-5-18",
+        "S-1-5-32-544",
+        "Invoke-MexionWithProcessEnvironment",
+        "finally",
+        "non-loopback listener"
+      ]
+    },
+    {
+      "path": "scripts/upgrade-sub2api.ps1",
+      "requires": [
+        "SECURITY_OPTIMIZATION_PLAN.md",
+        "UPSTREAM_UPGRADE_SECURITY_OVERLAY.md",
+        "Invoke-SecurityAudit -Mode 'pre-upgrade'",
+        "Invoke-SecurityAudit -Mode 'post-upgrade'",
+        "if (!$Apply)",
+        "-Activate requires -Apply",
+        "upstream-upgrade-$timestamp",
+        "'worktree', 'add'",
+        "'apply', '--reverse'",
+        "'apply', $patchPath",
+        "'build', '-tags', 'timetzdata'",
+        "./migrations",
+        "Migration|Checksum",
+        "oldPatchPath"
+      ]
+    },
+    {
+      "path": ".github/workflows/security.yml",
+      "requires": [
+        "permissions:",
+        "contents: read",
+        "pnpm audit --prod --audit-level=high",
+        "gitleaks/gitleaks-action",
+        "aquasecurity/trivy-action",
+        "govulncheck ./..."
+      ]
+    }
+  ]
+}

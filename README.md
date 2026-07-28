@@ -56,8 +56,8 @@ pnpm dev:local
 ```json
 {
   "admin_email": "admin@mexion.local",
-  "admin_password": "<本地管理员密码>",
-  "database_password": "<本地 .runtime 集群的口令>"
+  "admin_password": "<LOCAL_ADMIN_PASSWORD>",
+  "database_password": "<LOCAL_DATABASE_PASSWORD>"
 }
 ```
 

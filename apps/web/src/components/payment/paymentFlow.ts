@@ -6,8 +6,10 @@ import type {
   WechatJSAPIPayload,
   WechatOAuthInfo,
 } from '@/types/payment'
+import { sanitizePaymentUrl } from '@/utils/url'
 
 export const PAYMENT_RECOVERY_STORAGE_KEY = 'payment.recovery.current'
+export const PAYMENT_RECOVERY_MAX_AGE_MS = 2 * 60 * 60 * 1000
 
 const VISIBLE_METHOD_ALIASES = {
   alipay: 'alipay',
@@ -236,6 +238,7 @@ export function createPaymentRecoverySnapshot(
 ): PaymentRecoverySnapshot {
   return {
     ...state,
+    payUrl: sanitizePaymentUrl(state.payUrl, { allowRelative: true }),
     createdAt: now,
   }
 }
@@ -285,6 +288,9 @@ export function readPaymentRecoverySnapshot(
     }
 
     const now = options.now ?? Date.now()
+    if (parsed.createdAt > now || now - parsed.createdAt > PAYMENT_RECOVERY_MAX_AGE_MS) {
+      return null
+    }
     const expiresAt = Date.parse(parsed.expiresAt)
     if (Number.isFinite(expiresAt) && expiresAt <= now) {
       return null

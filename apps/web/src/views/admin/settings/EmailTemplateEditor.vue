@@ -213,6 +213,7 @@
                 <iframe
                   class="h-[36rem] w-full rounded-md border border-gray-200 bg-white dark:border-dark-700"
                   sandbox=""
+                  referrerpolicy="no-referrer"
                   :srcdoc="previewHtml"
                   :title="t('admin.settings.emailTemplates.livePreview')"
                 ></iframe>

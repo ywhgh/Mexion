@@ -72,6 +72,12 @@
 import { ref, computed } from 'vue'
 import Icon from '@/components/icons/Icon.vue'
 import { sanitizeSvg } from '@/utils/sanitize'
+import {
+  hasRasterImageSignature,
+  isAllowedRasterImageMimeType,
+  readBlobPrefix,
+  sanitizeUploadedSvg,
+} from '@/utils/imageUpload'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -96,7 +102,9 @@ const emit = defineEmits<{
 
 const error = ref('')
 
-const acceptTypes = computed(() => props.mode === 'svg' ? '.svg' : 'image/*')
+const acceptTypes = computed(() => props.mode === 'svg'
+  ? '.svg,image/svg+xml'
+  : 'image/png,image/jpeg,image/gif,image/webp,image/avif')
 
 const sanitizedValue = computed(() =>
   props.mode === 'svg' ? sanitizeSvg(props.modelValue ?? '') : ''
@@ -106,7 +114,7 @@ const previewSizeClass = computed(() => props.size === 'sm' ? 'h-14 w-14' : 'h-2
 const innerSizeClass = computed(() => props.size === 'sm' ? 'h-7 w-7' : 'h-12 w-12')
 const placeholderSizeClass = computed(() => props.size === 'sm' ? 'h-5 w-5' : 'h-8 w-8')
 
-function handleUpload(event: Event) {
+async function handleUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
   error.value = ''
@@ -123,12 +131,31 @@ function handleUpload(event: Event) {
   if (props.mode === 'svg') {
     reader.onload = (e) => {
       const text = e.target?.result as string
-      if (text) emit('update:modelValue', text.trim())
+      const sanitized = sanitizeUploadedSvg(text || '')
+      if (!sanitized) {
+        error.value = 'Please select a valid SVG file'
+        return
+      }
+      emit('update:modelValue', sanitized)
     }
     reader.readAsText(file)
   } else {
-    if (!file.type.startsWith('image/')) {
-      error.value = 'Please select an image file'
+    const mimeType = file.type.toLowerCase()
+    if (!isAllowedRasterImageMimeType(mimeType)) {
+      error.value = 'Please select a PNG, JPEG, GIF, WebP, or AVIF image'
+      input.value = ''
+      return
+    }
+    let signature: Uint8Array
+    try {
+      signature = await readBlobPrefix(file.slice(0, 16))
+    } catch {
+      error.value = 'Failed to read file'
+      input.value = ''
+      return
+    }
+    if (!hasRasterImageSignature(signature, mimeType)) {
+      error.value = 'The image content does not match its file type'
       input.value = ''
       return
     }

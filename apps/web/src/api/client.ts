@@ -7,6 +7,12 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResp
 import type { ApiResponse } from '@/types'
 import { getLocale } from '@/i18n'
 import { getAPIBaseURL } from './url'
+import {
+  clearBrowserAuthSession,
+  getSessionAccessToken,
+  setSessionAccessToken,
+  setSessionTokenExpiresIn,
+} from '@/utils/authSession'
 export { buildApiUrl, buildGatewayUrl } from './url'
 
 // ==================== Axios Instance Configuration ====================
@@ -16,7 +22,8 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'X-User-UI-Request': '1',
   }
 })
 
@@ -55,8 +62,8 @@ const getUserTimezone = (): string => {
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Attach token from localStorage
-    const token = localStorage.getItem('auth_token')
+    // Access tokens live only for the current tab; refresh tokens are HttpOnly cookies.
+    const token = getSessionAccessToken()
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -165,15 +172,14 @@ apiClient.interceptors.response.use(
         })
       }
 
-      // 401: Try to refresh the token if we have a refresh token
+      // 401: Try the HttpOnly refresh cookie once for non-auth endpoints.
       // This handles TOKEN_EXPIRED, INVALID_TOKEN, TOKEN_REVOKED, etc.
       if (status === 401 && !originalRequest._retry) {
-        const refreshToken = localStorage.getItem('refresh_token')
         const isAuthEndpoint =
-          url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/refresh')
+          url.includes('/auth/login') || url.includes('/auth/register') ||
+          url.includes('/auth/refresh') || url.includes('/auth/logout')
 
-        // If we have a refresh token and this is not an auth endpoint, try to refresh
-        if (refreshToken && !isAuthEndpoint) {
+        if (!isAuthEndpoint) {
           if (isRefreshing) {
             // Wait for the ongoing refresh to complete
             return new Promise((resolve, reject) => {
@@ -204,25 +210,26 @@ apiClient.interceptors.response.use(
             // Call refresh endpoint directly to avoid circular dependency
             const refreshResponse = await axios.post(
               `${getAPIBaseURL()}/auth/refresh`,
-              { refresh_token: refreshToken },
+              {},
               // 显式设置超时：裸 axios 默认无限等待，若刷新请求挂起会导致 isRefreshing
               // 永远为 true，所有排队的 401 重试请求永久卡死，页面 loading 无法恢复。
-              { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
+              {
+                headers: { 'Content-Type': 'application/json', 'X-User-UI-Request': '1' },
+                timeout: 30000,
+                withCredentials: true,
+              }
             )
 
             const refreshData = refreshResponse.data as ApiResponse<{
               access_token: string
-              refresh_token: string
               expires_in: number
             }>
 
             if (refreshData.code === 0 && refreshData.data) {
-              const { access_token, refresh_token: newRefreshToken, expires_in } = refreshData.data
+              const { access_token, expires_in } = refreshData.data
 
-              // Update tokens in localStorage (convert expires_in to timestamp)
-              localStorage.setItem('auth_token', access_token)
-              localStorage.setItem('refresh_token', newRefreshToken)
-              localStorage.setItem('token_expires_at', String(Date.now() + expires_in * 1000))
+              setSessionAccessToken(access_token)
+              setSessionTokenExpiresIn(expires_in)
 
               // Notify subscribers with new token
               onTokenRefreshed(access_token)
@@ -244,10 +251,7 @@ apiClient.interceptors.response.use(
             isRefreshing = false
 
             // Clear tokens and redirect to login
-            localStorage.removeItem('auth_token')
-            localStorage.removeItem('refresh_token')
-            localStorage.removeItem('auth_user')
-            localStorage.removeItem('token_expires_at')
+            clearBrowserAuthSession()
             sessionStorage.setItem('auth_expired', '1')
 
             if (!window.location.pathname.includes('/login')) {
@@ -262,8 +266,8 @@ apiClient.interceptors.response.use(
           }
         }
 
-        // No refresh token or is auth endpoint - clear auth and redirect
-        const hasToken = !!localStorage.getItem('auth_token')
+        // Auth endpoint failures are returned without forcing public pages to /login.
+        const hasToken = !!getSessionAccessToken()
         const headers = error.config?.headers as Record<string, unknown> | undefined
         const authHeader = headers?.Authorization ?? headers?.authorization
         const sentAuth =
@@ -273,15 +277,12 @@ apiClient.interceptors.response.use(
               ? authHeader.length > 0
               : !!authHeader
 
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('auth_user')
-        localStorage.removeItem('token_expires_at')
+        clearBrowserAuthSession()
         if ((hasToken || sentAuth) && !isAuthEndpoint) {
           sessionStorage.setItem('auth_expired', '1')
         }
         // Only redirect if not already on login page
-        if (!window.location.pathname.includes('/login')) {
+        if ((hasToken || sentAuth) && !isAuthEndpoint && !window.location.pathname.includes('/login')) {
           window.location.href = '/login'
         }
       }
