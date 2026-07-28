@@ -1,0 +1,7 @@
+# Reviewed synthetic CSS, documentation, and test-fixture findings.
+d1b78d4521654e0c9e4f3c4600cfe24d15011143:scripts/cdp-overlay-audit.mjs:generic-api-key:149
+fd87887290aa6453420d2d13eb1ee7ae9778042c:apps/web/src/components/dashboard/MexionDashboardSurface.vue:curl-auth-header:999
+4252a1e32a5791c25c3b2ec795dd399d637f30d0:apps/web/public/assets/dashboard.js:curl-auth-header:248
+40fb506c61b14b5db3af2a4995f8d90487708b92:apps/web/test/subs.test.tsx:generic-api-key:46
+40fb506c61b14b5db3af2a4995f8d90487708b92:apps/web/test/subs.test.tsx:generic-api-key:47
+40fb506c61b14b5db3af2a4995f8d90487708b92:apps/web/test/subs.test.tsx:generic-api-key:62
