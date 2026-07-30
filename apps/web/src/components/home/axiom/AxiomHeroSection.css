@@ -1,0 +1,329 @@
+.axiom-hero-container {
+  --axiom-font-serif: 'Noto Serif SC', 'Newsreader', Georgia, 'Times New Roman', serif;
+  --axiom-font-display: 'Newsreader', 'Noto Serif SC', Georgia, 'Times New Roman', serif;
+  --axiom-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --axiom-paper-ink: #292824;
+  --axiom-paper-muted: #656057;
+  --axiom-paper-faint: rgba(77, 72, 65, 0.2);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--axiom-paper-ink);
+  font-family: var(--axiom-font-serif);
+}
+
+.axiom-stage-wrap {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+#app .mexion-index-page .axiom-canvas-frame {
+  position: relative;
+  width: 100% !important;
+  max-width: 680px;
+  aspect-ratio: 4 / 3 !important;
+  margin: 0 auto;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+.axiom-canvas-frame::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 1.1%;
+  top: 16%;
+  width: 1px;
+  height: 68%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--axiom-paper-faint) 8%,
+    var(--axiom-paper-faint) 92%,
+    transparent
+  );
+}
+
+.axiom-canvas-frame::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 8%;
+  right: 8%;
+  bottom: 4.2%;
+  height: 1px;
+  pointer-events: none;
+  opacity: 0.56;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 14px,
+    var(--axiom-paper-faint) 14px 15px,
+    transparent 15px 27px
+  );
+}
+
+.axiom-illustration-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.axiom-illustrated-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  mix-blend-mode: multiply;
+  touch-action: pan-y;
+}
+
+.axiom-illustrated-canvas:focus-visible {
+  outline: 1px dashed color-mix(in srgb, var(--axiom-active-accent) 58%, transparent);
+  outline-offset: -6px;
+}
+
+.axiom-figure-index {
+  position: absolute;
+  z-index: 3;
+  top: 3.2%;
+  right: 2.8%;
+  color: color-mix(in srgb, var(--axiom-paper-muted) 72%, transparent);
+  font-family: var(--axiom-font-mono);
+  font-size: clamp(7px, 0.72vw, 9px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.axiom-register-mark {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  color: color-mix(in srgb, var(--axiom-paper-muted) 42%, transparent);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.axiom-register-mark::before,
+.axiom-register-mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.axiom-register-mark::before {
+  width: 15px;
+  height: 1px;
+}
+
+.axiom-register-mark::after {
+  width: 1px;
+  height: 15px;
+}
+
+.axiom-register-mark--west {
+  left: -1px;
+}
+
+.axiom-register-mark--east {
+  right: -1px;
+}
+
+.axiom-status-line {
+  position: absolute;
+  z-index: 3;
+  left: 3.6%;
+  bottom: 1.8%;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 76%;
+  color: color-mix(in srgb, var(--axiom-paper-muted) 76%, transparent);
+  font-family: var(--axiom-font-mono);
+  font-size: clamp(7px, 0.7vw, 9px);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.axiom-status-line__mark {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border: 1px solid var(--axiom-active-accent);
+  transform: rotate(45deg);
+  transition: background-color 360ms ease, transform 360ms ease;
+}
+
+.axiom-phase-ambient .axiom-status-line__mark {
+  background: var(--axiom-active-accent);
+  transform: rotate(225deg);
+}
+
+.mexion-index-page .plate__caption.axiom-caption {
+  margin-top: 7px;
+  font-family: var(--axiom-font-mono);
+  color: var(--axiom-paper-muted);
+}
+
+.mexion-index-page .axiom-caption .plate__caption-num {
+  color: color-mix(in srgb, var(--axiom-active-accent) 78%, var(--axiom-paper-ink));
+  font-family: var(--axiom-font-mono);
+  font-style: normal;
+  letter-spacing: 0.08em;
+}
+
+.mexion-index-page .axiom-caption .plate__caption-text {
+  color: var(--axiom-paper-ink);
+  font-family: var(--axiom-font-serif);
+  letter-spacing: 0.035em;
+}
+
+#app .mexion-index-page .plate__prop.axiom-proposition {
+  position: relative;
+  max-width: 410px;
+  margin-top: 16px;
+  padding-top: 14px;
+  background: transparent;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--axiom-font-serif);
+}
+
+#app .mexion-index-page .plate__prop.axiom-proposition::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 42px;
+  height: 1px;
+  background: var(--axiom-active-accent);
+  opacity: 0.72;
+}
+
+.mexion-index-page .axiom-proposition .prop__eyebrow {
+  font-family: var(--axiom-font-mono);
+  color: var(--axiom-active-accent);
+}
+
+.mexion-index-page .axiom-proposition .prop__eyebrow-num {
+  font-family: var(--axiom-font-serif);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+
+.mexion-index-page .axiom-content {
+  margin-top: 8px;
+  color: var(--axiom-paper-ink);
+  font-family: var(--axiom-font-serif);
+  font-size: clamp(0.84rem, 0.98vw, 0.96rem);
+  line-height: 1.78;
+  letter-spacing: 0.015em;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+html:not([lang='zh']) .mexion-index-page .axiom-caption .plate__caption-text,
+html:not([lang='zh']) .mexion-index-page .axiom-content,
+html:not([lang='zh']) .mexion-index-page .axiom-proposition .prop__eyebrow-num {
+  font-family: var(--axiom-font-display);
+}
+
+html.dark .axiom-hero-container {
+  --axiom-paper-ink: #e7e1d3;
+  --axiom-paper-muted: #aaa293;
+  --axiom-paper-faint: rgba(231, 225, 211, 0.16);
+  --axiom-active-accent: var(--axiom-active-accent-dark);
+}
+
+html.dark .axiom-illustrated-canvas {
+  mix-blend-mode: normal;
+}
+
+html.dark .axiom-canvas-frame::after {
+  opacity: 0.44;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .axiom-illustrated-canvas {
+    cursor: crosshair;
+  }
+}
+
+@media (max-width: 860px) {
+  #app .mexion-index-page .axiom-canvas-frame {
+    width: min(100%, 560px) !important;
+  }
+
+  .axiom-figure-index {
+    right: 1.5%;
+  }
+
+  .axiom-status-line {
+    left: 2.4%;
+  }
+}
+
+@media (max-width: 480px) {
+  .axiom-register-mark {
+    transform: translateY(-50%) scale(0.82);
+  }
+
+  .axiom-figure-index {
+    top: 2.2%;
+    font-size: 7px;
+  }
+
+  .axiom-status-line {
+    bottom: 0.8%;
+    max-width: 86%;
+    font-size: 7px;
+  }
+
+  #app .mexion-index-page .plate__prop.axiom-proposition {
+    margin-top: 13px;
+    padding-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axiom-status-line__mark,
+  .axiom-illustrated-canvas {
+    transition: none !important;
+  }
+}

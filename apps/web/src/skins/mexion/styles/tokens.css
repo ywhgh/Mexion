@@ -62,7 +62,7 @@
   --mx-font-interface: 'Geist', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   --mx-font-cn: 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
   --mx-font-meta: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --mx-font-display: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --mx-font-display: 'Newsreader', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --mx-font-serif: var(--mx-font-display);
   --mx-type-display: clamp(36px, 4.8vw, 76px);
   --mx-type-h1: clamp(32px, 5.2vw, 56px);

@@ -33,7 +33,12 @@ import type { AdminUser } from '@/types'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 
 const props = defineProps<{ show: boolean, user: AdminUser | null, operation: 'add' | 'subtract' }>()
-const emit = defineEmits(['close', 'success']); const { t } = useI18n(); const appStore = useAppStore()
+const emit = defineEmits<{
+  close: []
+  success: [user: AdminUser]
+}>()
+const { t } = useI18n()
+const appStore = useAppStore()
 
 const submitting = ref(false); const form = reactive({ amount: 0, notes: '' })
 watch(() => props.show, (v) => { if(v) { form.amount = 0; form.notes = '' } })
@@ -76,8 +81,15 @@ const handleBalanceSubmit = async () => {
   }
   submitting.value = true
   try {
-    await adminAPI.users.updateBalance(props.user.id, form.amount, props.operation, form.notes)
-    appStore.showSuccess(t('common.success')); emit('success'); emit('close')
+    const updatedUser = await adminAPI.users.updateBalance(
+      props.user.id,
+      form.amount,
+      props.operation,
+      form.notes
+    )
+    appStore.showSuccess(t('common.success'))
+    emit('success', updatedUser)
+    emit('close')
   } catch (e: any) {
     console.error('Failed to update balance:', e)
     appStore.showError(e.response?.data?.detail || t('common.error'))

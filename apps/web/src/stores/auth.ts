@@ -433,6 +433,24 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Synchronize a server-confirmed balance change for the current user.
+   * Keeps the reactive header state and this tab's persisted user snapshot aligned.
+   */
+  function syncCurrentUserBalance(userID: number, balance: number): boolean {
+    if (!user.value || user.value.id !== userID || !Number.isFinite(balance)) {
+      return false
+    }
+
+    const updatedUser = {
+      ...user.value,
+      balance
+    }
+    user.value = updatedUser
+    sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser))
+    return true
+  }
+
+  /**
    * Clear all authentication state
    * Internal helper function
    */
@@ -479,6 +497,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     checkAuth,
     refreshUser,
+    syncCurrentUserBalance,
     setPendingAuthSession,
     clearPendingAuthSession
   }

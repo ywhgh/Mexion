@@ -73,16 +73,27 @@ class Cdp {
 }
 
 async function navigate(cdp, path, settle = 1200) {
-  await cdp.send('Page.navigate', { url: `${baseUrl}${path}` })
+  const targetUrl = new URL(path, baseUrl).href
+  await cdp.send('Page.navigate', { url: targetUrl })
   const deadline = Date.now() + 15000
+  let mounted = false
   while (Date.now() < deadline) {
     const state = await cdp.send('Runtime.evaluate', {
-      expression: `({ ready: document.readyState, href: location.href })`,
+      expression: `({
+        ready: document.readyState,
+        href: location.href,
+        mounted: (document.querySelector('#app')?.children.length || 0) > 0,
+      })`,
       returnByValue: true,
     })
-    if (state.result?.value?.ready === 'complete') break
+    const value = state.result?.value
+    if (value?.href === targetUrl && value.ready === 'complete' && value.mounted) {
+      mounted = true
+      break
+    }
     await sleep(100)
   }
+  if (!mounted) throw new Error(`Timed out waiting for Vue route ${targetUrl}`)
   await sleep(settle)
 }
 
@@ -198,34 +209,79 @@ try {
   if (!report.login?.ok) report.failures.push('admin login failed')
 
   await navigate(cdp, '/admin/dashboard', 2400)
-  report.pages.admin = await evaluate(cdp, `(async () => {
+  const adminSnapshotExpression = `(() => {
+    const sidebar = document.querySelector('.sidebar')
     const box = document.querySelector('.sidebar-logo')
-    const img = box?.querySelector('img')
+    const letter = box?.querySelector('.sidebar-logo-letter')
     const boxStyle = box && getComputedStyle(box)
+    const letterStyle = letter && getComputedStyle(letter)
+    const sidebarStyle = sidebar && getComputedStyle(sidebar)
     const boxRect = box && box.getBoundingClientRect()
-    const imgRect = img && img.getBoundingClientRect()
-    const svg = await fetch('/mexion-logo.svg', { cache: 'no-store' }).then((r) => r.text())
+    const colorCanvas = document.createElement('canvas')
+    colorCanvas.width = 1
+    colorCanvas.height = 1
+    const colorContext = colorCanvas.getContext('2d', { willReadFrequently: true })
+    const rgb = (value) => {
+      if (!colorContext || !value) return null
+      colorContext.clearRect(0, 0, 1, 1)
+      colorContext.fillStyle = String(value)
+      colorContext.fillRect(0, 0, 1, 1)
+      return [...colorContext.getImageData(0, 0, 1, 1).data].slice(0, 3)
+    }
+    const luminance = (color) => {
+      if (!color) return null
+      const channels = color.map((channel) => {
+        const value = channel / 255
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+      })
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+    }
+    const contrast = (front, back) => {
+      const a = luminance(rgb(front))
+      const b = luminance(rgb(back))
+      if (a == null || b == null) return null
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+    }
+    const brand = document.querySelector('.sidebar-brand')
+    const headerNodes = [...document.querySelectorAll('.sidebar-header *')]
     return {
       href: location.href,
+      mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
       box: box && {
-        width: boxRect.width, height: boxRect.height,
+        width: boxRect.width,
+        height: boxRect.height,
         borderRadius: boxStyle.borderRadius,
         boxShadow: boxStyle.boxShadow,
         backgroundColor: boxStyle.backgroundColor,
       },
-      image: img && {
-        src: img.currentSrc || img.src,
-        complete: img.complete,
-        naturalWidth: img.naturalWidth,
-        naturalHeight: img.naturalHeight,
-        width: imgRect.width,
-        height: imgRect.height,
+      imageCount: box?.querySelectorAll('img').length || 0,
+      letter: letter && {
+        text: letter.textContent?.trim() || '',
+        color: letterStyle.color,
+        fontFamily: letterStyle.fontFamily,
+        fontSize: letterStyle.fontSize,
+        contrast: contrast(letterStyle.color, sidebarStyle?.backgroundColor),
       },
-      svgIsM: /data-letter="M"/.test(svg) && /data-style="newsreader-ink"/.test(svg),
-      svgHasLegacyColors: /#191919/i.test(svg) && /#AA2524/i.test(svg),
+      badge: {
+        brandChildCount: brand?.children.length || 0,
+        proCount: headerNodes.filter((node) => node.textContent?.trim() === 'PRO').length,
+        versionCount: headerNodes.filter((node) => /^v?\d+\.\d+/.test(node.textContent?.trim() || '')).length,
+      },
     }
+  })()`
+  report.pages.admin = {
+    light: await evaluate(cdp, adminSnapshotExpression),
+  }
+  await capture(cdp, 'admin-dashboard-light')
+
+  await evaluate(cdp, `(() => {
+    localStorage.setItem('theme', 'dark')
+    document.documentElement.classList.add('dark')
+    return true
   })()`)
-  await capture(cdp, 'admin-dashboard')
+  await sleep(350)
+  report.pages.admin.dark = await evaluate(cdp, adminSnapshotExpression)
+  await capture(cdp, 'admin-dashboard-dark')
 
   const diamondOk = (page) => page?.exists
     && page.cssSize?.width === '8px'
@@ -234,11 +290,24 @@ try {
     && page.backgroundColor !== 'rgba(0, 0, 0, 0)'
   if (!diamondOk(report.pages.home)) report.failures.push('home brand ornament is not the legacy 8px vermilion diamond')
   if (!diamondOk(report.pages.login)) report.failures.push('login brand ornament is not the legacy 8px vermilion diamond')
-  const admin = report.pages.admin
-  if (!admin?.image?.complete || admin.image.naturalWidth !== 512 || admin.image.naturalHeight !== 512) report.failures.push('sidebar M logo did not load as the 512x512 master asset')
-  if (Math.abs(admin?.box?.width - 28) > 0.2 || Math.abs(admin?.box?.height - 28) > 0.2) report.failures.push('sidebar logo frame is not 28x28')
-  if (admin?.box?.borderRadius !== '0px' || admin?.box?.boxShadow !== 'none') report.failures.push('sidebar logo still has the modern rounded-square/shadow styling')
-  if (!admin?.svgIsM || !admin?.svgHasLegacyColors) report.failures.push('SVG is not the approved Newsreader ink M with vermilion seal')
+  for (const [mode, admin] of Object.entries(report.pages.admin)) {
+    if (admin?.mode !== mode) report.failures.push(`sidebar ${mode} theme was not applied`)
+    if (admin?.imageCount !== 0) report.failures.push(`sidebar ${mode} default logo still renders an image`)
+    if (admin?.letter?.text !== 'M') report.failures.push(`sidebar ${mode} default logo is not M`)
+    if (!/Newsreader/i.test(admin?.letter?.fontFamily || '') || !/serif/i.test(admin?.letter?.fontFamily || '')) {
+      report.failures.push(`sidebar ${mode} logo font stack is missing Newsreader or a serif fallback`)
+    }
+    if ((admin?.letter?.contrast || 0) < 4.5) report.failures.push(`sidebar ${mode} logo contrast is ${admin?.letter?.contrast}`)
+    if (!admin?.box || Math.abs(admin.box.width - 28) > 0.2 || Math.abs(admin.box.height - 28) > 0.2) {
+      report.failures.push(`sidebar ${mode} logo frame is not 28x28`)
+    }
+    if (admin?.box?.borderRadius !== '0px' || admin?.box?.boxShadow !== 'none') {
+      report.failures.push(`sidebar ${mode} logo still has the modern rounded-square/shadow styling`)
+    }
+    if (admin?.badge?.brandChildCount !== 1 || admin?.badge?.proCount !== 0 || admin?.badge?.versionCount !== 0) {
+      report.failures.push(`sidebar ${mode} PRO/version badge is still present`)
+    }
+  }
 
   const network500 = cdp.events
     .filter((event) => event.method === 'Network.responseReceived' && event.params?.response?.status >= 500)

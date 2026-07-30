@@ -16,8 +16,10 @@ describe('site_logo sanitization', () => {
   })
 
   it('AppSidebar falls back to the Mexion editorial mark without overriding a custom site logo', () => {
-    expect(sidebarSource).toContain("import { resolveMexionSidebarMark } from '@/skins/mexion/brand'")
+    expect(sidebarSource).toContain('MEXION_BRAND_ASSETS')
+    expect(sidebarSource).toContain('resolveMexionSidebarMark')
     expect(sidebarSource).toContain('const sidebarLogo = computed(() => resolveMexionSidebarMark(siteLogo.value))')
+    expect(sidebarSource).toContain('v-if="usesDefaultMexionMark"')
     expect(sidebarSource).toContain(':src="sidebarLogo"')
   })
   it('HomeView applies sanitizeUrl to siteLogo', () => {

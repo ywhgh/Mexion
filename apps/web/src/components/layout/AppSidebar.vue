@@ -13,8 +13,17 @@
         :to="homePath"
         class="sidebar-logo brand__mark flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-glow transition-opacity hover:opacity-80"
         @click="handleMenuItemClick(homePath)"
+        :aria-label="siteName"
       >
-        <img :src="sidebarLogo" alt="Logo" class="h-full w-full object-contain" />
+        <span v-if="usesDefaultMexionMark" class="sidebar-logo-letter" aria-hidden="true">
+          M
+        </span>
+        <img
+          v-else
+          :src="sidebarLogo"
+          alt=""
+          class="sidebar-logo-image h-full w-full object-contain"
+        />
       </router-link>
       <div class="sidebar-brand" :class="{ 'sidebar-brand-collapsed': sidebarCollapsed }" :aria-hidden="sidebarCollapsed ? 'true' : 'false'">
         <router-link
@@ -24,9 +33,6 @@
         >
           {{ siteName }}
         </router-link>
-        <!-- Static Mexion skin uses a compact PRO capsule; other pages keep the original version dropdown. -->
-        <span v-if="isStaticSidebar" class="brand__plan">PRO</span>
-        <VersionBadge v-else :version="siteVersion" />
       </div>
     </div>
 
@@ -189,12 +195,11 @@ import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'v
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAdminSettingsStore, useAppStore, useAuthStore, useOnboardingStore } from '@/stores'
-import VersionBadge from '@/components/common/VersionBadge.vue'
 import { sanitizeSvg } from '@/utils/sanitize'
 import { sanitizeUrl } from '@/utils/url'
 import { FeatureFlags, makeSidebarFlag } from '@/utils/featureFlags'
 import { useBatchImageAccess } from '@/composables/useBatchImageAccess'
-import { resolveMexionSidebarMark } from '@/skins/mexion/brand'
+import { MEXION_BRAND_ASSETS, resolveMexionSidebarMark } from '@/skins/mexion/brand'
 
 interface NavItem {
   path: string
@@ -266,7 +271,9 @@ const expandedGroups = ref<Set<string>>(new Set())
 const siteName = computed(() => appStore.siteName)
 const siteLogo = computed(() => sanitizeUrl(appStore.siteLogo || '', { allowRelative: true, allowDataUrl: true }))
 const sidebarLogo = computed(() => resolveMexionSidebarMark(siteLogo.value))
-const siteVersion = computed(() => appStore.siteVersion)
+const usesDefaultMexionMark = computed(
+  () => sidebarLogo.value === MEXION_BRAND_ASSETS.sidebarMark
+)
 const collapseShortcut = computed(() => {
   if (typeof navigator === 'undefined') return 'Ctrl\\'
   return /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘\\' : 'Ctrl\\'

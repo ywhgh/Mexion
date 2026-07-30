@@ -743,7 +743,7 @@
     />
     <UserApiKeysModal :show="showApiKeysModal" :user="viewingUser" @close="closeApiKeysModal" />
     <UserAllowedGroupsModal :show="showAllowedGroupsModal" :user="allowedGroupsUser" @close="closeAllowedGroupsModal" @success="loadUsers" />
-    <UserBalanceModal :show="showBalanceModal" :user="balanceUser" :operation="balanceOperation" @close="closeBalanceModal" @success="loadUsers" />
+    <UserBalanceModal :show="showBalanceModal" :user="balanceUser" :operation="balanceOperation" @close="closeBalanceModal" @success="handleBalanceUpdated" />
     <UserBalanceHistoryModal :show="showBalanceHistoryModal" :user="balanceHistoryUser" @close="closeBalanceHistoryModal" @deposit="handleDepositFromHistory" @withdraw="handleWithdrawFromHistory" />
     <GroupReplaceModal :show="showGroupReplaceModal" :user="groupReplaceUser" :old-group="groupReplaceOldGroup" :all-groups="allGroups" @close="closeGroupReplaceModal" @success="loadUsers" />
     <UserAttributesConfigModal :show="showAttributesModal" @close="handleAttributesModalClose" />
@@ -751,9 +751,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
+import { useAuthStore } from '@/stores/auth'
 import { getPersistedPageSize } from '@/composables/usePersistedPageSize'
 import { formatDateTime } from '@/utils/format'
 import Icon from '@/components/icons/Icon.vue'
@@ -789,6 +790,7 @@ import UserBalanceHistoryModal from '@/components/admin/user/UserBalanceHistoryM
 import GroupReplaceModal from '@/components/admin/user/GroupReplaceModal.vue'
 
 const appStore = useAppStore()
+const authStore = useAuthStore()
 
 // Generate dynamic attribute columns from enabled definitions
 const attributeColumns = computed<Column[]>(() =>
@@ -1755,6 +1757,40 @@ const closeBalanceModal = () => {
   showBalanceModal.value = false
   balanceUser.value = null
 }
+
+const applyVisibleBalance = (userID: number, balance: number) => {
+  const index = users.value.findIndex((user) => user.id === userID)
+  if (index >= 0) {
+    users.value[index] = { ...users.value[index], balance }
+  }
+  if (balanceUser.value?.id === userID) {
+    balanceUser.value = { ...balanceUser.value, balance }
+  }
+  if (balanceHistoryUser.value?.id === userID) {
+    balanceHistoryUser.value = { ...balanceHistoryUser.value, balance }
+  }
+}
+
+const handleBalanceUpdated = (updatedUser: AdminUser) => {
+  const index = users.value.findIndex((user) => user.id === updatedUser.id)
+  if (index >= 0) {
+    users.value[index] = { ...users.value[index], ...updatedUser }
+  }
+  applyVisibleBalance(updatedUser.id, updatedUser.balance)
+  authStore.syncCurrentUserBalance(updatedUser.id, updatedUser.balance)
+}
+
+watch(
+  () => {
+    const currentUser = authStore.user
+    return currentUser ? [currentUser.id, currentUser.balance] as const : null
+  },
+  (currentUser) => {
+    if (currentUser) {
+      applyVisibleBalance(currentUser[0], currentUser[1])
+    }
+  }
+)
 
 const handleBalanceHistory = (user: AdminUser) => {
   balanceHistoryUser.value = user

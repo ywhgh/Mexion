@@ -406,6 +406,52 @@ describe('useAuthStore', () => {
     })
   })
 
+  describe('syncCurrentUserBalance', () => {
+    it('同步当前用户余额并持久化到当前标签页 sessionStorage', async () => {
+      mockLogin.mockResolvedValue(fakeAuthResponse)
+      const store = useAuthStore()
+      await store.login({ email: 'test@example.com', password: '123456' })
+
+      const result = store.syncCurrentUserBalance(fakeUser.id, 125.5)
+
+      expect(result).toBe(true)
+      expect(store.user).toEqual({ ...fakeUser, balance: 125.5 })
+      expect(JSON.parse(sessionStorage.getItem('auth_user')!)).toEqual({
+        ...fakeUser,
+        balance: 125.5,
+      })
+    })
+
+    it('用户 ID 不匹配时不修改当前用户或持久化快照', async () => {
+      mockLogin.mockResolvedValue(fakeAuthResponse)
+      const store = useAuthStore()
+      await store.login({ email: 'test@example.com', password: '123456' })
+      const persistedBefore = sessionStorage.getItem('auth_user')
+
+      const result = store.syncCurrentUserBalance(fakeUser.id + 1, 999)
+
+      expect(result).toBe(false)
+      expect(store.user).toEqual(fakeUser)
+      expect(sessionStorage.getItem('auth_user')).toBe(persistedBefore)
+    })
+
+    it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+      '余额为非有限值 %s 时不修改当前用户',
+      async (balance) => {
+        mockLogin.mockResolvedValue(fakeAuthResponse)
+        const store = useAuthStore()
+        await store.login({ email: 'test@example.com', password: '123456' })
+        const persistedBefore = sessionStorage.getItem('auth_user')
+
+        const result = store.syncCurrentUserBalance(fakeUser.id, balance)
+
+        expect(result).toBe(false)
+        expect(store.user).toEqual(fakeUser)
+        expect(sessionStorage.getItem('auth_user')).toBe(persistedBefore)
+      }
+    )
+  })
+
   // --- isSimpleMode ---
 
   describe('isSimpleMode', () => {

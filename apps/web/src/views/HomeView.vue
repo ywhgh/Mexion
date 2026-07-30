@@ -93,24 +93,7 @@
           <span class="plate__title-sep">·</span>
           <span class="plate__title-en">The Keeper of the Scroll</span>
         </p>
-        <div class="plate__frame-wrap">
-          <div class="plate__frame">
-            <img class="plate__ink" src="/assets/mascot.webp" alt="持卷者 — The Keeper of the Scroll" />
-          </div>
-        </div>
-        <p class="plate__caption">
-          <span class="plate__caption-num">FIG.&thinsp;0.1&nbsp;—&nbsp;</span>
-          <span class="plate__caption-text">{{ isZh ? '工笔淡彩，朱砂点睛。' : 'Ink and wash, vermilion-touched.' }}</span>
-        </p>
-        <div class="plate__prop">
-          <div class="prop__eyebrow"><span class="prop__eyebrow-num">{{ isZh ? '关于「公理」' : 'A Note on the Name' }}</span></div>
-          <p class="prop__body" v-if="isZh">
-            公理——源自希腊语 ἀξίωμα，<em class="prop__quote">「被认为值得相信的事物。」</em>一种基础的真理，无需证明而被接受。<span class="prop__end"></span>
-          </p>
-          <p class="prop__body" v-else>
-            Mexion — from Greek ἀξίωμα, <em class="prop__quote">"that which is thought worthy."</em> A foundational truth, accepted without proof.<span class="prop__end"></span>
-          </p>
-        </div>
+        <AxiomHeroSection :is-zh="isZh" />
       </aside>
     </main>
 
@@ -134,6 +117,7 @@ import { useAuthStore, useAppStore } from '@/stores'
 import { sanitizeUrl } from '@/utils/url'
 import { sanitizeRichHtml } from '@/utils/html'
 import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
+import AxiomHeroSection from '@/components/home/axiom/AxiomHeroSection.vue'
 
 const BrushSvg = defineComponent({
   name: 'BrushSvg',

@@ -9,13 +9,15 @@ const {
   getAllGroups,
   getBatchUsersUsage,
   listEnabledDefinitions,
-  getBatchUserAttributes
+  getBatchUserAttributes,
+  syncCurrentUserBalance
 } = vi.hoisted(() => ({
   listUsers: vi.fn(),
   getAllGroups: vi.fn(),
   getBatchUsersUsage: vi.fn(),
   listEnabledDefinitions: vi.fn(),
-  getBatchUserAttributes: vi.fn()
+  getBatchUserAttributes: vi.fn(),
+  syncCurrentUserBalance: vi.fn()
 }))
 
 vi.mock('@/api/admin', () => ({
@@ -42,6 +44,13 @@ vi.mock('@/stores/app', () => ({
   useAppStore: () => ({
     showError: vi.fn(),
     showSuccess: vi.fn()
+  })
+}))
+
+vi.mock('@/stores/auth', () => ({
+  useAuthStore: () => ({
+    user: null,
+    syncCurrentUserBalance
   })
 }))
 
@@ -83,6 +92,7 @@ const DataTableStub = {
     <div>
       <div data-test="columns">{{ columns.map(col => col.key).join(',') }}</div>
       <div data-test="row-order">{{ data.map(row => row.email).join(',') }}</div>
+      <div data-test="row-balances">{{ data.map(row => row.id + ':' + row.balance).join(',') }}</div>
       <button data-test="sort-last-used" @click="$emit('sort', 'last_used_at', 'desc')">sort</button>
       <template v-for="col in columns" :key="col.key">
         <slot :name="'header-' + col.key" :column="col" />
@@ -92,6 +102,13 @@ const DataTableStub = {
       </div>
     </div>
   `
+}
+
+const UserBalanceModalStub = {
+  name: 'UserBalanceModal',
+  props: ['show', 'user', 'operation'],
+  emits: ['close', 'success'],
+  template: '<div data-test="balance-modal"></div>'
 }
 
 describe('admin UsersView', () => {
@@ -104,6 +121,7 @@ describe('admin UsersView', () => {
     getBatchUsersUsage.mockReset()
     listEnabledDefinitions.mockReset()
     getBatchUserAttributes.mockReset()
+    syncCurrentUserBalance.mockReset()
 
     listUsers.mockResolvedValue({
       items: [createAdminUser()],
@@ -142,7 +160,7 @@ describe('admin UsersView', () => {
           UserEditModal: true,
           UserApiKeysModal: true,
           UserAllowedGroupsModal: true,
-          UserBalanceModal: true,
+          UserBalanceModal: UserBalanceModalStub,
           UserBalanceHistoryModal: true,
           GroupReplaceModal: true,
           Icon: true,
@@ -226,7 +244,7 @@ describe('admin UsersView', () => {
           UserEditModal: true,
           UserApiKeysModal: true,
           UserAllowedGroupsModal: true,
-          UserBalanceModal: true,
+          UserBalanceModal: UserBalanceModalStub,
           UserBalanceHistoryModal: true,
           GroupReplaceModal: true,
           Icon: true,
@@ -263,5 +281,59 @@ describe('admin UsersView', () => {
       }),
       expect.any(Object)
     )
+  })
+
+  it('余额弹窗成功后立即更新对应行并同步当前登录用户余额', async () => {
+    const initialUser = createAdminUser({ id: 1, balance: 100 })
+    listUsers.mockResolvedValue({
+      items: [initialUser],
+      total: 1,
+      page: 1,
+      page_size: 20,
+      pages: 1
+    })
+
+    const wrapper = mount(UsersView, {
+      global: {
+        stubs: {
+          AppLayout: { template: '<div><slot /></div>' },
+          TablePageLayout: {
+            template: '<div><slot name="filters" /><slot name="table" /><slot name="pagination" /></div>'
+          },
+          DataTable: DataTableStub,
+          Pagination: true,
+          ConfirmDialog: true,
+          EmptyState: true,
+          GroupBadge: true,
+          Select: true,
+          UserAttributesConfigModal: true,
+          UserConcurrencyCell: true,
+          UserCreateModal: true,
+          UserEditModal: true,
+          UserApiKeysModal: true,
+          UserAllowedGroupsModal: true,
+          UserBalanceModal: UserBalanceModalStub,
+          UserBalanceHistoryModal: true,
+          GroupReplaceModal: true,
+          Icon: true,
+          Teleport: true
+        }
+      }
+    })
+    await flushPromises()
+
+    expect(wrapper.get('[data-test="row-balances"]').text()).toBe('1:100')
+
+    const updatedUser = createAdminUser({
+      ...initialUser,
+      balance: 101,
+      updated_at: '2026-07-28T01:00:00Z'
+    })
+    wrapper.getComponent(UserBalanceModalStub).vm.$emit('success', updatedUser)
+    await flushPromises()
+
+    expect(wrapper.get('[data-test="row-balances"]').text()).toBe('1:101')
+    expect(syncCurrentUserBalance).toHaveBeenCalledWith(1, 101)
+    expect(listUsers).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,15 +1,44 @@
-/* Mexion brand assets deliberately keep the legacy Axiom/Mexion visual language:
-   transparent Newsreader ink letterform with a vermilion printer's diamond.
-   Homepage and auth-page brand ornaments remain the original 8px diamond and
-   are defined in mexion-static-pages.css; do not replace them with the full logo. */
+/* Mexion sidebar brand mark.
+   The default mark is rendered as a Newsreader M so its color can follow the
+   current paper/ink theme. Uploaded site logos continue to render as images. */
 
 #app .sidebar-logo.brand__mark {
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  color: var(--mx-ink, #14140f) !important;
 }
 
-#app .sidebar-logo.brand__mark img {
+#app .sidebar-logo-letter {
+  display: flex !important;
+  width: 100% !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: inherit !important;
+  font-family: var(
+    --mx-f-display,
+    'Newsreader',
+    'Iowan Old Style',
+    Georgia,
+    'Times New Roman',
+    serif
+  ) !important;
+  font-size: 30px !important;
+  font-style: normal !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.055em !important;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+html.dark #app .sidebar-logo.brand__mark {
+  color: var(--mx-ink, #f1efe6) !important;
+}
+
+#app .sidebar-logo.brand__mark img,
+#app .sidebar-logo-image {
   display: block !important;
   border-radius: 0 !important;
 }
